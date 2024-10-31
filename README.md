@@ -1,5 +1,9 @@
 # web08-BooQuiz
 
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/a3550464-e324-4933-85cb-f181ee62b3d5">
+</p>
+
 [팀 노션](https://www.notion.so/127f1897cdf5809c8a44d54384683bc6?pvs=21) | [백로그](https://github.com/orgs/boostcampwm-2024/projects/11) | [그라운드 룰](https://github.com/boostcampwm-2024/web08-BooQuiz/wiki/%EA%B7%B8%EB%9D%BC%EC%9A%B4%EB%93%9C-%EB%A3%B0) 
 
 ## 프로젝트 소개
