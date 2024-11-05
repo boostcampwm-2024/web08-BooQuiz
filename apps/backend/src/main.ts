@@ -10,8 +10,8 @@ async function bootstrap() {
   app.use(
     session({
       secret: 'my-secret',
-      resave: false,
-      saveUninitialized: false,
+      resave: true,
+      saveUninitialized: true,
     }),
   );
 
