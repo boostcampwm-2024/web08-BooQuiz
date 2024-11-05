@@ -15,7 +15,8 @@
     "docs:backend": "typedoc --tsconfig apps/backend/tsconfig.json --entryPointStrategy expand",
     "docs:frontend": "typedoc --tsconfig apps/frontend/tsconfig.json --entryPointStrategy expand",
     "docs:shared": "typedoc --tsconfig packages/shared/tsconfig.json --entryPointStrategy expand",
-    "docs": "npm run docs:backend && npm run docs:frontend && npm run docs:shared"
+    "docs": "npm run docs:backend && npm run docs:frontend && npm run docs:shared",
+    "prepare": "husky"
   },
   "repository": {
     "type": "git",
@@ -34,6 +35,9 @@
   },
   "homepage": "https://github.com/boostcampwm-2024/web08-BooQuiz#readme",
   "devDependencies": {
+    "@commitlint/cli": "^19.5.0",
+    "@commitlint/config-conventional": "^19.5.0",
+    "husky": "^9.1.6",
     "typedoc-plugin-markdown": "^4.2.10",
     "typescript": "^5.x.x"
   }

@@ -15,3 +15,5 @@
 | [J004 강준현](https://github.com/JunhyunKang) | [J074 김현우](https://github.com/krokerdile) | [J086 도선빈](https://github.com/typingmistake) | [J175 이동현](https://github.com/codemario318) | [J217 전현민](https://github.com/joyjhm) |
 | --- | --- | --- | --- | --- |
 |![](https://avatars.githubusercontent.com/u/72436328?v=4)|![](https://avatars.githubusercontent.com/u/39644976?v=4)|![](https://avatars.githubusercontent.com/u/102957984?v=4)|![](https://avatars.githubusercontent.com/u/130330767?v=4)|![](https://avatars.githubusercontent.com/u/77275989?v=4)|
+
+## 기술 스택 
