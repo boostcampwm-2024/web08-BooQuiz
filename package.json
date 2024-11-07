@@ -16,7 +16,8 @@
     "docs:frontend": "typedoc --tsconfig apps/frontend/tsconfig.json --entryPointStrategy expand",
     "docs:shared": "typedoc --tsconfig packages/shared/tsconfig.json --entryPointStrategy expand",
     "docs": "npm run docs:backend && npm run docs:frontend && npm run docs:shared",
-    "prepare": "husky"
+    "prepare": "husky",
+    "preinstall": "npx only-allow pnpm"
   },
   "repository": {
     "type": "git",
