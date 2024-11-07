@@ -1,12 +1,9 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { CreateQuizZoneDto } from './dto/create-quiz-zone.dto';
+import { Injectable } from '@nestjs/common';
 import { UpdateQuizZoneDto } from './dto/update-quiz-zone.dto';
-import { QuizZoneRepositoryInterface } from './quiz-zone.repository.interface';
 import { QuizZoneRepositoryMemory } from './quiz-zone.repository.memory';
 import { Quiz } from './entities/quiz.entity';
 import { Player } from './entities/player.entity';
 import { QuizZone } from './entities/quiz-zone.entity';
-import { SubmittedQuiz } from './entities/submitted.quiz';
 
 export const quizzes: Quiz[] = [
     { index: 0, question: 'What is the capital of Korea?', answer: 'Seoul' },
