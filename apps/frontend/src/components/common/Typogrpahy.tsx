@@ -1,7 +1,8 @@
 interface TypographyProps {
     text: string;
     size: 'xs' | 'sm' | 'base' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl' | '6xl';
-    color: 'gray' | 'red' | 'black';
+    color: 'gray' | 'red' | 'black' | 'blue';
+    bold?: boolean;
 }
 
 /**
@@ -22,7 +23,7 @@ interface TypographyProps {
  * @returns {JSX.Element} Tailwind CSS 클래스를 적용한 텍스트를 포함하는 `<p>` 요소
  */
 
-const Typography = ({ text, size, color }: TypographyProps) => {
+const Typography = ({ text, size, color, bold = false }: TypographyProps) => {
     const sizeClasses = {
         xs: 'text-xs',
         sm: 'text-sm',
@@ -37,13 +38,13 @@ const Typography = ({ text, size, color }: TypographyProps) => {
     };
 
     const colorClasses = {
-        gray: 'text-gray-700',
+        gray: 'text-gray-400',
         red: 'text-red-600',
         blue: 'text-blue-600',
         black: 'text-black',
     };
 
-    const classes = `${sizeClasses[size] || sizeClasses.base} ${colorClasses[color] || colorClasses.black}`;
+    const classes = `${sizeClasses[size] || sizeClasses.base} ${colorClasses[color] || colorClasses.black} ${bold ? 'font-bold' : ''}`;
     return <p className={classes}>{text}</p>;
 };
 
