@@ -1,6 +1,6 @@
 import { Button } from '../ui/button';
 
-interface CommonButtonProps {
+export interface CommonButtonProps {
     text?: string;
     isFulfill?: boolean;
     clickEvent: () => void;
