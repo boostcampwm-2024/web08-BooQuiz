@@ -1,15 +1,13 @@
 import { Progress } from '../ui/progress';
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import TimerDisplay from './TimerDisplay';
 import Typography from './Typogrpahy';
 
 export interface ProgressBarProps {
     maxTime: number;
+    onTimeEnd: () => void;
 }
 
-const ProgressBar = ({ maxTime = 10 }: ProgressBarProps) => {
-    const navigate = useNavigate();
+const ProgressBar = ({ maxTime = 10, onTimeEnd }: ProgressBarProps) => {
     const [timeValue, setTimeValue] = useState(100);
     const intervalsPerSecond = 10; // 초당 업데이트 횟수
     const intervalDuration = 1000 / intervalsPerSecond; // ms 단위로 계산
@@ -17,7 +15,7 @@ const ProgressBar = ({ maxTime = 10 }: ProgressBarProps) => {
     useEffect(() => {
         const incrementPerInterval = 100 / (maxTime * intervalsPerSecond); // maxTime에 맞춰 증가량 조정
         if (timeValue == 0) {
-            navigate('/waiting');
+            onTimeEnd();
         }
         const interval = setInterval(() => {
             setTimeValue((prevTimeValue) => {
@@ -31,7 +29,7 @@ const ProgressBar = ({ maxTime = 10 }: ProgressBarProps) => {
         }, intervalDuration);
 
         return () => clearInterval(interval);
-    }, [maxTime, timeValue, navigate]);
+    }, [maxTime, timeValue]);
 
     return (
         <div className="w-full flex justify-center flex-col items-center gap-2">
