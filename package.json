@@ -38,7 +38,6 @@
     "@commitlint/cli": "^19.5.0",
     "@commitlint/config-conventional": "^19.5.0",
     "husky": "^9.1.6",
-    "prettier": "^3.3.3",
     "typedoc-plugin-markdown": "^4.2.10",
     "typescript": "^5.x.x"
   }
