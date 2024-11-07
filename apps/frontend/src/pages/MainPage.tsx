@@ -6,8 +6,8 @@ import { useNavigate } from 'react-router-dom';
 const MainPage = () => {
     const navigate = useNavigate();
 
-    const handleMoveToMain = () => {
-        navigate('/waiting');
+    const handleMoveToQuizZoneWaiting = () => {
+        navigate('/quizZoneWait');
     };
 
     return (
@@ -30,7 +30,7 @@ const MainPage = () => {
                 <CommonButton
                     text="퀴즈존 참여하기"
                     isFulfill={true}
-                    clickEvent={handleMoveToMain}
+                    clickEvent={handleMoveToQuizZoneWaiting}
                 />
             </ContentBox>
         </>
