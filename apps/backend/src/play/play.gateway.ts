@@ -1,34 +1,26 @@
-import { WebSocketGateway, SubscribeMessage, MessageBody } from '@nestjs/websockets';
+import {
+    MessageBody,
+    OnGatewayConnection,
+    SubscribeMessage,
+    WebSocketGateway,
+} from '@nestjs/websockets';
 import { PlayService } from './play.service';
 import { CreatePlayDto } from './dto/create-play.dto';
-import { UpdatePlayDto } from './dto/update-play.dto';
+import { WebSocket } from 'ws';
+import { IncomingMessage } from 'http';
 
-@WebSocketGateway()
-export class PlayGateway {
-  constructor(private readonly playService: PlayService) {}
+@WebSocketGateway(8080)
+export class PlayGateway implements OnGatewayConnection {
+    constructor(private readonly playService: PlayService) {}
 
-  @SubscribeMessage('createPlay')
-  create(@MessageBody() createPlayDto: CreatePlayDto) {
-    return this.playService.create(createPlayDto);
-  }
+    handleConnection(client: WebSocket, request: IncomingMessage) {
+        // console.log(client);
+        console.log(request.headers);
+        console.log(request.headers.cookie);
+    }
 
-  @SubscribeMessage('findAllPlay')
-  findAll() {
-    return this.playService.findAll();
-  }
-
-  @SubscribeMessage('findOnePlay')
-  findOne(@MessageBody() id: number) {
-    return this.playService.findOne(id);
-  }
-
-  @SubscribeMessage('updatePlay')
-  update(@MessageBody() updatePlayDto: UpdatePlayDto) {
-    return this.playService.update(updatePlayDto.id, updatePlayDto);
-  }
-
-  @SubscribeMessage('removePlay')
-  remove(@MessageBody() id: number) {
-    return this.playService.remove(id);
-  }
+    @SubscribeMessage('createPlay')
+    create(@MessageBody() createPlayDto: CreatePlayDto) {
+        // return this.playService.create(createPlayDto);
+    }
 }
