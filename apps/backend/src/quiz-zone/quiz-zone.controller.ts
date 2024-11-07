@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Session } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Session, HttpCode } from '@nestjs/common';
 import { QuizZoneService } from './quiz-zone.service';
 import { UpdateQuizZoneDto } from './dto/update-quiz-zone.dto';
 
@@ -7,8 +7,10 @@ export class QuizZoneController {
   constructor(private readonly quizZoneService: QuizZoneService) {}
 
   @Post()
-  create(@Session() session: Record<string, any>) {
-    return this.quizZoneService.create('');
+  @HttpCode(201)
+  async create(@Session() session: Record<string, any>) {
+    console.log('session', session);
+    await this.quizZoneService.create(session.id);
   }
 
   @Get()

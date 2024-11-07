@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { QuizZoneRepositoryMemory } from './quiz-zone.repository.memory';
 import { QuizZone } from './entities/quiz-zone.entity';
 import { QuizZoneService } from './quiz-zone.service';
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, ConflictException } from '@nestjs/common';
 
 describe('QuizZoneRepositoryMemory', () => {
   let data: Record<string, QuizZone>;
@@ -54,7 +54,7 @@ describe('QuizZoneRepositoryMemory', () => {
 
       await repository.set(id, quizZone);
 
-      expect(repository.set(id, quizZone)).rejects.toThrow(BadRequestException);
+      expect(repository.set(id, quizZone)).rejects.toThrow(ConflictException);
     });
   });
 });

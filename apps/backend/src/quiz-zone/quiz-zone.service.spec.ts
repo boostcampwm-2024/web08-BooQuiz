@@ -3,7 +3,7 @@ import { quizzes, QuizZoneService } from './quiz-zone.service';
 import { QuizZoneRepositoryMemory } from './quiz-zone.repository.memory';
 import { QuizZone } from './entities/quiz-zone.entity';
 import { SubmittedQuiz } from './entities/submitted.quiz';
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, ConflictException } from '@nestjs/common';
 
 describe('QuizZoneService', () => {
     let service: QuizZoneService;
@@ -58,7 +58,8 @@ describe('QuizZoneService', () => {
         it('이미 만들어진 퀴즈존을 생성하면 에러가 발생한다.', async () => {
             const sid = '1234';
             await service.create(sid);
-            expect(service.create(sid)).rejects.toThrow(BadRequestException);
+            expect(service.create(sid)).rejects.toThrow(ConflictException);
         });
     });
 });
+

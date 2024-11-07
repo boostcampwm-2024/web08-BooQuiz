@@ -1,5 +1,5 @@
 import { QuizZoneRepositoryInterface } from './quiz-zone.repository.interface';
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, Inject, Injectable } from '@nestjs/common';
 import { QuizZone } from './entities/quiz-zone.entity';
 
 @Injectable()
@@ -11,7 +11,7 @@ export class QuizZoneRepositoryMemory implements QuizZoneRepositoryInterface {
 
   async set(key: string, value: QuizZone) {
       if (this.data.hasOwnProperty(key)) {
-        throw new BadRequestException('Data already exists');
+        throw new ConflictException('Data already exists');
       }
 
       this.data[key] = value;
