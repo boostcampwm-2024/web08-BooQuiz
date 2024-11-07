@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import Typography from './Typogrpahy';
 
 interface TimerDisplayProps {
@@ -7,19 +6,19 @@ interface TimerDisplayProps {
     isFulfill: boolean;
     width?: string;
     height?: string;
+    onTimeEnd: () => void;
 }
 
-const TimerDisplay = ({ time = 3, isFulfill = true }: TimerDisplayProps) => {
+const TimerDisplay = ({ time = 3, isFulfill = true, onTimeEnd }: TimerDisplayProps) => {
     const backgroundColorClass = isFulfill ? 'bg-gray300' : 'bg-white';
     const textColorClass = 'black';
     const hoverBackgroundColorClass = isFulfill ? 'hover:bg-gray500' : 'hover:bg-[#f5f5f5]';
 
-    const navigate = useNavigate();
     const [timeValue, setTimeValue] = useState(time);
 
     useEffect(() => {
         if (timeValue === 0) {
-            navigate('/quiz');
+            onTimeEnd();
         }
 
         const interval = setInterval(() => {
@@ -27,7 +26,7 @@ const TimerDisplay = ({ time = 3, isFulfill = true }: TimerDisplayProps) => {
         }, 1000);
 
         return () => clearInterval(interval);
-    }, [timeValue]);
+    }, [timeValue, onTimeEnd]);
     return (
         <div
             className={`w-[557px] h-[47px] ${backgroundColorClass}${hoverBackgroundColorClass} flex items-center justify-center`}
