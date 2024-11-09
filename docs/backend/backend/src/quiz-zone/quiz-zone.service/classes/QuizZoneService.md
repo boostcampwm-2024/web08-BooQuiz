@@ -22,7 +22,7 @@
 
 #### Defined in
 
-[apps/backend/src/quiz-zone/quiz-zone.service.ts:16](https://github.com/boostcampwm-2024/web08-BooQuiz/blob/070f8cd9fc8f2112d3401f93894ddd08f59e2916/apps/backend/src/quiz-zone/quiz-zone.service.ts#L16)
+[apps/backend/src/quiz-zone/quiz-zone.service.ts:16](https://github.com/boostcampwm-2024/web08-BooQuiz/blob/7476b6206e2a8c55cace72cc6ee6a8796386519f/apps/backend/src/quiz-zone/quiz-zone.service.ts#L16)
 
 ## Methods
 
@@ -40,7 +40,7 @@
 
 #### Defined in
 
-[apps/backend/src/quiz-zone/quiz-zone.service.ts:18](https://github.com/boostcampwm-2024/web08-BooQuiz/blob/070f8cd9fc8f2112d3401f93894ddd08f59e2916/apps/backend/src/quiz-zone/quiz-zone.service.ts#L18)
+[apps/backend/src/quiz-zone/quiz-zone.service.ts:18](https://github.com/boostcampwm-2024/web08-BooQuiz/blob/7476b6206e2a8c55cace72cc6ee6a8796386519f/apps/backend/src/quiz-zone/quiz-zone.service.ts#L18)
 
 ***
 
@@ -54,7 +54,7 @@
 
 #### Defined in
 
-[apps/backend/src/quiz-zone/quiz-zone.service.ts:32](https://github.com/boostcampwm-2024/web08-BooQuiz/blob/070f8cd9fc8f2112d3401f93894ddd08f59e2916/apps/backend/src/quiz-zone/quiz-zone.service.ts#L32)
+[apps/backend/src/quiz-zone/quiz-zone.service.ts:32](https://github.com/boostcampwm-2024/web08-BooQuiz/blob/7476b6206e2a8c55cace72cc6ee6a8796386519f/apps/backend/src/quiz-zone/quiz-zone.service.ts#L32)
 
 ***
 
@@ -72,7 +72,7 @@
 
 #### Defined in
 
-[apps/backend/src/quiz-zone/quiz-zone.service.ts:36](https://github.com/boostcampwm-2024/web08-BooQuiz/blob/070f8cd9fc8f2112d3401f93894ddd08f59e2916/apps/backend/src/quiz-zone/quiz-zone.service.ts#L36)
+[apps/backend/src/quiz-zone/quiz-zone.service.ts:36](https://github.com/boostcampwm-2024/web08-BooQuiz/blob/7476b6206e2a8c55cace72cc6ee6a8796386519f/apps/backend/src/quiz-zone/quiz-zone.service.ts#L36)
 
 ***
 
@@ -90,7 +90,7 @@
 
 #### Defined in
 
-[apps/backend/src/quiz-zone/quiz-zone.service.ts:44](https://github.com/boostcampwm-2024/web08-BooQuiz/blob/070f8cd9fc8f2112d3401f93894ddd08f59e2916/apps/backend/src/quiz-zone/quiz-zone.service.ts#L44)
+[apps/backend/src/quiz-zone/quiz-zone.service.ts:44](https://github.com/boostcampwm-2024/web08-BooQuiz/blob/7476b6206e2a8c55cace72cc6ee6a8796386519f/apps/backend/src/quiz-zone/quiz-zone.service.ts#L44)
 
 ***
 
@@ -110,4 +110,4 @@
 
 #### Defined in
 
-[apps/backend/src/quiz-zone/quiz-zone.service.ts:40](https://github.com/boostcampwm-2024/web08-BooQuiz/blob/070f8cd9fc8f2112d3401f93894ddd08f59e2916/apps/backend/src/quiz-zone/quiz-zone.service.ts#L40)
+[apps/backend/src/quiz-zone/quiz-zone.service.ts:40](https://github.com/boostcampwm-2024/web08-BooQuiz/blob/7476b6206e2a8c55cace72cc6ee6a8796386519f/apps/backend/src/quiz-zone/quiz-zone.service.ts#L40)

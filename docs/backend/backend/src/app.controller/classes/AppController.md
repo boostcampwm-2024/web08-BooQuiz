@@ -22,7 +22,7 @@
 
 #### Defined in
 
-[apps/backend/src/app.controller.ts:6](https://github.com/boostcampwm-2024/web08-BooQuiz/blob/070f8cd9fc8f2112d3401f93894ddd08f59e2916/apps/backend/src/app.controller.ts#L6)
+[apps/backend/src/app.controller.ts:6](https://github.com/boostcampwm-2024/web08-BooQuiz/blob/7476b6206e2a8c55cace72cc6ee6a8796386519f/apps/backend/src/app.controller.ts#L6)
 
 ## Methods
 
@@ -36,4 +36,4 @@
 
 #### Defined in
 
-[apps/backend/src/app.controller.ts:9](https://github.com/boostcampwm-2024/web08-BooQuiz/blob/070f8cd9fc8f2112d3401f93894ddd08f59e2916/apps/backend/src/app.controller.ts#L9)
+[apps/backend/src/app.controller.ts:9](https://github.com/boostcampwm-2024/web08-BooQuiz/blob/7476b6206e2a8c55cace72cc6ee6a8796386519f/apps/backend/src/app.controller.ts#L9)

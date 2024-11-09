@@ -14,7 +14,7 @@
 
 #### Defined in
 
-[apps/backend/src/quiz-zone/entities/submitted.quiz.ts:3](https://github.com/boostcampwm-2024/web08-BooQuiz/blob/070f8cd9fc8f2112d3401f93894ddd08f59e2916/apps/backend/src/quiz-zone/entities/submitted.quiz.ts#L3)
+[apps/backend/src/quiz-zone/entities/submitted.quiz.ts:3](https://github.com/boostcampwm-2024/web08-BooQuiz/blob/7476b6206e2a8c55cace72cc6ee6a8796386519f/apps/backend/src/quiz-zone/entities/submitted.quiz.ts#L3)
 
 ***
 
@@ -24,7 +24,7 @@
 
 #### Defined in
 
-[apps/backend/src/quiz-zone/entities/submitted.quiz.ts:2](https://github.com/boostcampwm-2024/web08-BooQuiz/blob/070f8cd9fc8f2112d3401f93894ddd08f59e2916/apps/backend/src/quiz-zone/entities/submitted.quiz.ts#L2)
+[apps/backend/src/quiz-zone/entities/submitted.quiz.ts:2](https://github.com/boostcampwm-2024/web08-BooQuiz/blob/7476b6206e2a8c55cace72cc6ee6a8796386519f/apps/backend/src/quiz-zone/entities/submitted.quiz.ts#L2)
 
 ***
 
@@ -34,4 +34,4 @@
 
 #### Defined in
 
-[apps/backend/src/quiz-zone/entities/submitted.quiz.ts:4](https://github.com/boostcampwm-2024/web08-BooQuiz/blob/070f8cd9fc8f2112d3401f93894ddd08f59e2916/apps/backend/src/quiz-zone/entities/submitted.quiz.ts#L4)
+[apps/backend/src/quiz-zone/entities/submitted.quiz.ts:4](https://github.com/boostcampwm-2024/web08-BooQuiz/blob/7476b6206e2a8c55cace72cc6ee6a8796386519f/apps/backend/src/quiz-zone/entities/submitted.quiz.ts#L4)

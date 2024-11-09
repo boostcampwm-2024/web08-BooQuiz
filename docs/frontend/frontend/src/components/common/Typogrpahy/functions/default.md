@@ -34,4 +34,4 @@ Tailwind CSS 클래스를 적용한 텍스트를 포함하는 `<p>` 요소
 
 ## Defined in
 
-[apps/frontend/src/components/common/Typogrpahy.tsx:26](https://github.com/boostcampwm-2024/web08-BooQuiz/blob/070f8cd9fc8f2112d3401f93894ddd08f59e2916/apps/frontend/src/components/common/Typogrpahy.tsx#L26)
+[apps/frontend/src/components/common/Typogrpahy.tsx:26](https://github.com/boostcampwm-2024/web08-BooQuiz/blob/7476b6206e2a8c55cace72cc6ee6a8796386519f/apps/frontend/src/components/common/Typogrpahy.tsx#L26)

@@ -14,4 +14,4 @@
 
 ## Defined in
 
-[apps/frontend/src/pages/QuizResultPage.tsx:6](https://github.com/boostcampwm-2024/web08-BooQuiz/blob/070f8cd9fc8f2112d3401f93894ddd08f59e2916/apps/frontend/src/pages/QuizResultPage.tsx#L6)
+[apps/frontend/src/pages/QuizResultPage.tsx:6](https://github.com/boostcampwm-2024/web08-BooQuiz/blob/7476b6206e2a8c55cace72cc6ee6a8796386519f/apps/frontend/src/pages/QuizResultPage.tsx#L6)
