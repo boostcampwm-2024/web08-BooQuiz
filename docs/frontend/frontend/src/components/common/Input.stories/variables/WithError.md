@@ -10,4 +10,4 @@
 
 ## Defined in
 
-[apps/frontend/src/components/common/Input.stories.tsx:88](https://github.com/boostcampwm-2024/web08-BooQuiz/blob/7e828c98e22bdcb5cd4d46c7c476fd54ffa246ae/apps/frontend/src/components/common/Input.stories.tsx#L88)
+[apps/frontend/src/components/common/Input.stories.tsx:88](https://github.com/boostcampwm-2024/web08-BooQuiz/blob/070f8cd9fc8f2112d3401f93894ddd08f59e2916/apps/frontend/src/components/common/Input.stories.tsx#L88)

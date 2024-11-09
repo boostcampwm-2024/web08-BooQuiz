@@ -18,7 +18,7 @@
 
 #### Defined in
 
-[apps/frontend/src/components/common/CommonButton.tsx:6](https://github.com/boostcampwm-2024/web08-BooQuiz/blob/7e828c98e22bdcb5cd4d46c7c476fd54ffa246ae/apps/frontend/src/components/common/CommonButton.tsx#L6)
+[apps/frontend/src/components/common/CommonButton.tsx:6](https://github.com/boostcampwm-2024/web08-BooQuiz/blob/070f8cd9fc8f2112d3401f93894ddd08f59e2916/apps/frontend/src/components/common/CommonButton.tsx#L6)
 
 ***
 
@@ -28,7 +28,7 @@
 
 #### Defined in
 
-[apps/frontend/src/components/common/CommonButton.tsx:9](https://github.com/boostcampwm-2024/web08-BooQuiz/blob/7e828c98e22bdcb5cd4d46c7c476fd54ffa246ae/apps/frontend/src/components/common/CommonButton.tsx#L9)
+[apps/frontend/src/components/common/CommonButton.tsx:9](https://github.com/boostcampwm-2024/web08-BooQuiz/blob/070f8cd9fc8f2112d3401f93894ddd08f59e2916/apps/frontend/src/components/common/CommonButton.tsx#L9)
 
 ***
 
@@ -38,7 +38,7 @@
 
 #### Defined in
 
-[apps/frontend/src/components/common/CommonButton.tsx:8](https://github.com/boostcampwm-2024/web08-BooQuiz/blob/7e828c98e22bdcb5cd4d46c7c476fd54ffa246ae/apps/frontend/src/components/common/CommonButton.tsx#L8)
+[apps/frontend/src/components/common/CommonButton.tsx:8](https://github.com/boostcampwm-2024/web08-BooQuiz/blob/070f8cd9fc8f2112d3401f93894ddd08f59e2916/apps/frontend/src/components/common/CommonButton.tsx#L8)
 
 ***
 
@@ -48,7 +48,7 @@
 
 #### Defined in
 
-[apps/frontend/src/components/common/CommonButton.tsx:5](https://github.com/boostcampwm-2024/web08-BooQuiz/blob/7e828c98e22bdcb5cd4d46c7c476fd54ffa246ae/apps/frontend/src/components/common/CommonButton.tsx#L5)
+[apps/frontend/src/components/common/CommonButton.tsx:5](https://github.com/boostcampwm-2024/web08-BooQuiz/blob/070f8cd9fc8f2112d3401f93894ddd08f59e2916/apps/frontend/src/components/common/CommonButton.tsx#L5)
 
 ***
 
@@ -58,7 +58,7 @@
 
 #### Defined in
 
-[apps/frontend/src/components/common/CommonButton.tsx:4](https://github.com/boostcampwm-2024/web08-BooQuiz/blob/7e828c98e22bdcb5cd4d46c7c476fd54ffa246ae/apps/frontend/src/components/common/CommonButton.tsx#L4)
+[apps/frontend/src/components/common/CommonButton.tsx:4](https://github.com/boostcampwm-2024/web08-BooQuiz/blob/070f8cd9fc8f2112d3401f93894ddd08f59e2916/apps/frontend/src/components/common/CommonButton.tsx#L4)
 
 ***
 
@@ -68,4 +68,4 @@
 
 #### Defined in
 
-[apps/frontend/src/components/common/CommonButton.tsx:7](https://github.com/boostcampwm-2024/web08-BooQuiz/blob/7e828c98e22bdcb5cd4d46c7c476fd54ffa246ae/apps/frontend/src/components/common/CommonButton.tsx#L7)
+[apps/frontend/src/components/common/CommonButton.tsx:7](https://github.com/boostcampwm-2024/web08-BooQuiz/blob/070f8cd9fc8f2112d3401f93894ddd08f59e2916/apps/frontend/src/components/common/CommonButton.tsx#L7)
