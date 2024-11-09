@@ -1,4 +1,4 @@
-name: Deploy Docs
+name: Deploy Storybook and Docs
 
 on:
   pull_request:
@@ -28,13 +28,17 @@ jobs:
         working-directory: apps/frontend
         run: pnpm run build-storybook
 
-      - name: Move docs to output folder
+      - name: Build docs
+        run: pnpm run docs
+
+      - name: Move docs, storybook, and Jekyll config to output folder
         run: |
-          mkdir ./dist  # docs 폴더 생성
-          mv ./apps/frontend/storybook-static ./apps/frontend/dist/storybook
+          mkdir -p ./static
+          mv docs ./static/docs
+          mv apps/frontend/storybook-static ./static/storybook
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: .apps/frontend/dist
+          publish_dir: ./static
