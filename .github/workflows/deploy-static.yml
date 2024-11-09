@@ -1,0 +1,40 @@
+name: Deploy Docs
+
+on:
+  pull_request:
+    branches: [develop]
+
+jobs:
+  deploy-docs:
+    runs-on: ubuntu-latest
+    name: Deploy Storybook and TypeDocs
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'node'
+
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Build Storybook
+        working-directory: apps/frontend
+        run: pnpm run build-storybook
+
+      - name: Move docs to output folder
+        run: |
+          mkdir ./dist  # docs 폴더 생성
+          mv ./apps/frontend/storybook-static ./apps/frontend/dist/storybook
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: .apps/frontend/dist
