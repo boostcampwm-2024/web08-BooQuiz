@@ -22,7 +22,7 @@ jobs:
         run: npm install -g pnpm
 
       - name: Install root dependencies
-        run: pnpm install
+        run: pnpm install --no-frozen-lockfile
 
   test:
     runs-on: ubuntu-latest
