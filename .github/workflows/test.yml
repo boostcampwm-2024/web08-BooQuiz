@@ -35,6 +35,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Install pnpm
+        run: npm install -g pnpm
+
       - name: Build ${{ matrix.app }}
         working-directory: apps/${{ matrix.app }}
         run: pnpm run build
