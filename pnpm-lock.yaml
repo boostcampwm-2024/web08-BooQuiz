@@ -72,6 +72,9 @@ importers:
       socket.io-client:
         specifier: ^4.8.1
         version: 4.8.1
+      superwstest:
+        specifier: ^2.0.4
+        version: 2.0.4(supertest@7.0.0)
       ws:
         specifier: ^8.18.0
         version: 8.18.0
@@ -3486,6 +3489,14 @@ packages:
   supertest@7.0.0:
     resolution: {integrity: sha512-qlsr7fIC0lSddmA3tzojvzubYxvlGtzumcdHgPwbFWMISQwL22MhM2Y3LNt+6w9Yyx7559VW5ab70dgphm8qQA==}
     engines: {node: '>=14.18.0'}
+
+  superwstest@2.0.4:
+    resolution: {integrity: sha512-7u9H76yvLMdjwdrD0BFdc2JN6m2dcEQ8h7+nERrIFGADDw0HBA+clG1Yx/aQ0B/RqKzrHNkVVkGzvVBeknoCeg==}
+    peerDependencies:
+      supertest: '*'
+    peerDependenciesMeta:
+      supertest:
+        optional: true
 
   supports-color@7.2.0:
     resolution: {integrity: sha512-qpCAvRl9stuOHveKsn7HncJRvv501qIacKzQlO/+Lwxc9+0q2wLyv4Dfvt80/DPn2pqOBsJdDiogXGR9+OvwRw==}
@@ -7673,6 +7684,17 @@ snapshots:
       superagent: 9.0.2
     transitivePeerDependencies:
       - supports-color
+
+  superwstest@2.0.4(supertest@7.0.0):
+    dependencies:
+      '@types/supertest': 6.0.2
+      '@types/ws': 8.5.13
+      ws: 8.18.0
+    optionalDependencies:
+      supertest: 7.0.0
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
 
   supports-color@7.2.0:
     dependencies:
