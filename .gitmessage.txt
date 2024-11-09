@@ -1,7 +1,0 @@
-<type>: <subject>
-
-<body>
-
-EPIC: #
-Story: #
-Task: #
