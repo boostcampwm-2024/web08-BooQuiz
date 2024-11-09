@@ -1,4 +1,7 @@
 {
+  "dependencies": {
+    "@nestjs/mapped-types": "*"
+  },
   "name": "web08-booquiz",
   "private": true,
   "version": "1.0.0",
