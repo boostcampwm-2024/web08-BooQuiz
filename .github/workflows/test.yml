@@ -5,9 +5,13 @@ on:
     branches: [develop, main]
 
 jobs:
-  setup:
+  test:
     runs-on: ubuntu-latest
     name: Set up Node environment
+
+    strategy:
+      matrix:
+        app: [frontend, backend]
 
     steps:
       - name: Checkout repository
@@ -23,20 +27,6 @@ jobs:
 
       - name: Install root dependencies
         run: pnpm install --no-frozen-lockfile
-
-  test:
-    runs-on: ubuntu-latest
-    needs: setup
-    strategy:
-      matrix:
-        app: [frontend, backend]
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Install pnpm
-        run: npm install -g pnpm
 
       - name: Build ${{ matrix.app }}
         working-directory: apps/${{ matrix.app }}
