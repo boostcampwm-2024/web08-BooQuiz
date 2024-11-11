@@ -1,4 +1,10 @@
-import { OnGatewayConnection, SubscribeMessage, WebSocketGateway } from '@nestjs/websockets';
+import {
+    ConnectedSocket,
+    MessageBody,
+    OnGatewayConnection,
+    SubscribeMessage,
+    WebSocketGateway,
+} from '@nestjs/websockets';
 import { PlayService } from './play.service';
 import { WebSocket } from 'ws';
 import { IncomingMessage } from 'http';
@@ -17,9 +23,11 @@ export class PlayGateway implements OnGatewayConnection {
         client.send(JSON.stringify(quizZone));
     }
 
-    @SubscribeMessage('createPlay')
-    create(client: any, data: any) {
-        // return this.playService.create(createPlayDto);
-        return { event: 'pong' };
+    @SubscribeMessage('start')
+    async start(@ConnectedSocket() client: WebSocket) {
+        return {
+            event: 'start',
+            data: await this.playService.start(client),
+        };
     }
 }
