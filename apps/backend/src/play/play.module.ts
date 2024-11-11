@@ -7,6 +7,13 @@ export const PLAY_STORAGE = Symbol('PlayStorage');
 
 @Module({
     imports: [QuizZoneModule],
-    providers: [PlayGateway, PlayService],
+    providers: [
+        PlayGateway,
+        PlayService,
+        {
+            provide: PLAY_STORAGE,
+            useValue: new Map(),
+        },
+    ],
 })
 export class PlayModule {}

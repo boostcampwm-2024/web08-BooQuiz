@@ -2,20 +2,18 @@ import { OnGatewayConnection, SubscribeMessage, WebSocketGateway } from '@nestjs
 import { PlayService } from './play.service';
 import { WebSocket } from 'ws';
 import { IncomingMessage } from 'http';
-import { QuizZoneService } from '../quiz-zone/quiz-zone.service';
 import { parse } from 'cookie';
 
 @WebSocketGateway({ path: '/play' })
 export class PlayGateway implements OnGatewayConnection {
-    constructor(
-        private readonly playService: PlayService,
-        private readonly quizZoneService: QuizZoneService,
-    ) {}
+    constructor(private readonly playService: PlayService) {}
 
-    handleConnection(client: WebSocket, request: IncomingMessage) {
+    async handleConnection(client: WebSocket, request: IncomingMessage) {
         const cookies = parse(request.headers.cookie);
         const sessionId = cookies['connect.sid'];
-        const quizZone = this.quizZoneService.findOne(sessionId);
+
+        const quizZone = await this.playService.join(sessionId, client);
+
         client.send(JSON.stringify(quizZone));
     }
 

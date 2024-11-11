@@ -1,26 +1,25 @@
-import { Injectable } from '@nestjs/common';
-import { CreatePlayDto } from './dto/create-play.dto';
-import { UpdatePlayDto } from './dto/update-play.dto';
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { PLAY_STORAGE } from './play.module';
+import { WebSocket } from 'ws';
+import { QuizZoneService } from '../quiz-zone/quiz-zone.service';
 
 @Injectable()
 export class PlayService {
-  create(createPlayDto: CreatePlayDto) {
-    return 'This action adds a new play';
-  }
+    constructor(
+        @Inject(PLAY_STORAGE)
+        private readonly plays: Map<string, WebSocket>,
+        private readonly quizZoneService: QuizZoneService,
+    ) {}
 
-  findAll() {
-    return `This action returns all play`;
-  }
+    async join(sessionId: string, client: WebSocket) {
+        const quizZone = await this.quizZoneService.findOne(sessionId);
 
-  findOne(id: number) {
-    return `This action returns a #${id} play`;
-  }
+        if (quizZone.player.id !== sessionId) {
+            throw new UnauthorizedException('개설 정보가 일치하지 않습니다.');
+        }
 
-  update(id: number, updatePlayDto: UpdatePlayDto) {
-    return `This action updates a #${id} play`;
-  }
+        this.plays.set(sessionId, client);
 
-  remove(id: number) {
-    return `This action removes a #${id} play`;
-  }
+        return quizZone;
+    }
 }
