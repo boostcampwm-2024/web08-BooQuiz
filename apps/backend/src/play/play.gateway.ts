@@ -4,14 +4,19 @@ import {
     OnGatewayConnection,
     SubscribeMessage,
     WebSocketGateway,
+    WebSocketServer,
 } from '@nestjs/websockets';
 import { PlayService } from './play.service';
 import { WebSocket } from 'ws';
 import { IncomingMessage } from 'http';
 import { parse } from 'cookie';
+import { QuizSubmitDto } from './dto/quiz-submit.dto';
 
 @WebSocketGateway({ path: '/play' })
 export class PlayGateway implements OnGatewayConnection {
+    @WebSocketServer()
+    server: WebSocket;
+
     constructor(private readonly playService: PlayService) {}
 
     async handleConnection(client: WebSocket, request: IncomingMessage) {
@@ -29,5 +34,13 @@ export class PlayGateway implements OnGatewayConnection {
             event: 'start',
             data: await this.playService.start(client),
         };
+    }
+
+    @SubscribeMessage('submit')
+    async submit(
+        @ConnectedSocket() client: WebSocket,
+        @MessageBody('data') quizSubmit: QuizSubmitDto,
+    ) {
+        await this.playService.submit(client, { ...quizSubmit, receivedAt: Date.now() });
     }
 }
