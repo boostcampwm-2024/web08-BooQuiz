@@ -1,14 +1,20 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { WebSocket } from 'ws';
 import { QuizZoneService } from '../quiz-zone/quiz-zone.service';
 import { SubmittedQuiz } from '../quiz-zone/entities/submitted-quiz.entity';
 
+interface PlayInfo {
+    quizZoneId: string;
+    submitHandle?: NodeJS.Timeout;
+}
+
 @Injectable()
 export class PlayService {
-    private readonly plays: Map<WebSocket, { quizZoneId: string; submitHandle?: NodeJS.Timeout }> =
-        new Map();
-
-    constructor(private readonly quizZoneService: QuizZoneService) {}
+    constructor(
+        @Inject('PlayInfoStorage')
+        private readonly plays: Map<WebSocket, PlayInfo>,
+        private readonly quizZoneService: QuizZoneService,
+    ) {}
 
     async join(quizZoneId: string, client: WebSocket) {
         const quizZone = await this.quizZoneService.findOne(quizZoneId);

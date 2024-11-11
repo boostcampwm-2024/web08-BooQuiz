@@ -14,6 +14,10 @@ describe('PlayService', () => {
             providers: [
                 PlayService,
                 {
+                    provide: 'PlayInfoStorage',
+                    useValue: new Map(),
+                },
+                {
                     provide: QuizZoneService,
                     useValue: mockQuizZoneService,
                 },

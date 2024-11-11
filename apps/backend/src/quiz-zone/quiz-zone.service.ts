@@ -1,8 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { QuizZoneRepositoryMemory } from './quiz-zone.repository.memory';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { Quiz } from './entities/quiz.entity';
 import { Player } from './entities/player.entity';
 import { QuizZone } from './entities/quiz-zone.entity';
+import { IQuizZoneRepository } from './repository/quiz-zone.repository.interface';
 
 const playTime = 30_000;
 
@@ -14,7 +14,10 @@ export const quizzes: Quiz[] = [
 
 @Injectable()
 export class QuizZoneService {
-    constructor(private readonly quizZoneRepository: QuizZoneRepositoryMemory) {}
+    constructor(
+        @Inject('QuizZoneRepository')
+        private readonly repository: IQuizZoneRepository,
+    ) {}
 
     async create(sessionId: string) {
         const player: Player = { id: sessionId, score: 0, submits: [], state: 'WAIT' };
@@ -28,15 +31,15 @@ export class QuizZoneService {
             intervalTime: 5000,
         };
 
-        await this.quizZoneRepository.set(sessionId, quizZone);
+        await this.repository.set(sessionId, quizZone);
     }
 
     async findOne(quizZoneId: string) {
-        return this.quizZoneRepository.get(quizZoneId);
+        return this.repository.get(quizZoneId);
     }
 
     async progressQuizZone(quizZoneId: string) {
-        const quizZone = await this.quizZoneRepository.get(quizZoneId);
+        const quizZone = await this.repository.get(quizZoneId);
         const { quizzes, currentQuizIndex, intervalTime } = quizZone;
 
         if (quizzes.length <= currentQuizIndex) {

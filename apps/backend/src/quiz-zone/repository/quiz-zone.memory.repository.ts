@@ -1,10 +1,13 @@
-import { QuizZoneRepositoryInterface } from './quiz-zone.repository.interface';
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
-import { QuizZone } from './entities/quiz-zone.entity';
+import { IQuizZoneRepository } from './quiz-zone.repository.interface';
+import { ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { QuizZone } from '../entities/quiz-zone.entity';
 
 @Injectable()
-export class QuizZoneRepositoryMemory implements QuizZoneRepositoryInterface {
-    private readonly data: Map<string, QuizZone> = new Map();
+export class QuizZoneRepositoryMemory implements IQuizZoneRepository {
+    constructor(
+        @Inject('QuizZoneStorage')
+        private readonly data: Map<string, QuizZone>,
+    ) {}
 
     async set(id: string, quizZone: QuizZone) {
         if (this.data.has(id)) {

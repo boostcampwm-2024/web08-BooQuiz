@@ -5,6 +5,13 @@ import { QuizZoneModule } from '../quiz-zone/quiz-zone.module';
 
 @Module({
     imports: [QuizZoneModule],
-    providers: [PlayGateway, PlayService],
+    providers: [
+        PlayGateway,
+        PlayService,
+        {
+            provide: 'PlayInfoStorage',
+            useValue: new Map(),
+        },
+    ],
 })
 export class PlayModule {}
