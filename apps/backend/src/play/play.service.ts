@@ -1,15 +1,12 @@
-import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
-import { PLAY_STORAGE } from './play.module';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { WebSocket } from 'ws';
 import { QuizZoneService } from '../quiz-zone/quiz-zone.service';
 
 @Injectable()
 export class PlayService {
-    constructor(
-        @Inject(PLAY_STORAGE)
-        private readonly plays: Map<string, WebSocket>,
-        private readonly quizZoneService: QuizZoneService,
-    ) {}
+    private readonly plays: Map<string, WebSocket> = new Map();
+
+    constructor(private readonly quizZoneService: QuizZoneService) {}
 
     async join(sessionId: string, client: WebSocket) {
         const quizZone = await this.quizZoneService.findOne(sessionId);
