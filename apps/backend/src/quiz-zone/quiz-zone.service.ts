@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { UpdateQuizZoneDto } from './dto/update-quiz-zone.dto';
 import { QuizZoneRepositoryMemory } from './quiz-zone.repository.memory';
 import { Quiz } from './entities/quiz.entity';
 import { Player } from './entities/player.entity';
@@ -29,19 +28,7 @@ export class QuizZoneService {
         await this.quizZoneRepository.set(sessionId, quizZone);
     }
 
-    findAll() {
-        return `This action returns all quizZone`;
-    }
-
-    findOne(id: number) {
-        return `This action returns a #${id} quizZone`;
-    }
-
-    update(id: number, updateQuizZoneDto: UpdateQuizZoneDto) {
-        return `This action updates a #${id} quizZone`;
-    }
-
-    remove(id: number) {
-        return `This action removes a #${id} quizZone`;
+    async findOne(quizZoneId: string) {
+        return this.quizZoneRepository.get(quizZoneId);
     }
 }
