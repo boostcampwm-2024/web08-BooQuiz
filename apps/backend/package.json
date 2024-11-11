@@ -27,6 +27,7 @@
     "@nestjs/platform-ws": "^10.4.7",
     "@nestjs/websockets": "^10.4.7",
     "backend": "file:",
+    "cookie": "^1.0.1",
     "cookie-parser": "^1.4.7",
     "express-session": "^1.18.1",
     "get-port": "^7.1.0",

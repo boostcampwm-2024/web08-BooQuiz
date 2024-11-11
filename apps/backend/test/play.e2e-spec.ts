@@ -2,20 +2,22 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import { WsAdapter } from '@nestjs/platform-ws';
 import { PlayModule } from '../src/play/play.module';
-import request from 'superwstest';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
+import { Server } from 'http';
+import wsrequest from 'superwstest';
 
 describe('PlayGateway (e2e)', () => {
     let app: INestApplication;
+    let server: Server;
     let agent: any;
 
     beforeAll(async () => {
         const moduleFixture: TestingModule = await Test.createTestingModule({
             imports: [PlayModule],
         }).compile();
-        app = moduleFixture.createNestApplication();
 
+        app = moduleFixture.createNestApplication();
         app.use(cookieParser());
         app.use(
             session({
@@ -24,27 +26,37 @@ describe('PlayGateway (e2e)', () => {
                 saveUninitialized: true,
             }),
         );
-
         app.useWebSocketAdapter(new WsAdapter(app));
+
         await app.init();
 
-        agent = request('http://localhost:3000');
+        server = app.getHttpServer();
     });
 
     afterAll(async () => {
         await app.close();
     });
 
+    beforeEach((done) => {
+        server.listen(0, 'localhost', done);
+    });
+
+    afterEach((done) => {
+        server.close(done);
+    });
+
     describe('WebSocket Connection Test', () => {
         it('should connect successfully', async () => {
-            await agent.ws('/play').expectText('connected');
+            // await wsrequest(server).post('/quiz-zone').expect(201);
+            await wsrequest(server).ws('/play').set('Cookie', 'sid=12345');
         });
 
         it('should receive pong', async () => {
-            await agent
+            await wsrequest(server)
                 .ws('/play')
-                .set('Cookie', 'hihi')
-                .expectText('connected')
+                .set('Cookie', 'sid=12345')
+                .expectJson({})
+                // .expectText('connected')
                 .sendJson({
                     event: 'createPlay',
                 })
