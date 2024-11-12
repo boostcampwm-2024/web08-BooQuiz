@@ -1,10 +1,9 @@
 import { Progress } from '../ui/progress';
 import { useState, useEffect } from 'react';
 import Typography from './Typogrpahy';
-
 export interface ProgressBarProps {
     maxTime: number;
-    onTimeEnd: () => void;
+    onTimeEnd?: () => void;
 }
 
 /**
@@ -48,7 +47,7 @@ const ProgressBar = ({ maxTime = 10, onTimeEnd }: ProgressBarProps) => {
 
     // useEffect 내부에서 사용할 타이머 설정 로직 분리
     const setupTimer = (timeValue: number, incrementPerInterval: number, onTimeEnd: () => void) => {
-        if (timeValue === 0) {
+        if (timeValue === 0 && onTimeEnd) {
             onTimeEnd();
         }
 
@@ -67,7 +66,7 @@ const ProgressBar = ({ maxTime = 10, onTimeEnd }: ProgressBarProps) => {
 
     useEffect(() => {
         const incrementPerInterval = calculateIncrementPerInterval(maxTime);
-        const interval = setupTimer(timeValue, incrementPerInterval, onTimeEnd);
+        const interval = setupTimer(timeValue, incrementPerInterval, onTimeEnd ?? (() => {}));
 
         return () => clearInterval(interval);
     }, [maxTime, timeValue, onTimeEnd]);
