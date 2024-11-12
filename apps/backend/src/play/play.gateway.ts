@@ -2,12 +2,13 @@ import {
     ConnectedSocket,
     MessageBody,
     OnGatewayConnection,
+    OnGatewayInit,
     SubscribeMessage,
     WebSocketGateway,
     WebSocketServer,
 } from '@nestjs/websockets';
 import { PlayService } from './play.service';
-import { WebSocket } from 'ws';
+import { WebSocket, Server } from 'ws';
 import { IncomingMessage } from 'http';
 import { parse } from 'cookie';
 import { QuizSubmitDto } from './dto/quiz-submit.dto';
@@ -19,18 +20,19 @@ export interface PlayInfo {
 }
 
 @WebSocketGateway({ path: '/play' })
-export class PlayGateway implements OnGatewayConnection {
+export class PlayGateway implements OnGatewayConnection, OnGatewayInit {
     @WebSocketServer()
-    server: WebSocket;
+    server: Server;
 
     constructor(
         @Inject('PlayInfoStorage')
         private readonly plays: Map<WebSocket, PlayInfo>,
         private readonly playService: PlayService,
-    ) {
-        this.server.on('nextQuiz', (client: WebSocket) => this.playNextQuiz(client));
-        // @SubscribeMessage('summary')
-        this.server.on('summary', (client: WebSocket) => this.summary(client));
+    ) {}
+
+    afterInit(server: Server) {
+        server.on('nextQuiz', (client: WebSocket) => this.playNextQuiz(client));
+        server.on('summary', (client: WebSocket) => this.summary(client));
     }
 
     async handleConnection(client: WebSocket, request: IncomingMessage) {
