@@ -16,7 +16,7 @@ jobs:
                   node-version: 'node'
 
             - name: Install dependencies
-              run: npm install -g pnpm && pnpm install
+              run: npm install -g pnpm && pnpm install --no-frozen-lockfile
 
             - name: Build
               run: cd apps/frontend && pnpm build
