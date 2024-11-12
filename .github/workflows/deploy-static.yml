@@ -1,8 +1,8 @@
 name: Deploy Storybook and Docs
 
 on:
-    pull_request:
-        branches: [xyz]
+    push:
+        branches: [main]
 
 jobs:
     deploy-docs:

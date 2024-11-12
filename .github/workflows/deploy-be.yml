@@ -1,7 +1,7 @@
 name: Deploy Backend
 on:
-    pull_request:
-        branches: [develop]
+    push:
+        branches: [main]
 jobs:
     build-backend:
         runs-on: ubuntu-latest
