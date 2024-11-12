@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PlayService } from './play.service';
 import { QuizZoneService } from '../quiz-zone/quiz-zone.service';
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 
 describe('PlayService', () => {
     let playService: PlayService;
@@ -112,6 +112,130 @@ describe('PlayService', () => {
             await playService.submit('0', submittedQuiz);
 
             expect(player.state).toEqual('SUBMIT');
+        });
+    });
+
+    describe('서버는 문제를 출제한다.', () => {
+        it('서버가 현재 출제한 문제의 순차 번호를 저장한다.', async () => {
+            quizZone.currentQuizIndex = -1;
+
+            await playService.playNextQuiz('0');
+
+            expect(quizZone.currentQuizIndex).toEqual(0);
+        });
+
+        it('서버는 현재 문제 번호에 해당하는 문제를 출제한다.', async () => {
+            quizZone.currentQuizIndex = -1;
+
+            const { nextQuiz } = await playService.playNextQuiz('0');
+
+            expect(quizzes.at(quizZone.currentQuizIndex).question).toEqual(nextQuiz.question);
+        });
+
+        it('서버는 출제할 퀴즈가 없다면 예외를 발생시킨다.', () => {
+            quizZone.currentQuizIndex = quizzes.length - 1;
+
+            expect(playService.playNextQuiz('0')).rejects.toThrow(NotFoundException);
+        });
+
+        it('서버가 문제를 출제하면 퀴즈존의 상태는 "대기"로 바뀐다.', async () => {
+            quizZone.currentQuizIndex = -1;
+
+            await playService.playNextQuiz('0');
+
+            expect(quizZone.stage).toEqual('WAITING');
+        });
+
+        it('서버는 문제를 출제할 때 제출 마감 시간을 저장한다.', async () => {
+            jest.spyOn(Date, 'now').mockImplementation(() => 0);
+
+            const quiz = quizzes.at(0);
+            quiz.playTime = 100;
+
+            quizZone.currentQuizIndex = -1;
+            quizZone.intervalTime = 10;
+
+            await playService.playNextQuiz('0');
+
+            const limitTime = quiz.playTime + quizZone.intervalTime;
+
+            expect(quizZone.currentQuizDeadlineTime).toEqual(limitTime);
+        });
+
+        it('서버는 사용자에게 퀴즈존의 현재 진행 상태인 "대기" 상태를 반환한다.', async () => {
+            quizZone.currentQuizIndex = -1;
+
+            const { nextQuiz } = await playService.playNextQuiz('0');
+
+            expect(nextQuiz.stage).toEqual('WAITING');
+        });
+
+        it('서버는 사용자에게 현재 출제될 문제를 반환한다.', async () => {
+            quizZone.currentQuizIndex = -1;
+
+            const quiz = quizzes.at(0);
+            const { nextQuiz } = await playService.playNextQuiz('0');
+
+            expect(nextQuiz.question).toEqual(quiz.question);
+        });
+
+        it('서버는 사용자에게 현재 문제의 순차 번호를 반환한다.', async () => {
+            quizZone.currentQuizIndex = -1;
+
+            const { nextQuiz } = await playService.playNextQuiz('0');
+
+            expect(nextQuiz.currentIndex).toEqual(0);
+        });
+
+        it('서버는 사용자에게 현재 문제의 풀이 제한 시간을 반환한다.', async () => {
+            quizZone.currentQuizIndex = -1;
+
+            const { nextQuiz } = await playService.playNextQuiz('0');
+            const { playTime } = quizzes.at(0);
+
+            expect(nextQuiz.playTime).toEqual(playTime);
+        });
+
+        it('서버는 사용자에게 현재 문제의 풀이 시작 시간을 반환한다.', async () => {
+            jest.spyOn(Date, 'now').mockImplementation(() => 0);
+
+            quizZone.currentQuizIndex = -1;
+
+            const { nextQuiz } = await playService.playNextQuiz('0');
+
+            expect(nextQuiz.startTime).toEqual(quizZone.intervalTime);
+        });
+
+        it('서버는 사용자에게 현재 문제의 풀이 종료 시간을 반환한다.', async () => {
+            jest.spyOn(Date, 'now').mockImplementation(() => 0);
+
+            quizZone.currentQuizIndex = -1;
+
+            const { intervalTime, nextQuiz } = await playService.playNextQuiz('0');
+            const { playTime } = quizzes.at(0);
+            const deadline = intervalTime + playTime;
+
+            expect(nextQuiz.deadlineTime).toEqual(deadline);
+        });
+    });
+
+    describe('퀴즈 풀이 제한 시간이 지나면 현재 퀴즈 풀이를 종료한다.', () => {
+        it('풀이를 진행중인 사용자가 제한된 시간에 답안을 제출하지 못하면 빈 답변으로 제출처리한다.', async () => {
+            player.state = 'PLAY';
+            player.submits = [];
+
+            await playService.quizTimeOut('0');
+
+            expect(player.submits.length).toEqual(1);
+            expect(player.submits.at(0).answer).toEqual(undefined);
+        });
+
+        it('풀이가 진행중인 사용자가 아니면 예외가 발생한다.', () => {
+            player.state = 'SUBMIT';
+            expect(playService.quizTimeOut('0')).rejects.toThrow(BadRequestException);
+
+            player.state = 'WAIT';
+            expect(playService.quizTimeOut('0')).rejects.toThrow(BadRequestException);
         });
     });
 });
