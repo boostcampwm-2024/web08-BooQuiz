@@ -1,5 +1,5 @@
 export interface Quiz {
-  index: number;
-  question: string;
-  answer: string;
+    question: string;
+    answer: string;
+    playTime: number;
 }

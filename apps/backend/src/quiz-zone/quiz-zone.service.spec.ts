@@ -1,28 +1,30 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { quizzes, QuizZoneService } from './quiz-zone.service';
-import { QuizZoneRepositoryMemory } from './quiz-zone.repository.memory';
+import { QuizZoneService } from './quiz-zone.service';
+import { QuizZoneRepositoryMemory } from './repository/quiz-zone.memory.repository';
+import { ConflictException } from '@nestjs/common';
 import { QuizZone } from './entities/quiz-zone.entity';
-import { SubmittedQuiz } from './entities/submitted.quiz';
-import { BadRequestException, ConflictException } from '@nestjs/common';
 
 describe('QuizZoneService', () => {
     let service: QuizZoneService;
-    let repository: QuizZoneRepositoryMemory;
-    let data: Record<string, QuizZone>;
+    let storage: Map<string, QuizZone>;
+
     beforeEach(async () => {
-        data = {};
+        storage = new Map();
 
         const module: TestingModule = await Test.createTestingModule({
             providers: [
-                QuizZoneRepositoryMemory,
-                {
-                    provide: 'DATA',
-                    useValue: data,
-                },
                 QuizZoneService,
+                {
+                    provide: 'QuizZoneRepository',
+                    useClass: QuizZoneRepositoryMemory,
+                },
+                {
+                    provide: 'QuizZoneStorage',
+                    useValue: storage,
+                },
             ],
         }).compile();
-        repository = module.get<QuizZoneRepositoryMemory>(QuizZoneRepositoryMemory);
+
         service = module.get<QuizZoneService>(QuizZoneService);
     });
 
@@ -31,35 +33,48 @@ describe('QuizZoneService', () => {
             const sid = '1234';
 
             await service.create(sid);
-            expect(data.hasOwnProperty(sid)).toEqual(true);
+
+            const { player } = storage.get(sid);
+
+            expect(player.id).toEqual(sid);
         });
 
-        it('퀴즈존은 입장한 사용자 정보로 초기화된다.', async () => {
-            const sid = '1234';
-            await service.create(sid);
-            expect(data[sid].player.id).toEqual(sid);
-        });
         it('퀴즈존이 초기화되면 현재퀴즈번호는 0이다.', async () => {
             const sid = '1234';
 
             await service.create(sid);
-            expect(data[sid].currentQuizIndex).toEqual(0);
+
+            const { currentQuizIndex } = storage.get(sid);
+
+            expect(currentQuizIndex).toEqual(0);
         });
+
         it('퀴즈존이 초기화되면 문제들이 할당된다.', async () => {
             const sid = '1234';
+
             await service.create(sid);
-            expect(data[sid].quizzes).toEqual(quizzes);
+
+            const { quizzes } = storage.get(sid);
+
+            expect(quizzes).toEqual(quizzes);
         });
+
         it('퀴즈존이 초기화되면 로비상태가 된다.', async () => {
             const sid = '1234';
+
             await service.create(sid);
-            expect(data[sid].stage).toEqual('LOBBY');
+
+            const { stage } = storage.get(sid);
+
+            expect(stage).toEqual('LOBBY');
         });
+
         it('이미 만들어진 퀴즈존을 생성하면 에러가 발생한다.', async () => {
             const sid = '1234';
+
             await service.create(sid);
+
             expect(service.create(sid)).rejects.toThrow(ConflictException);
         });
     });
 });
-
