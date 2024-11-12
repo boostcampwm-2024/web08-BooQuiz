@@ -2,6 +2,7 @@ import {
     ConnectedSocket,
     MessageBody,
     OnGatewayConnection,
+    OnGatewayDisconnect,
     OnGatewayInit,
     SubscribeMessage,
     WebSocketGateway,
@@ -20,7 +21,7 @@ export interface PlayInfo {
 }
 
 @WebSocketGateway({ path: '/play' })
-export class PlayGateway implements OnGatewayConnection, OnGatewayInit {
+export class PlayGateway implements OnGatewayConnection, OnGatewayInit, OnGatewayDisconnect {
     @WebSocketServer()
     server: Server;
 
@@ -37,8 +38,12 @@ export class PlayGateway implements OnGatewayConnection, OnGatewayInit {
 
     async handleConnection(client: WebSocket, request: IncomingMessage) {
         const cookies = parse(request.headers.cookie);
-        const sessionId = cookies['connect.sid'];
+        const sessionId = cookies['connect.sid'].split('.')[0].slice(2);
         this.plays.set(client, { quizZoneId: sessionId });
+    }
+
+    async handleDisconnect(client: WebSocket) {
+        client.terminate();
     }
 
     @SubscribeMessage('start')
