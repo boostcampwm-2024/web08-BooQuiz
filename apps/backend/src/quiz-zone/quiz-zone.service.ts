@@ -24,7 +24,7 @@ export class QuizZoneService {
         const player: Player = { id: sessionId, score: 0, submits: [], state: 'WAIT' };
         const quizZone: QuizZone = {
             currentQuizDeadlineTime: 0,
-            currentQuizIndex: 0,
+            currentQuizIndex: -1,
             currentQuizStartTime: 0,
             player,
             quizzes: [...quizzes],

@@ -11,29 +11,52 @@ import { WebSocket } from 'ws';
 import { IncomingMessage } from 'http';
 import { parse } from 'cookie';
 import { QuizSubmitDto } from './dto/quiz-submit.dto';
+import { BadRequestException, Inject } from '@nestjs/common';
+
+export interface PlayInfo {
+    quizZoneId: string;
+    submitHandle?: NodeJS.Timeout;
+}
 
 @WebSocketGateway({ path: '/play' })
 export class PlayGateway implements OnGatewayConnection {
     @WebSocketServer()
     server: WebSocket;
 
-    constructor(private readonly playService: PlayService) {}
+    constructor(
+        @Inject('PlayInfoStorage')
+        private readonly plays: Map<WebSocket, PlayInfo>,
+        private readonly playService: PlayService,
+    ) {
+        this.server.on('nextQuiz', (client: WebSocket) => this.playNextQuiz(client));
+    }
 
     async handleConnection(client: WebSocket, request: IncomingMessage) {
         const cookies = parse(request.headers.cookie);
         const sessionId = cookies['connect.sid'];
-
-        const quizZone = await this.playService.join(sessionId, client);
-
-        client.send(JSON.stringify(quizZone));
+        this.plays.set(client, { quizZoneId: sessionId });
     }
 
     @SubscribeMessage('start')
     async start(@ConnectedSocket() client: WebSocket) {
+        this.server.emit('nextQuiz', client);
         return {
             event: 'start',
-            data: await this.playService.start(client),
+            data: 'OK',
         };
+    }
+
+    private async playNextQuiz(client: WebSocket) {
+        const playInfo = this.getPlayInfo(client);
+        const { quizZoneId } = playInfo;
+
+        const { intervalTime, nextQuiz } = await this.playService.playNextQuiz(quizZoneId);
+
+        client.send(JSON.stringify({ event: 'nextQuiz', data: nextQuiz }));
+
+        playInfo.submitHandle = setTimeout(() => {
+            this.quizTimeOut(client);
+        }, intervalTime + nextQuiz.playTime);
     }
 
     @SubscribeMessage('submit')
@@ -41,6 +64,41 @@ export class PlayGateway implements OnGatewayConnection {
         @ConnectedSocket() client: WebSocket,
         @MessageBody('data') quizSubmit: QuizSubmitDto,
     ) {
-        await this.playService.submit(client, { ...quizSubmit, receivedAt: Date.now() });
+        const playInfo = this.getPlayInfo(client);
+        const { quizZoneId, submitHandle } = playInfo;
+
+        clearTimeout(submitHandle);
+        playInfo.submitHandle = undefined;
+
+        await this.playService.submit(quizZoneId, { ...quizSubmit, receivedAt: Date.now() });
+
+        this.server.emit('nextQuiz', client);
+
+        return {
+            event: 'submit',
+            data: 'OK',
+        };
+    }
+
+    getPlayInfo(client: WebSocket) {
+        const playInfo = this.plays.get(client);
+
+        if (playInfo === undefined) {
+            throw new BadRequestException('사용자의 접속 정보를 찾을 수 없습니다.');
+        }
+
+        return playInfo;
+    }
+
+    private async quizTimeOut(socket: WebSocket) {
+        const playInfo = this.getPlayInfo(socket);
+        const { quizZoneId } = playInfo;
+
+        playInfo.submitHandle = undefined;
+
+        await this.playService.quizTimeOut(quizZoneId);
+
+        socket.send(JSON.stringify({ event: 'quizTimeOut' }));
+        this.server.emit('nextQuiz', socket);
     }
 }
