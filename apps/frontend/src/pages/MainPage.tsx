@@ -7,16 +7,16 @@ const MainPage = () => {
     const navigate = useNavigate();
 
     const handleMoveToQuizZoneWaiting = () => {
-        navigate('/quizZoneWait');
+        navigate('/quizZone');
     };
 
     return (
         <>
             <img src="/BooQuizLogo.png" alt="BooQuiz Logo" />
             <Typography
-                size="4xl"
+                size="2xl"
                 color="blue"
-                text="시작하기 버튼을 눌러 퀴즈를 시작해보세요"
+                text="실시간 퀴즈 플랫폼 BooQuiz에 오신 것을 환영합니다!"
                 bold={true}
             />
             <ContentBox>
