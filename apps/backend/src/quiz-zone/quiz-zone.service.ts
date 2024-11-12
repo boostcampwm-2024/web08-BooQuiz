@@ -8,9 +8,12 @@ import { WaitingQuizZoneDto } from './dto/waiting-quiz-zone.dto';
 const playTime = 30_000;
 
 export const quizzes: Quiz[] = [
-    { question: 'What is the capital of Korea?', answer: 'Seoul', playTime },
-    { question: 'WsadfsafKorea?', answer: 'sadfsaf', playTime },
-    { question: 'Wsdfaf?', answer: 'cvxvcx', playTime },
+    { question: '신이 화나면?', answer: '신발끈', playTime },
+    { question: '도둑이 훔친 돈을 뭐라고 하는가?', answer: '슬그머니', playTime },
+    { question: '털이 있는 동물들이 가장 좋아하는 장소는?', answer: '모텔', playTime },
+    { question: '아몬드가 죽으면?', answer: '다이아몬드', playTime },
+    { question: '왕이 넘어지면?', answer: '킹콩', playTime },
+    { question: '바나나가 웃으면?', answer: '바나나킥', playTime },
 ];
 
 @Injectable()
