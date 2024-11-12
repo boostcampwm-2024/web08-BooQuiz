@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useTimer } from './useTimer';
 
-type MainStage = 'LOBBY' | 'QUIZ_PROGRESS' | 'RESULT';
-type QuizSubStage = 'WAITING' | 'IN_PROGRESS' | 'COMPLETED';
+type QuizZone = 'LOBBY' | 'QUIZ_PROGRESS' | 'RESULT';
+type SolveStage = 'WAITING' | 'IN_PROGRESS' | 'COMPLETED';
 
 interface QuizProgress {
     currentQuizIndex: number;
@@ -10,7 +10,7 @@ interface QuizProgress {
     timeLimit: number;
 }
 
-interface StageData {
+interface QuizZoneData {
     Lobby: {
         participants: number;
         isHost: boolean;
@@ -43,38 +43,51 @@ interface SubmissionResult {
 
 interface QuizStageConfig {
     totalQuizzes: number;
-    onMainStageChange?: (stage: MainStage) => void;
-    onSubStageChange?: (stage: QuizSubStage) => void;
+    onMainStageChange?: (stage: QuizZone) => void;
+    onSubStageChange?: (stage: SolveStage) => void;
     onQuizComplete?: () => void;
     onError?: (error: Error) => void;
 }
 
 export const useQuizZoneManager = (config: QuizStageConfig) => {
+    //퀴즈 풀이 준비 시간
     const PREPARE_TIME = 2;
+    //퀴즈 풀이 시간
     const SOLVE_TIME = 2;
 
-    const [mainStage, setMainStage] = useState<MainStage>('LOBBY');
-    const [subStage, setSubStage] = useState<QuizSubStage>('WAITING');
+    //퀴즈존 전체 진행 상태
+    const [quizZone, setQuizZone] = useState<QuizZone>('LOBBY');
+    // 퀴즈존 풀이 단계 상태
+    const [solveStage, setSolveStage] = useState<SolveStage>('WAITING');
+
+    //퀴즈 진행 상태
     const [quizProgress, setQuizProgress] = useState<QuizProgress>({
         currentQuizIndex: 0,
         totalQuizzes: config.totalQuizzes,
         timeLimit: SOLVE_TIME,
     });
-    const [stageData, setStageData] = useState<Partial<StageData>>({});
+
+    //퀴즈존 데이터
+    const [quizZoneData, setQuizZoneData] = useState<Partial<QuizZoneData>>({});
     const [isTransitioning, setIsTransitioning] = useState(false);
 
+    //퀴즈 풀이 준비 타이머
     const prepareTimer = useTimer({
         initialTime: PREPARE_TIME,
         onComplete: () => handleQuizCycle('IN_PROGRESS'),
     });
 
+    //퀴즈 풀이 타이머
     const solutionTimer = useTimer({
         initialTime: SOLVE_TIME,
         onComplete: handleTimeExpired,
     });
 
-    function updateStageData<K extends keyof StageData>(stageKey: K, data: Partial<StageData[K]>) {
-        setStageData((prev) => ({
+    function updateStageData<K extends keyof QuizZoneData>(
+        stageKey: K,
+        data: Partial<QuizZoneData[K]>,
+    ) {
+        setQuizZoneData((prev) => ({
             ...prev,
             [stageKey]: { ...(prev[stageKey] || {}), ...data },
         }));
@@ -94,19 +107,19 @@ export const useQuizZoneManager = (config: QuizStageConfig) => {
 
             if (isLastQuiz) {
                 // 마지막 문제인 경우 바로 결과 화면으로
-                setMainStage('RESULT');
+                setQuizZone('RESULT');
                 config.onQuizComplete?.();
             } else {
                 // 다음 문제로 즉시 전환
                 setQuizProgress((prev) => ({ ...prev, currentQuizIndex: nextIndex }));
-                setSubStage('WAITING');
+                setSolveStage('WAITING');
                 prepareTimer.start();
             }
 
             // 현재 문제의 제출 결과 업데이트
             updateStageData('quizProgress', {
                 currentQuiz: {
-                    ...stageData.quizProgress?.currentQuiz,
+                    ...quizZoneData.quizProgress?.currentQuiz,
                     submissionResult: { submitted: false, timeExpired: true },
                 },
             });
@@ -117,19 +130,20 @@ export const useQuizZoneManager = (config: QuizStageConfig) => {
         }
     }
 
-    function changeMainStage(stage: MainStage, data?: any) {
+    //퀴즈존 상태 변경
+    function changeMainStage(stage: QuizZone, data?: any) {
         setIsTransitioning(true);
         try {
-            setMainStage(stage);
+            setQuizZone(stage);
             if (stage === 'QUIZ_PROGRESS') {
-                setSubStage('WAITING');
+                setSolveStage('WAITING');
                 prepareTimer.start();
                 solutionTimer.stop();
                 setQuizProgress((prev) => ({ ...prev, currentQuizIndex: 0 }));
             }
 
             if (data) {
-                setStageData((prev) => ({
+                setQuizZoneData((prev) => ({
                     ...prev,
                     [stage === 'LOBBY'
                         ? 'Lobby'
@@ -147,10 +161,11 @@ export const useQuizZoneManager = (config: QuizStageConfig) => {
         }
     }
 
-    function handleQuizCycle(stage: QuizSubStage, data?: any) {
+    //퀴즈 풀이 진행 단계 변경
+    function handleQuizCycle(stage: SolveStage, data?: any) {
         setIsTransitioning(true);
         try {
-            setSubStage(stage);
+            setSolveStage(stage);
             if (stage === 'WAITING') {
                 prepareTimer.start();
                 solutionTimer.stop();
@@ -185,7 +200,7 @@ export const useQuizZoneManager = (config: QuizStageConfig) => {
             config.onQuizComplete?.();
         } else {
             setQuizProgress((prev) => ({ ...prev, currentQuizIndex: nextIndex }));
-            setSubStage('WAITING');
+            setSolveStage('WAITING');
             prepareTimer.start();
             solutionTimer.stop();
         }
@@ -211,17 +226,17 @@ export const useQuizZoneManager = (config: QuizStageConfig) => {
     function submitAnswer(answer: string) {
         handleQuizCycle('COMPLETED', {
             currentQuiz: {
-                ...stageData.quizProgress?.currentQuiz,
+                ...quizZoneData.quizProgress?.currentQuiz,
                 submissionResult: { submitted: true, answer },
             },
         });
     }
 
     return {
-        mainStage,
-        subStage,
+        quizZone,
+        solveStage,
         quizProgress,
-        stageData,
+        quizZoneData,
         isTransitioning,
         prepareTime: prepareTimer.time,
         solutionTime: solutionTimer.time,
