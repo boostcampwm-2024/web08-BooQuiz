@@ -3,6 +3,7 @@ import { Quiz } from './entities/quiz.entity';
 import { Player } from './entities/player.entity';
 import { QuizZone } from './entities/quiz-zone.entity';
 import { IQuizZoneRepository } from './repository/quiz-zone.repository.interface';
+import { WaitingQuizZoneDto } from './dto/waiting-quiz-zone.dto';
 
 const playTime = 30_000;
 
@@ -38,6 +39,13 @@ export class QuizZoneService {
         return this.repository.get(quizZoneId);
     }
 
+    async getQuizWaitingRoom(quizZoneId: string): Promise<WaitingQuizZoneDto> {
+        const quizZone = await this.repository.get(quizZoneId);
+        return {
+            quizCount: quizZone.quizzes.length,
+            stage: quizZone.stage,
+        };
+    }
     async progressQuizZone(quizZoneId: string) {
         const quizZone = await this.repository.get(quizZoneId);
         const { quizzes, currentQuizIndex, intervalTime } = quizZone;
