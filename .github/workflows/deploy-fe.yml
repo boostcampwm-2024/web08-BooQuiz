@@ -54,5 +54,3 @@ jobs:
 
                   ssh -i ~/.ssh/id_rsa $PUBLIC_SERVER_USER@$PUBLIC_SERVER_IP "mkdir -p $DEPLOY_PATH"
                   scp -i ~/.ssh/id_rsa -r apps/frontend/dist/* $PUBLIC_SERVER_USER@$PUBLIC_SERVER_IP:$DEPLOY_PATH
-
-            -
