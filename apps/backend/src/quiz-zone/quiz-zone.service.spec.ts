@@ -39,14 +39,14 @@ describe('QuizZoneService', () => {
             expect(player.id).toEqual(sid);
         });
 
-        it('퀴즈존이 초기화되면 현재퀴즈번호는 0이다.', async () => {
+        it('퀴즈존이 초기화되면 현재퀴즈번호는 -1이다.', async () => {
             const sid = '1234';
 
             await service.create(sid);
 
             const { currentQuizIndex } = storage.get(sid);
 
-            expect(currentQuizIndex).toEqual(0);
+            expect(currentQuizIndex).toEqual(-1);
         });
 
         it('퀴즈존이 초기화되면 문제들이 할당된다.', async () => {

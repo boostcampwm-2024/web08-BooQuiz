@@ -23,6 +23,10 @@ describe('PlayGateway', () => {
                     useValue: mockPlayService,
                 },
                 {
+                    provide: 'PlayInfoStorage',
+                    useValue: new Map(),
+                },
+                {
                     provide: QuizZoneService,
                     useValue: mockQuizZoneService,
                 },

@@ -13,7 +13,21 @@ export class PlayService {
         this.submitQuiz(quizZone, submitQuiz);
     }
 
-    async nextQuiz(quizZoneId: string) {
+    async playNextQuiz(quizZoneId: string) {
+        const quizZone = await this.quizZoneService.findOne(quizZoneId);
+        const { intervalTime } = quizZone;
+
+        const nextQuiz = await this.nextQuiz(quizZoneId);
+
+        quizZone.player.state = 'PLAY';
+
+        return {
+            intervalTime,
+            nextQuiz,
+        };
+    }
+
+    private async nextQuiz(quizZoneId: string) {
         const quizZone = await this.quizZoneService.findOne(quizZoneId);
 
         quizZone.currentQuizIndex++;
@@ -40,20 +54,6 @@ export class PlayService {
         };
     }
 
-    async playNextQuiz(quizZoneId: string) {
-        const quizZone = await this.quizZoneService.findOne(quizZoneId);
-        const { intervalTime } = quizZone;
-
-        const nextQuiz = await this.nextQuiz(quizZoneId);
-
-        quizZone.player.state = 'PLAY';
-
-        return {
-            intervalTime,
-            nextQuiz,
-        };
-    }
-
     async quizTimeOut(quizZoneId: string) {
         const quizZone = await this.quizZoneService.findOne(quizZoneId);
         this.submitQuiz(quizZone);
@@ -69,17 +69,19 @@ export class PlayService {
 
         const now = Date.now();
 
-        player.submits.push({
+        const submittedQuiz = {
             index: currentQuizIndex,
             answer: undefined,
             submittedAt: now,
             receivedAt: now,
             ...submitQuiz,
-        });
+        };
+
+        player.submits.push(submittedQuiz);
 
         if (
-            quiz.answer === submitQuiz.answer &&
-            submitQuiz.submittedAt <= currentQuizDeadlineTime
+            quiz.answer === submittedQuiz.answer &&
+            submittedQuiz.submittedAt <= currentQuizDeadlineTime
         ) {
             player.score++;
         }

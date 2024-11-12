@@ -13,12 +13,12 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "build": "npm run build -w apps/backend && npm run build -w apps/frontend",
-    "dev": "npm run dev -w apps/backend & npm run dev -w apps/frontend",
-    "docs:backend": "typedoc --tsconfig apps/backend/tsconfig.json --entryPointStrategy expand",
-    "docs:frontend": "typedoc --tsconfig apps/frontend/tsconfig.json --entryPointStrategy expand",
-    "docs:shared": "typedoc --tsconfig packages/shared/tsconfig.json --entryPointStrategy expand",
-    "docs": "npm run docs:backend && npm run docs:frontend && npm run docs:shared",
+    "build": "pnpm run build -w apps/backend && pnpm run build -w apps/frontend",
+    "dev": "pnpm run dev -w apps/backend & pnpm run dev -w apps/frontend",
+    "docs:backend": "typedoc --tsconfig apps/backend/tsconfig.json --entryPointStrategy expand --out docs/backend",
+    "docs:frontend": "typedoc --tsconfig apps/frontend/tsconfig.json --entryPointStrategy expand --out docs/frontend",
+    "docs:shared": "typedoc --tsconfig packages/shared/tsconfig.json --entryPointStrategy expand --out docs/shared",
+    "docs": "pnpm run docs:backend && pnpm run docs:frontend",
     "prepare": "husky",
     "preinstall": "npx only-allow pnpm"
   },
@@ -43,7 +43,7 @@
     "@commitlint/config-conventional": "^19.5.0",
     "husky": "^9.1.6",
     "prettier": "^3.3.3",
-    "typedoc-plugin-markdown": "^4.2.10",
+    "typedoc": "^0.26.11",
     "typescript": "^5.x.x"
   }
 }
