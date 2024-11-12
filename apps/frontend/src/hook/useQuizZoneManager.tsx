@@ -19,9 +19,9 @@ interface QuizZoneData {
     };
     quizProgress: {
         currentQuiz: {
-            question: string;
+            question?: string;
             options?: string[];
-            timeLimit: number;
+            timeLimit?: number;
             submissionResult?: SubmissionResult;
             type?: 'MULTIPLE_CHOICE' | 'SHORT_ANSWER';
         };
@@ -121,7 +121,7 @@ export const useQuizZoneManager = (config: QuizStageConfig) => {
                 currentQuiz: {
                     ...quizZoneData.quizProgress?.currentQuiz,
                     submissionResult: { submitted: false, timeExpired: true },
-                },
+                }
             });
         } catch (err) {
             config.onError?.(err instanceof Error ? err : new Error('Unknown error'));
