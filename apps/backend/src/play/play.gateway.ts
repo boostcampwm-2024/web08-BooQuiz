@@ -11,7 +11,7 @@ import { WebSocket } from 'ws';
 import { IncomingMessage } from 'http';
 import { parse } from 'cookie';
 import { QuizSubmitDto } from './dto/quiz-submit.dto';
-import { BadRequestException, Inject } from '@nestjs/common';
+import { BadRequestException, Inject, NotFoundException } from '@nestjs/common';
 
 export interface PlayInfo {
     quizZoneId: string;
@@ -29,6 +29,8 @@ export class PlayGateway implements OnGatewayConnection {
         private readonly playService: PlayService,
     ) {
         this.server.on('nextQuiz', (client: WebSocket) => this.playNextQuiz(client));
+        // @SubscribeMessage('summary')
+        this.server.on('summary', (client: WebSocket) => this.summary(client));
     }
 
     async handleConnection(client: WebSocket, request: IncomingMessage) {
@@ -47,16 +49,23 @@ export class PlayGateway implements OnGatewayConnection {
     }
 
     private async playNextQuiz(client: WebSocket) {
-        const playInfo = this.getPlayInfo(client);
-        const { quizZoneId } = playInfo;
+        try {
+            const playInfo = this.getPlayInfo(client);
+            const { quizZoneId } = playInfo;
 
-        const { intervalTime, nextQuiz } = await this.playService.playNextQuiz(quizZoneId);
+            const { intervalTime, nextQuiz } = await this.playService.playNextQuiz(quizZoneId);
 
-        client.send(JSON.stringify({ event: 'nextQuiz', data: nextQuiz }));
+            client.send(JSON.stringify({ event: 'nextQuiz', data: nextQuiz }));
 
-        playInfo.submitHandle = setTimeout(() => {
-            this.quizTimeOut(client);
-        }, intervalTime + nextQuiz.playTime);
+            playInfo.submitHandle = setTimeout(() => {
+                this.quizTimeOut(client);
+            }, intervalTime + nextQuiz.playTime);
+        } catch (error) {
+            if (error instanceof NotFoundException) {
+                client.send(JSON.stringify({ event: 'finish' }));
+                this.server.emit('summary', client);
+            }
+        }
     }
 
     @SubscribeMessage('submit')
@@ -100,5 +109,14 @@ export class PlayGateway implements OnGatewayConnection {
 
         socket.send(JSON.stringify({ event: 'quizTimeOut' }));
         this.server.emit('nextQuiz', socket);
+    }
+
+    private async summary(client: WebSocket) {
+        const playInfo = this.getPlayInfo(client);
+        const { quizZoneId } = playInfo;
+        const summaryResult = await this.playService.summary(quizZoneId);
+        await this.playService.clearQuizZone(quizZoneId);
+        this.plays.delete(client);
+        client.send(JSON.stringify({ event: 'summary', data: summaryResult }));
     }
 }

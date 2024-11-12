@@ -26,4 +26,8 @@ export class QuizZoneRepositoryMemory implements IQuizZoneRepository {
 
         return quizZone;
     }
+
+    async delete(id: string) {
+        this.data.delete(id);
+    }
 }

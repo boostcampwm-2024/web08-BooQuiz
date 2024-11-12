@@ -2,6 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { QuizZoneService } from '../quiz-zone/quiz-zone.service';
 import { SubmittedQuiz } from '../quiz-zone/entities/submitted-quiz.entity';
 import { QuizZone } from '../quiz-zone/entities/quiz-zone.entity';
+import { QuizResultSummaryDto } from './dto/quiz-result-summary.dto';
 
 @Injectable()
 export class PlayService {
@@ -84,5 +85,26 @@ export class PlayService {
         }
 
         player.state = 'SUBMIT';
+    }
+
+    async summary(quizZoneId: string): Promise<QuizResultSummaryDto> {
+        const quizZone = await this.quizZoneService.findOne(quizZoneId);
+        const { player } = quizZone;
+        return {
+            score: player.score,
+            submits: player.submits,
+            quizzes: quizZone.quizzes,
+        };
+    }
+    async clearQuizZone(quizZoneId: string) {
+        const quizZone = await this.quizZoneService.findOne(quizZoneId);
+        quizZone.player = {
+            id: '',
+            score: 0,
+            submits: [],
+            state: 'WAIT',
+        };
+        quizZone.currentQuizIndex = -1;
+        quizZone.stage = 'WAITING';
     }
 }

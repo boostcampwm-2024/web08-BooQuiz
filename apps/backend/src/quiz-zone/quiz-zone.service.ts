@@ -66,4 +66,8 @@ export class QuizZoneService {
 
         return quizZone;
     }
+
+    async clearQuizZone(quizZoneId: string) {
+        await this.repository.delete(quizZoneId);
+    }
 }
