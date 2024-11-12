@@ -13,6 +13,7 @@ interface QuizProgress {
 interface QuizZoneData {
     Lobby: {
         participants: number;
+        totalQuizCount: number;
         isHost: boolean;
         quizTitle: string;
         description?: string;
