@@ -1,88 +1,73 @@
 name: Deploy Backend
-
 on:
-  pull_request:
-    branches: [develop]
-
+    pull_request:
+        branches: [develop]
 jobs:
-  build-backend:
-    runs-on: ubuntu-latest
-    name: Build Backend
+    build-backend:
+        runs-on: ubuntu-latest
+        name: Build Backend
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@v2
+            - name: Log in to Docker Hub
+              uses: docker/login-action@v2
+              with:
+                  username: ${{ secrets.DOCKER_USERNAME }}
+                  password: ${{ secrets.DOCKER_PASSWORD }}
+            - name: Build and Push Docker Image
+              uses: docker/build-push-action@v3
+              with:
+                  context: .
+                  file: apps/backend/Dockerfile
+                  push: true
+                  tags: ${{ secrets.DOCKER_USERNAME }}/booquiz-backend:latest
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Build and Push Docker Image
-        uses: docker/build-push-action@v3
-        with:
-          context: .
-          file: apps/backend/Dockerfile
-          push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/booquiz-backend:latest
-          cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/booquiz-backend:latest
-          cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/booquiz-backend:latest,mode=max
-
-  deploy-backend:
-    needs: build-backend
-    runs-on: ubuntu-latest
-    name: Deploy Backend
-
-    steps:
-      - name: Set up SSH agent and add SSH key
-        run: |
-          eval "$(ssh-agent -s)"
-          echo "SSH_AGENT_PID=$SSH_AGENT_PID" >> $GITHUB_ENV
-          echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> $GITHUB_ENV
-          
-          # SSH 프라이빗 키 추가
-          echo "${{ secrets.PUBLIC_SSH_PRIVATE_KEY }}" > public_server_key.pem
-          chmod 600 public_server_key.pem
-          ssh-add public_server_key.pem
-          
-          # 프라이빗 서버 키 추가
-          echo "${{ secrets.PRIVATE_SSH_PRIVATE_KEY }}" > private_server_key.pem
-          chmod 600 private_server_key.pem
-          ssh-add private_server_key.pem
-
-        shell: bash
-
-      - name: Access To Public Server and Deploy to Private Server
-        run: |
-          DEPLOY_USER=${{ secrets.DEPLOY_USER }}              # 유저 이름
-          PUBLIC_SERVER_IP=${{ secrets.PUBLIC_SERVER_IP }}     # 퍼블릭 서버 IP
-          PRIVATE_SERVER_IP=${{ secrets.PRIVATE_SERVER_IP }}   # 프라이빗 서버 IP
-          DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}
-          
-          # 퍼블릭 서버의 호스트 키를 known_hosts에 추가
-          mkdir -p ~/.ssh
-          ssh-keyscan -H $PUBLIC_SERVER_IP >> ~/.ssh/known_hosts
-          
-          # SSH 에이전트 포워딩을 사용하여 퍼블릭 서버에 접속하여 프라이빗 서버에 배포
-          ssh -i public_server_key.pem -A $DEPLOY_USER@$PUBLIC_SERVER_IP << EOF
-              # 프라이빗 서버의 호스트 키를 퍼블릭 서버의 known_hosts에 추가
-              mkdir -p ~/.ssh
-              ssh-keyscan -H $PRIVATE_SERVER_IP >> ~/.ssh/known_hosts
-          
-              # 프라이빗 서버에서 Docker Hub 로그인 및 이미지 배포
-              ssh $DEPLOY_USER@$PRIVATE_SERVER_IP "sudo docker pull $DOCKER_USERNAME/booquiz-backend:latest && \
-          # 현재 실행 중인 모든 컨테이너 이미지 ID를 가져옵니다.
-                running_images=$(docker ps --format "{{.Image}}" | xargs docker images --format "{{.ID}}" --filter=reference=)
-                docker images --format "{{.ID}}" | grep -v -E "$(echo $running_images | tr ' ' '|')" | xargs -r docker rmi
-                
-  
-                sudo docker stop booquiz-backend || true && \
-                sudo docker rm booquiz-backend || true && \
-                sudo docker run -d --name booquiz-backend -p 3000:3000 $DOCKER_USERNAME/booquiz-backend:latest"
-          EOF
-          exit
-        shell: bash
+    deploy-backend:
+        needs: build-backend
+        runs-on: ubuntu-latest
+        name: Deploy Backend
+        steps:
+            - name: Set up SSH agent and add SSH key
+              run: |
+                  eval "$(ssh-agent -s)"
+                  echo "SSH_AGENT_PID=$SSH_AGENT_PID" >> $GITHUB_ENV
+                  echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> $GITHUB_ENV
+                  
+                  # SSH 프라이빗 키 추가
+                  echo "${{ secrets.PUBLIC_SSH_PRIVATE_KEY }}" > public_server_key.pem
+                  chmod 600 public_server_key.pem
+                  ssh-add public_server_key.pem
+                  
+                  # 프라이빗 서버 키 추가
+                  echo "${{ secrets.PRIVATE_SSH_PRIVATE_KEY }}" > private_server_key.pem
+                  chmod 600 private_server_key.pem
+                  ssh-add private_server_key.pem
+              shell: bash
+            - name: Access To Public Server and Deploy to Private Server
+              run: |
+                  DEPLOY_USER=${{ secrets.DEPLOY_USER }}              # 유저 이름
+                  PUBLIC_SERVER_IP=${{ secrets.PUBLIC_SERVER_IP }}     # 퍼블릭 서버 IP
+                  PRIVATE_SERVER_IP=${{ secrets.PRIVATE_SERVER_IP }}   # 프라이빗 서버 IP
+                  DOCKER_USERNAME=${{ secrets.DOCKER_USERNAME }}
+                  
+                  # 퍼블릭 서버의 호스트 키를 known_hosts에 추가
+                  mkdir -p ~/.ssh
+                  ssh-keyscan -H $PUBLIC_SERVER_IP >> ~/.ssh/known_hosts
+                  
+                  # SSH 에이전트 포워딩을 사용하여 퍼블릭 서버에 접속하여 프라이빗 서버에 배포
+                  ssh -i public_server_key.pem -A $DEPLOY_USER@$PUBLIC_SERVER_IP << EOF
+                      # 프라이빗 서버의 호스트 키를 퍼블릭 서버의 known_hosts에 추가
+                      mkdir -p ~/.ssh
+                      ssh-keyscan -H $PRIVATE_SERVER_IP >> ~/.ssh/known_hosts
+                  
+                      # 프라이빗 서버에서 Docker Hub 로그인 및 이미지 배포
+                      ssh $DEPLOY_USER@$PRIVATE_SERVER_IP "sudo docker pull $DOCKER_USERNAME/booquiz-backend:latest && \
+                          sudo docker stop booquiz-backend || true && \
+                          sudo docker rm booquiz-backend || true && \
+                          sudo docker run -d --name booquiz-backend -p 3000:3000 $DOCKER_USERNAME/booquiz-backend:latest"
+                          sudo docker image prune -f
+                  EOF
+                  exit
+              shell: bash
