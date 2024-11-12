@@ -6,7 +6,7 @@ interface TimerDisplayProps {
     isFulfill: boolean;
     width?: string;
     height?: string;
-    onTimeEnd: () => void;
+    onTimeEnd?: () => void;
 }
 
 /**
@@ -39,7 +39,9 @@ const TimerDisplay = ({ time = 3, isFulfill = true, onTimeEnd }: TimerDisplayPro
 
     useEffect(() => {
         if (timeValue === 0) {
-            onTimeEnd();
+            if (onTimeEnd) {
+                onTimeEnd();
+            }
         }
 
         const interval = setInterval(() => {
