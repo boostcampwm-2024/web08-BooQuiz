@@ -25,6 +25,7 @@
     "@nestjs/mapped-types": "*",
     "@nestjs/platform-express": "^10.0.0",
     "@nestjs/platform-ws": "^10.4.7",
+    "@nestjs/swagger": "^8.0.5",
     "@nestjs/websockets": "^10.4.7",
     "backend": "file:",
     "cookie": "^1.0.1",
