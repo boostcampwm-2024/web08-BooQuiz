@@ -23,6 +23,8 @@ jobs:
                   file: apps/backend/Dockerfile
                   push: true
                   tags: ${{ secrets.DOCKER_USERNAME }}/booquiz-backend:latest
+                  cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/booquiz-backend:cache
+                  cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/booquiz-backend:cache,mode=max
 
     deploy-backend:
         needs: build-backend
