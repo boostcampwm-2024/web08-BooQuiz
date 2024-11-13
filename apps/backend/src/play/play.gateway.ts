@@ -8,7 +8,7 @@ import {
     WebSocketServer,
 } from '@nestjs/websockets';
 import { PlayService } from './play.service';
-import { WebSocket, Server } from 'ws';
+import { Server, WebSocket } from 'ws';
 import { IncomingMessage } from 'http';
 import { parse } from 'cookie';
 import { QuizSubmitDto } from './dto/quiz-submit.dto';
@@ -71,10 +71,7 @@ export class PlayGateway implements OnGatewayConnection, OnGatewayInit {
     }
 
     @SubscribeMessage('submit')
-    async submit(
-        @ConnectedSocket() client: WebSocket,
-        @MessageBody('data') quizSubmit: QuizSubmitDto,
-    ) {
+    async submit(@ConnectedSocket() client: WebSocket, @MessageBody() quizSubmit: QuizSubmitDto) {
         const playInfo = this.getPlayInfo(client);
         const { quizZoneId, submitHandle } = playInfo;
 
