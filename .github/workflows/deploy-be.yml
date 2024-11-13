@@ -1,6 +1,6 @@
 name: Deploy Backend
 on:
-    push:
+    pull_request:
         branches: [develop]
 jobs:
     build-backend:
