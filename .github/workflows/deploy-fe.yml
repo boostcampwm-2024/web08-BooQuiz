@@ -52,5 +52,6 @@ jobs:
                   DEPLOY_USER=${{ secrets.DEPLOY_USER }}
                   DEPLOY_PATH=${{ secrets.DEPLOY_PATH }}
 
-                  ssh -i ~/.ssh/id_rsa $DEPLOY_USER@$PUBLIC_SERVER_IP "mkdir -p $DEPLOY_PATH && chmod -R 700 $DEPLOY_PATH"
+                  ssh -i ~/.ssh/id_rsa $DEPLOY_USER@$PUBLIC_SERVER_IP "mkdir -p $DEPLOY_PATH"
                   scp -i ~/.ssh/id_rsa -r apps/frontend/dist/* $DEPLOY_USER@$PUBLIC_SERVER_IP:$DEPLOY_PATH
+                  ssh -i ~/.ssh/id_rsa $DEPLOY_USER@$PUBLIC_SERVER_IP "chmod -R 755 $DEPLOY_PATH"
