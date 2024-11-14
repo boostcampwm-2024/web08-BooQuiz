@@ -34,9 +34,8 @@ interface QuizZoneData {
     };
     result: {
         score: number;
-        rank: number;
-        totalParticipants: number;
-        correctAnswers: number;
+        quizzes: any;
+        submits: any;
     };
 }
 
@@ -103,6 +102,9 @@ export const useQuizZoneManager = (config: QuizStageConfig) => {
             [stageKey]: { ...(prev[stageKey] || {}), ...data },
         }));
     }
+    const setQuizZoneState = (newState: typeof quizZone) => {
+        setQuizZone(newState);
+    };
 
     function handleTimeExpired() {
         solutionTimer.stop();
@@ -121,9 +123,19 @@ export const useQuizZoneManager = (config: QuizStageConfig) => {
                 prepareTimer.start();
             }
 
+            const currentQuiz = quizZoneData.quizProgress?.currentQuiz;
+
+            if (!currentQuiz) {
+                console.error('현재 퀴즈 정보가 없습니다.');
+                return;
+            }
             updateStageData('quizProgress', {
                 currentQuiz: {
-                    ...quizZoneData.quizProgress?.currentQuiz,
+                    ...currentQuiz, // 기존 필수 필드들을 모두 유지
+                    question: currentQuiz.question, // 필수 필드 명시적 포함
+                    timeLimit: currentQuiz.timeLimit, // 필수 필드 명시적 포함
+                    stage: currentQuiz.stage, // 필수 필드 명시적 포함
+                    currentIndex: currentQuiz.currentIndex, // 필수 필드 명시적 포함
                     submissionResult: { submitted: false, timeExpired: true },
                 },
             });
@@ -169,7 +181,7 @@ export const useQuizZoneManager = (config: QuizStageConfig) => {
         try {
             setSolveStage(stage);
             if (stage === 'WAITING') {
-                prepareTimer.start();
+                // prepareTimer.start();
                 solutionTimer.stop();
             } else if (stage === 'IN_PROGRESS') {
                 prepareTimer.stop();
@@ -258,7 +270,9 @@ export const useQuizZoneManager = (config: QuizStageConfig) => {
         updateStageData,
         setPrepareTime,
         setSolutionTime,
+        setQuizZone: setQuizZoneState,
         setTotalQuizzes: handleSetTotalQuizzes,
+        startPrepareTimer: prepareTimer.start,
     };
 };
 
