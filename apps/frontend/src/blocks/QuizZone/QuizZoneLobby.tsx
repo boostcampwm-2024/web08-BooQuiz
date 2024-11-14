@@ -9,7 +9,6 @@ interface QuizZoneLobbyProps {
 }
 
 const QuizZoneLobby = ({ quizZoneData, pinNumber, startQuiz }: QuizZoneLobbyProps) => {
-    console.log(quizZoneData);
     return (
         <div className="w-full h-screen flex flex-col items-center justify-center gap-4">
             <img className="w-[20rem]" src="/BooQuizLogo.png" alt="BooQuiz Logo" />
