@@ -8,7 +8,7 @@ import { useState } from 'react';
 interface QuizInProgressProps {
     solutionTime: number | null;
     currentQuiz: any;
-    submitAnswer: (e) => void;
+    submitAnswer: (e: any) => void;
 }
 
 const QuizInProgress = ({ solutionTime, currentQuiz, submitAnswer }: QuizInProgressProps) => {
@@ -42,7 +42,7 @@ const QuizInProgress = ({ solutionTime, currentQuiz, submitAnswer }: QuizInProgr
                     </>
                 ) : (
                     <div className="space-y-2">
-                        {currentQuiz.options?.map((option, index) => (
+                        {currentQuiz.options?.map((option: any, index :any) => (
                             <button
                                 key={index}
                                 onClick={() => submitAnswer(option)}

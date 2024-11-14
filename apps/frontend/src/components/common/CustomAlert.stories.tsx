@@ -4,9 +4,7 @@ import type { CustomAlertProps } from './CustomAlert';
 
 import {
     Info,
-    AlertTriangle,
     AlertCircle,
-    CheckCircle2,
     LogOut,
     Trash2,
     Download,
