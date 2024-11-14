@@ -15,7 +15,7 @@ const MainPage = () => {
     // 퀴즈존 대기실 정보를 받으면 퀴즈존 대기실으로 렌더링 한다.
     const handleMoveToQuizZoneLobby = () => {
         //baseURL 나중에 하기
-        fetch('http://localhost:3000/quiz-zone', {
+        fetch('/api/quiz-zone/', {
             method: 'POST',
             credentials: 'include',
         })

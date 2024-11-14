@@ -56,7 +56,7 @@ export const QuizZone = ({ pinNumber }: QuizZoneProps) => {
             try {
                 setIsLoading(true);
                 //! '/api'로 요청 날리기
-                const response = await fetch(`http://localhost:3000/quiz-zone/${pinNumber}`, {
+                const response = await fetch(`/api/quiz-zone/${pinNumber}`, {
                     method: 'GET',
                     credentials: 'include',
                     headers: {
@@ -95,11 +95,12 @@ export const QuizZone = ({ pinNumber }: QuizZoneProps) => {
         }
     }, [initialData]);
 
+    const wsUrl = import.meta.env.VITE_WS_URL;
     //WebSocket 연결
     useEffect(() => {
         if (!initialData) return;
 
-        const ws = new WebSocket('ws://localhost:3000/play');
+        const ws = new WebSocket(`${wsUrl}/play`);
         setWs(ws);
 
         ws.onopen = () => {
