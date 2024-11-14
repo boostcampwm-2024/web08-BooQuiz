@@ -1,4 +1,3 @@
-import CommonButton from '@/components/common/CommonButton';
 import ContentBox from '@/components/common/ContentBox';
 import CustomAlert from '@/components/common/CustomAlert';
 import Typography from '@/components/common/Typogrpahy';
