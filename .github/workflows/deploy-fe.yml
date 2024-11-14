@@ -20,8 +20,8 @@ jobs:
 
             - name: Build
               env:
-                VITE_API_URL=${{secrets.VITE_API_URL}}
-                VITE_WS_URL=${{secrets.VITE_WS_URL}}
+                VITE_API_URL : ${{secrets.VITE_API_URL}}
+                VITE_WS_URL : ${{secrets.VITE_WS_URL}}
               run: cd apps/frontend && pnpm build
 
             - name: Upload artifacts
