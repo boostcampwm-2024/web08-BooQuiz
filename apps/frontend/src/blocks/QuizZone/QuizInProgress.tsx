@@ -12,22 +12,18 @@ interface QuizInProgressProps {
     timeOutHandler: () => void;
 }
 
-const QuizInProgress = ({
-    solutionTime,
-    currentQuiz,
-    submitAnswer,
-    timeOutHandler,
-}: QuizInProgressProps) => {
+const QuizInProgress = ({ currentQuiz, submitAnswer, timeOutHandler }: QuizInProgressProps) => {
     const [answer, setAnswer] = useState('');
-    if (Date.now() > currentQuiz.deadlineTime) {
-        timeOutHandler();
-        return null;
-    }
 
     return (
         <div className="w-full h-screen flex flex-col items-center justify-center gap-4">
             <img width="200px" src="/BooQuizLogo.png" alt="BooQuiz Logo" />
-            <ProgressBar maxTime={solutionTime ?? 0} onTimeEnd={() => {}} />
+            <ProgressBar
+                deadlineTime={currentQuiz.deadlineTime}
+                onTimeEnd={() => {
+                    timeOutHandler();
+                }}
+            />
             <ContentBox>
                 <Typography
                     text={`Q. ${currentQuiz.question}`}
