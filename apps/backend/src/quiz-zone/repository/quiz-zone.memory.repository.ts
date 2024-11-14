@@ -10,9 +10,10 @@ export class QuizZoneRepositoryMemory implements IQuizZoneRepository {
     ) {}
 
     async set(id: string, quizZone: QuizZone) {
-        if (this.data.has(id)) {
-            throw new ConflictException('Data already exists');
-        }
+        //! 1인 사용자일 때는 접속 할 때마다 퀴즈존 초기화
+        // if (this.data.has(id)) {
+        //     throw new ConflictException('Data already exists');
+        // }
 
         this.data.set(id, quizZone);
     }

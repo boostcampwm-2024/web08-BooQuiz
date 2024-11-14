@@ -9,10 +9,21 @@ interface QuizInProgressProps {
     solutionTime: number | null;
     currentQuiz: any;
     submitAnswer: (e: any) => void;
+    timeOutHandler: () => void;
 }
 
-const QuizInProgress = ({ solutionTime, currentQuiz, submitAnswer }: QuizInProgressProps) => {
+const QuizInProgress = ({
+    solutionTime,
+    currentQuiz,
+    submitAnswer,
+    timeOutHandler,
+}: QuizInProgressProps) => {
     const [answer, setAnswer] = useState('');
+    if (Date.now() > currentQuiz.deadlineTime) {
+        timeOutHandler();
+        return null;
+    }
+
     return (
         <div className="w-full h-screen flex flex-col items-center justify-center gap-4">
             <img width="200px" src="/BooQuizLogo.png" alt="BooQuiz Logo" />
@@ -37,12 +48,18 @@ const QuizInProgress = ({ solutionTime, currentQuiz, submitAnswer }: QuizInProgr
                             //     }
                             // }}
                         />
-                        <CommonButton text={'제출하기'} clickEvent={() => submitAnswer(answer)} />
-                        <CommonButton text={'나가기'} clickEvent={() => {}} />
+                        <CommonButton
+                            text={'제출하기'}
+                            clickEvent={() => {
+                                console.log('작성한 답변:', answer);
+                                submitAnswer(answer);
+                            }}
+                        />
+                        {/* <CommonButton text={'나가기'} clickEvent={() => {}} /> */}
                     </>
                 ) : (
                     <div className="space-y-2">
-                        {currentQuiz.options?.map((option: any, index :any) => (
+                        {currentQuiz.options?.map((option: string, index: number) => (
                             <button
                                 key={index}
                                 onClick={() => submitAnswer(option)}

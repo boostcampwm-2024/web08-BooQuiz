@@ -6,8 +6,32 @@ import { useNavigate } from 'react-router-dom';
 const MainPage = () => {
     const navigate = useNavigate();
 
-    const handleMoveToQuizZoneWaiting = () => {
+    const handleMoveToQuizZone = () => {
         navigate('/quizZone');
+    };
+
+    //입장하기 버튼을 클릭하면 서버에 퀴즈존 세션 생성 요청을 날린다.
+    // 퀴즈존 세션 생성 요청이 성공하면, 퀴즈존 대기실 정보 요청을 날린다.
+    // 퀴즈존 대기실 정보를 받으면 퀴즈존 대기실으로 렌더링 한다.
+    const handleMoveToQuizZoneLobby = () => {
+        //baseURL 나중에 하기
+        fetch('/api/quiz-zone/', {
+            method: 'POST',
+            credentials: 'include',
+        })
+            .then((response) => {
+                console.log(typeof response);
+                console.log(response.status);
+                if (response.status === 201) {
+                    handleMoveToQuizZone();
+                }
+            })
+            .then((data) => {
+                console.log(data);
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
     };
 
     return (
@@ -30,7 +54,7 @@ const MainPage = () => {
                 <CommonButton
                     text="퀴즈존 참여하기"
                     isFulfill={true}
-                    clickEvent={handleMoveToQuizZoneWaiting}
+                    clickEvent={handleMoveToQuizZoneLobby}
                 />
             </ContentBox>
         </>

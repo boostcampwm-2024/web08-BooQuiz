@@ -9,7 +9,6 @@ interface QuizZoneLobbyProps {
 }
 
 const QuizZoneLobby = ({ quizZoneData, pinNumber, startQuiz }: QuizZoneLobbyProps) => {
-    console.log(quizZoneData);
     return (
         <div className="w-full h-screen flex flex-col items-center justify-center gap-4">
             <img className="w-[20rem]" src="/BooQuizLogo.png" alt="BooQuiz Logo" />
@@ -18,6 +17,7 @@ const QuizZoneLobby = ({ quizZoneData, pinNumber, startQuiz }: QuizZoneLobbyProp
                     <Typography text={`Room: ${pinNumber}`} size="2xl" color="black" bold={true} />
                     {quizZoneData && (
                         <div>
+                            <p>퀴즈 수: {quizZoneData?.Lobby.totalQuizCount}</p>
                             <p>참가자 수: {quizZoneData.Lobby.participants}</p>
                             <p>퀴즈 제목: {quizZoneData.Lobby.quizTitle}</p>
                             {quizZoneData.Lobby.isHost && (

@@ -1,5 +1,4 @@
 import ContentBox from '@/components/common/ContentBox';
-import TimerDisplay from '@/components/common/TimerDisplay';
 import Typography from '@/components/common/Typogrpahy';
 
 interface QuizWaitingProps {
@@ -20,7 +19,8 @@ const QuizWaiting = ({ prepareTime }: QuizWaitingProps) => {
                     />
                     <Typography size="3xl" color="blue" text="잠시만 기다려주세요" bold={true} />
                 </div>
-                <TimerDisplay time={prepareTime ?? 0} isFulfill={true} />
+                {/* <TimerDisplay time={prepareTime ?? 0} isFulfill={true} /> */}
+                <p>{prepareTime}</p>
             </ContentBox>
         </div>
     );

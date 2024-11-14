@@ -41,7 +41,8 @@ describe('QuizZoneRepositoryMemory', () => {
             expect(storage.get(id)).toEqual(quizZone); // 생성된 객체와 동일한지 확인
         });
 
-        it('중복된 key 값이 입력으로 들어오면 에러가 발생한다.', async () => {
+        //1인 사용자일 때는 접속 할 때마다 퀴즈존 초기화
+        it.skip('중복된 key 값이 입력으로 들어오면 에러가 발생한다.', async () => {
             const id = 'some-id';
             const quizZone: QuizZone = {
                 currentQuizDeadlineTime: 0,

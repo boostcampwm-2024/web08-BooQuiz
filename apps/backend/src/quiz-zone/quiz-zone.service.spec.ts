@@ -69,7 +69,8 @@ describe('QuizZoneService', () => {
             expect(stage).toEqual('LOBBY');
         });
 
-        it('이미 만들어진 퀴즈존을 생성하면 에러가 발생한다.', async () => {
+        //1인 사용자일 때는 접속 할 때마다 퀴즈존 초기화
+        it.skip('이미 만들어진 퀴즈존을 생성하면 에러가 발생한다.', async () => {
             const sid = '1234';
 
             await service.create(sid);

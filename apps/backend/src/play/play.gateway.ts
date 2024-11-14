@@ -2,6 +2,7 @@ import {
     ConnectedSocket,
     MessageBody,
     OnGatewayConnection,
+    OnGatewayDisconnect,
     OnGatewayInit,
     SubscribeMessage,
     WebSocketGateway,
@@ -68,6 +69,10 @@ export class PlayGateway implements OnGatewayConnection, OnGatewayInit {
         this.plays.set(client, { quizZoneId });
     }
 
+    async handleDisconnect(client: WebSocket) {
+        client.terminate();
+    }
+
     /**
      * 퀴즈 게임을 시작하는 메시지를 클라이언트로 전송합니다.
      *
@@ -118,7 +123,7 @@ export class PlayGateway implements OnGatewayConnection, OnGatewayInit {
     @SubscribeMessage('submit')
     async submit(
         @ConnectedSocket() client: WebSocket,
-        @MessageBody('data') quizSubmit: QuizSubmitDto,
+        @MessageBody() quizSubmit: QuizSubmitDto,
     ): Promise<SendEventMessage<string>> {
         const playInfo = this.getPlayInfo(client);
         const { quizZoneId, submitHandle } = playInfo;
