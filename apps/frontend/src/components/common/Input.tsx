@@ -10,6 +10,7 @@ interface InputProps {
     disabled?: boolean;
     error?: string | false;
     isUnderline?: boolean;
+    onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
 }
 
 /**
@@ -55,12 +56,14 @@ const Input = ({
     disabled = false,
     error = false,
     isUnderline = false,
+    onKeyDown,
     ...rest
 }: InputProps) => {
     return (
         <div className="input-wrapper">
             <label htmlFor={name}>{label}</label>
             <input
+                autoFocus
                 type={type}
                 id={name}
                 name={name}
@@ -69,6 +72,7 @@ const Input = ({
                 placeholder={placeholder}
                 disabled={disabled}
                 className={`${error ? 'error' : ''} focus:outline-none w-full`}
+                onKeyDown={onKeyDown}
                 {...rest}
             />
             {error && <span className="error-message">{error}</span>}
