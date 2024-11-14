@@ -29,6 +29,7 @@ jobs:
                       NODE_ENV=${{secrets.NODE_ENV}}
                       SESSION_SECRET=${{secrets.SESSION_SECRET}}
 
+
     deploy-backend:
         needs: build-backend
         runs-on: ubuntu-latest
@@ -71,7 +72,7 @@ jobs:
                       ssh $DEPLOY_USER@$PRIVATE_SERVER_IP "sudo docker pull $DOCKER_USERNAME/booquiz-backend:latest && \
                           sudo docker stop booquiz-backend || true && \
                           sudo docker rm booquiz-backend || true && \
-                          sudo docker run -d --name booquiz-backend -p 3000:3000  -e NODE_ENV=${{secrets.NODE_ENV}} -e SESSION_SECRET=${{secrets.SESSION_SECRET}} $DOCKER_USERNAME/booquiz-backend:latest && \
+                          sudo docker run -d --name booquiz-backend -p 3000:3000 $DOCKER_USERNAME/booquiz-backend:latest && \
                           sudo docker image prune -f"
                   EOF
                   exit

@@ -8,6 +8,7 @@ RUN npm install -g pnpm
 # 의존성 파일들 복사
 COPY pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/backend/package.json ./apps/backend/
+COPY apps/backend/tsconfig*.json ./apps/backend
 
 # backend 의존성 설치 (락파일 검사 무시)
 RUN pnpm install -C apps/backend --no-frozen-lockfile
@@ -36,7 +37,6 @@ RUN pnpm add -g pm2
 COPY --from=builder /app/apps/backend/dist ./dist
 COPY --from=builder /app/apps/backend/package.json ./
 COPY pnpm-lock.yaml pnpm-workspace.yaml ./
-
 # 프로덕션 실행에 필요한 의존성만 설치 (devDependencies 제외)
 # --no-frozen-lockfile: 락파일 버전 제약을 완화하여 호환되는 최신 버전 허용
 RUN pnpm install --no-frozen-lockfile
@@ -49,4 +49,4 @@ ENV SESSION_SECRET=$SESSION_SECRET
 
 # 포트 설정 및 앱 실행
 EXPOSE 3000
-CMD ["pm2-runtime", "start", "dist/main.js"]
+CMD ["pm2-runtime", "start", "dist/src/main.js"]
