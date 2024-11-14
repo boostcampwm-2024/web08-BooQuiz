@@ -27,6 +27,7 @@ jobs:
                       NODE_ENV=${{secrets.NODE_ENV}}
                       SESSION_SECRET=${{secrets.SESSION_SECRET}}
 
+
     deploy-backend:
         needs: build-backend
         runs-on: ubuntu-latest
