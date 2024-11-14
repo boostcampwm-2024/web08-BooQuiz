@@ -25,6 +25,9 @@ jobs:
                   tags: ${{ secrets.DOCKER_USERNAME }}/booquiz-backend:latest
                   cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/booquiz-backend:cache
                   cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/booquiz-backend:cache,mode=max
+                  build-args: |
+                      NODE_ENV=${{secrets.NODE_ENV}}
+                      SESSION_SECRET=${{secrets.SESSION_SECRET}}
 
     deploy-backend:
         needs: build-backend
@@ -68,7 +71,7 @@ jobs:
                       ssh $DEPLOY_USER@$PRIVATE_SERVER_IP "sudo docker pull $DOCKER_USERNAME/booquiz-backend:latest && \
                           sudo docker stop booquiz-backend || true && \
                           sudo docker rm booquiz-backend || true && \
-                          sudo docker run -d --name booquiz-backend -p 3000:3000 $DOCKER_USERNAME/booquiz-backend:latest && \
+                          sudo docker run -d --name booquiz-backend -p 3000:3000  -e NODE_ENV=${{secrets.NODE_ENV}} -e SESSION_SECRET=${{secrets.SESSION_SECRET}} $DOCKER_USERNAME/booquiz-backend:latest && \
                           sudo docker image prune -f"
                   EOF
                   exit
