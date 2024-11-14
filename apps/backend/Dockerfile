@@ -41,12 +41,7 @@ COPY pnpm-lock.yaml pnpm-workspace.yaml ./
 # --no-frozen-lockfile: 락파일 버전 제약을 완화하여 호환되는 최신 버전 허용
 RUN pnpm install --no-frozen-lockfile
 
-ARG NODE_ENV
-ARG SESSION_SECRET
-
-ENV NODE_ENV=$NODE_ENV
-ENV SESSION_SECRET=$SESSION_SECRET
 
 # 포트 설정 및 앱 실행
 EXPOSE 3000
-CMD ["pm2-runtime", "start", "dist/main.js"]
+CMD ["pm2-runtime", "start", "/app/dist/main.js"]
