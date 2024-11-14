@@ -1,7 +1,7 @@
 name: Deploy Backend
 on:
-    push:
-        branches: [main]
+    pull_request:
+        branches: [develop]
 jobs:
     build-backend:
         runs-on: ubuntu-latest
@@ -23,8 +23,6 @@ jobs:
                   file: apps/backend/Dockerfile
                   push: true
                   tags: ${{ secrets.DOCKER_USERNAME }}/booquiz-backend:latest
-                  cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/booquiz-backend:cache
-                  cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/booquiz-backend:cache,mode=max
                   build-args: |
                       NODE_ENV=${{secrets.NODE_ENV}}
                       SESSION_SECRET=${{secrets.SESSION_SECRET}}
