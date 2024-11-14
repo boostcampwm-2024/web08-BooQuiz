@@ -123,7 +123,7 @@ export class PlayGateway implements OnGatewayConnection, OnGatewayInit {
     @SubscribeMessage('submit')
     async submit(
         @ConnectedSocket() client: WebSocket,
-        @MessageBody('data') quizSubmit: QuizSubmitDto,
+        @MessageBody() quizSubmit: QuizSubmitDto,
     ): Promise<SendEventMessage<string>> {
         const playInfo = this.getPlayInfo(client);
         const { quizZoneId, submitHandle } = playInfo;
