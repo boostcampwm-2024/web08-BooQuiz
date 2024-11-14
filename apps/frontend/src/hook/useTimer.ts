@@ -52,20 +52,21 @@ export const useTimer = ({ initialTime, onComplete, autoStart = false }: TimerCo
 
         const timer = setInterval(() => {
             setTime((prev) => {
-                if (prev === null || prev <= 1) {
+                if (prev === null || prev <= 0) {
                     setIsRunning(false);
                     onComplete?.();
                     return null;
                 }
-                return prev - 1;
+                // 0.1초 단위로 감소
+                return Math.max(0, prev - 0.1);
             });
-        }, 1000);
+        }, 100); // 100ms 간격으로 업데이트
 
         return () => clearInterval(timer);
     }, [isRunning, time, onComplete]);
 
-    const start = () => {
-        setTime(initialTime);
+    const start = (newTime?: number) => {
+        setTime(newTime ?? initialTime); // newTime이 없으면 initialTime 사용
         setIsRunning(true);
     };
 
@@ -79,11 +80,16 @@ export const useTimer = ({ initialTime, onComplete, autoStart = false }: TimerCo
         setIsRunning(false);
     };
 
+    const setNewTime = (newTime: number) => {
+        setTime(Math.max(0, newTime));
+    };
+
     return {
         time,
         isRunning,
         start,
         stop,
         reset,
+        setTime: setNewTime,
     };
 };
