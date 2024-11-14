@@ -20,9 +20,9 @@ interface QuizZoneData {
     };
     quizProgress: {
         currentQuiz: {
-            question: string;
+            question?: string;
             options?: string[];
-            timeLimit: number;
+            timeLimit?: number;
             submissionResult?: SubmissionResult;
             deadlineTime?: number;
             startTime?: number;
@@ -137,7 +137,7 @@ export const useQuizZoneManager = (config: QuizStageConfig) => {
                     stage: currentQuiz.stage, // 필수 필드 명시적 포함
                     currentIndex: currentQuiz.currentIndex, // 필수 필드 명시적 포함
                     submissionResult: { submitted: false, timeExpired: true },
-                },
+                }
             });
         } catch (err) {
             config.onError?.(err instanceof Error ? err : new Error('Unknown error'));
