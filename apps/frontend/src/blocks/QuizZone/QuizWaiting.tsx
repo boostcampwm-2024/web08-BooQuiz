@@ -1,5 +1,4 @@
 import ContentBox from '@/components/common/ContentBox';
-import TimerDisplay from '@/components/common/TimerDisplay';
 import Typography from '@/components/common/Typogrpahy';
 
 interface QuizWaitingProps {
