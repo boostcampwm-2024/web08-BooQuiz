@@ -5,10 +5,9 @@ import { useNavigate } from 'react-router-dom';
 
 interface QuizZoneResultProps {
     quizZoneData: any;
-    quizProgress: any;
 }
 
-const QuizZoneResult = ({ quizZoneData, quizProgress }: QuizZoneResultProps) => {
+const QuizZoneResult = ({ quizZoneData }: QuizZoneResultProps) => {
     const navigate = useNavigate();
     const handleMoveToMain = () => {
         navigate('/');
@@ -24,23 +23,29 @@ const QuizZoneResult = ({ quizZoneData, quizProgress }: QuizZoneResultProps) => 
                     bold={true}
                 />
                 <Typography
-                    size="base"
+                    size="2xl"
                     color="blue"
-                    text={`최종 점수: ${quizZoneData.result.score}%`}
+                    text={`최종 점수: ${quizZoneData.result.score}`}
                     bold={true}
                 />
-                <Typography
-                    size="base"
-                    color="blue"
-                    text={`순위: ${quizZoneData.result.rank}/${quizZoneData.result.totalParticipants}%`}
-                    bold={true}
-                />
-                <Typography
-                    size="base"
-                    color="blue"
-                    text={`정답 개수: ${quizZoneData.result.correctAnswers}/${quizProgress.totalQuizzes}`}
-                    bold={true}
-                />
+                {/* {quizZoneData.result.quizzes ??
+                    quizZoneData.result.quizzes.map((quiz, index) => (
+                        <Typography
+                            size="base"
+                            color="blue"
+                            text={`Q. ${quiz.question} / A. ${quiz.answer} / ${quiz.playTime}`}
+                            bold={true}
+                        />
+                    ))}
+                {quizZoneData.result.submits ??
+                    quizZoneData.result.submits.map((submit, index) => (
+                        <Typography
+                            size="base"
+                            color="blue"
+                            text={`제출 ${index + 1}: ${submit.answer ?? '빈 값 혹은 제출하지 않았습니다.'}, 제출 시간: ${submit.submittedAt}, 수신 시간: ${submit.receivedAt}`}
+                            bold={true}
+                        />
+                    ))} */}
                 <CommonButton text="메인으로" clickEvent={handleMoveToMain} />
             </ContentBox>
         </div>
