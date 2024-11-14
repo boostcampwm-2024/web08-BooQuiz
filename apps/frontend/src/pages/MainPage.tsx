@@ -43,7 +43,7 @@ const MainPage = () => {
                 text="실시간 퀴즈 플랫폼 BooQuiz에 오신 것을 환영합니다!"
                 bold={true}
             />
-            <ContentBox>
+            <ContentBox className="w-4/5 md:w-[48rem]">
                 <Typography size="base" color="blue" text="퀴즈 참여하기" bold={true} />
                 <Typography
                     size="xs"

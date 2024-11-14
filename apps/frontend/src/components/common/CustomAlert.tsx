@@ -32,6 +32,7 @@ export interface CustomAlertProps {
     // 콜백 함수
     onConfirm: () => void;
     onCancel?: () => void;
+    className?: string;
 }
 
 const getAlertIcon = (type: string) => {
@@ -94,7 +95,7 @@ const getAlertStyle = (type: string) => {
  * @return {JSX.Element} 사용자 정의 알림 대화 상자 컴포넌트
  */
 
-const CustomAlert = ({ trigger, alert, onConfirm, onCancel }: CustomAlertProps) => {
+const CustomAlert = ({ trigger, alert, onConfirm, onCancel, className }: CustomAlertProps) => {
     const handleCancel = () => {
         onCancel?.();
     };
@@ -106,13 +107,18 @@ const CustomAlert = ({ trigger, alert, onConfirm, onCancel }: CustomAlertProps) 
     return (
         <AlertDialog>
             <AlertDialogTrigger asChild>
-                <Button variant={trigger.variant} size={trigger.size} disabled={trigger.disabled}>
+                <Button
+                    variant={trigger.variant}
+                    size={trigger.size}
+                    disabled={trigger.disabled}
+                    className={`rounded-[10px] ${className}`}
+                >
                     {trigger.icon && <span className="mr-2">{trigger.icon}</span>}
                     {trigger.text}
                 </Button>
             </AlertDialogTrigger>
 
-            <AlertDialogContent className={` border-2 ${getAlertStyle(alert.type ?? 'info')}`}>
+            <AlertDialogContent className={`border-2 ${getAlertStyle(alert.type ?? 'info')}`}>
                 <AlertDialogHeader className="gap-4">
                     <div className="flex items-center gap-2">
                         {getAlertIcon(alert.type ?? 'info')}
