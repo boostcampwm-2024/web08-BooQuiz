@@ -55,7 +55,6 @@ export const QuizZone = ({ pinNumber }: QuizZoneProps) => {
         const fetchQuizZoneData = async () => {
             try {
                 setIsLoading(true);
-                //! '/api'로 요청 날리기
                 const response = await fetch(`/api/quiz-zone/${pinNumber}`, {
                     method: 'GET',
                     credentials: 'include',
@@ -110,12 +109,10 @@ export const QuizZone = ({ pinNumber }: QuizZoneProps) => {
         // 서버로부터 메시지 수신
         ws.onmessage = (event) => {
             const data = JSON.parse(event.data);
-            console.log('서버로부터 받은 데이터:', data);
             // 서버로부터 받은 데이터에 따라 처리
             // event를 기준으로 객체 형태 데이터가 서버로부터 전달됨
             switch (data.event) {
                 case 'start':
-                    console.log(data.data);
                     break;
                 case 'nextQuiz':
                     {
@@ -145,13 +142,10 @@ export const QuizZone = ({ pinNumber }: QuizZoneProps) => {
                     }
                     break;
                 case 'finish':
-                    console.log('finish');
                     setIsLastQuiz(true);
                     handleQuizCycle('WAITING');
                     break;
                 case 'summary':
-                    console.log('summary');
-                    console.log(data.data);
                     setQuizZone('RESULT');
                     updateStageData('result', {
                         score: data.data.score,

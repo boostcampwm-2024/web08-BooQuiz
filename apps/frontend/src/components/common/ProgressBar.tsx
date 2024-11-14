@@ -1,81 +1,83 @@
 import { Progress } from '../ui/progress';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Typography from './Typogrpahy';
+
 export interface ProgressBarProps {
-    maxTime: number;
+    deadlineTime: number; // ISO string or Date object
     onTimeEnd?: () => void;
 }
 
 /**
  * @description
- * ProgressBar 컴포넌트는 시간이 지남에 따라 감소하는 진행 막대를 표시합니다.
- * 최대 시간과 시간이 끝났을 때 호출될 콜백 함수를 받습니다.
+ * ProgressBar 컴포넌트는 주어진 마감 시간까지 남은 시간을 시각적으로 표시합니다.
+ * 현재 시간과 마감 시간 사이의 진행도를 보여주며, 시간이 다 되면 콜백을 실행합니다.
  *
  * @example
- * <ProgressBar maxTime={10} onTimeEnd={() => console.log('Time ended!')} />
- *
- * @param {number} maxTime - 진행 막대가 실행될 최대 시간(초)입니다.
- * @param {() => void} onTimeEnd - 시간이 끝났을 때 호출될 콜백 함수입니다.
- *
- * @returns {JSX.Element} 렌더링된 진행 막대 컴포넌트입니다.
+ * <ProgressBar
+ *   deadlineTime={new Date(Date.now() + 30000)}
+ *   onTimeEnd={() => console.log('Time ended!')}
+ * />
  */
-const ProgressBar = ({ maxTime = 10, onTimeEnd }: ProgressBarProps) => {
-    const MAX_PERCENTAGE = 100;
-    const [timeValue, setTimeValue] = useState(MAX_PERCENTAGE);
-    const INTERVALS_PER_SECOND = 10; // 초당 업데이트 횟수
-    const INTERVAL_DURATION = 1000 / INTERVALS_PER_SECOND; // ms 단위로 계산
-    // 타이머 관련 상수와 계산 로직 분리
-    const calculateIncrementPerInterval = (maxTime: number) => {
-        return MAX_PERCENTAGE / (maxTime * INTERVALS_PER_SECOND);
+const ProgressBar = ({ deadlineTime, onTimeEnd }: ProgressBarProps) => {
+    const totalDurationRef = useRef(deadlineTime - Date.now());
+
+    const calculateInitialProgress = () => {
+        const now = Date.now();
+        const totalDuration = totalDurationRef.current;
+        const remaining = deadlineTime - now;
+        const progress = Math.max(0, (remaining / totalDuration) * 100);
+        return progress;
     };
 
-    // 타이머 업데이트 로직 분리
-    const createTimerUpdateFunction = (
-        incrementPerInterval: number,
-        clearIntervalFn: (intervalId: NodeJS.Timeout) => void,
-        intervalId: NodeJS.Timeout,
-    ) => {
-        return (prevTimeValue: number) => {
-            const newTimeValue = prevTimeValue - incrementPerInterval;
-            if (newTimeValue <= 0) {
-                clearIntervalFn(intervalId);
-                return 0;
-            }
-            return newTimeValue;
-        };
+    const calculateInitialSeconds = () => {
+        const now = Date.now();
+        return Math.max(0, (deadlineTime - now) / 1000);
     };
 
-    // useEffect 내부에서 사용할 타이머 설정 로직 분리
-    const setupTimer = (timeValue: number, incrementPerInterval: number, onTimeEnd: () => void) => {
-        if (timeValue === 0 && onTimeEnd) {
-            onTimeEnd();
-        }
-
-        const interval = setInterval(() => {
-            setTimeValue((prevTimeValue) =>
-                createTimerUpdateFunction(
-                    incrementPerInterval,
-                    clearInterval,
-                    interval,
-                )(prevTimeValue),
-            );
-        }, INTERVAL_DURATION);
-
-        return interval;
-    };
+    const [progress, setProgress] = useState(calculateInitialProgress());
+    const [remainingSeconds, setRemainingSeconds] = useState<number>(calculateInitialSeconds());
 
     useEffect(() => {
-        const incrementPerInterval = calculateIncrementPerInterval(maxTime);
-        const interval = setupTimer(timeValue, incrementPerInterval, onTimeEnd ?? (() => {}));
+        const startTime = Date.now();
+        const totalDuration = totalDurationRef.current;
+
+        // deadlineTime이 이미 지난 경우
+        if (deadlineTime <= startTime) {
+            setProgress(0);
+            setRemainingSeconds(0);
+            onTimeEnd?.();
+            return;
+        }
+
+        const updateProgress = () => {
+            const currentTime = Date.now();
+            const remaining = deadlineTime - currentTime;
+
+            if (remaining <= 0) {
+                setProgress(0);
+                setRemainingSeconds(0);
+                onTimeEnd?.();
+                return false;
+            }
+
+            // totalDurationRef.current를 사용하여 일정한 비율로 감소
+            const newProgress = (remaining / totalDuration) * 100;
+            setProgress(Math.max(0, Math.min(100, newProgress)));
+            setRemainingSeconds(remaining / 1000);
+
+            return true;
+        };
+
+        const interval = setInterval(updateProgress, 100);
 
         return () => clearInterval(interval);
-    }, [maxTime, timeValue, onTimeEnd]);
+    }, [deadlineTime, onTimeEnd]);
 
     return (
         <div className="w-full flex justify-center flex-col items-center gap-2">
-            <Progress value={timeValue} max={100} className="max-w-[60%]" time={50} />
+            <Progress value={progress} max={100} className="max-w-[60%]" />
             <Typography
-                text={`${((timeValue / 100) * maxTime).toFixed(1)}초`}
+                text={`${Math.max(0, remainingSeconds).toFixed(1)}초`}
                 size="xl"
                 color="black"
             />
