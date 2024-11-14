@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { Quiz } from './entities/quiz.entity';
 import { Player } from './entities/player.entity';
 import { QuizZone } from './entities/quiz-zone.entity';
@@ -23,8 +23,15 @@ export class QuizZoneService {
         private readonly repository: IQuizZoneRepository,
     ) {}
 
-    async create(sessionId: string) {
-        const player: Player = { id: sessionId, score: 0, submits: [], state: 'WAIT' };
+    /**
+     * 새로운 퀴즈 존을 생성합니다.
+     *
+     * @param quizZoneId - 등록될 퀴즈존 ID
+     * @returns 퀴즈 존을 생성하고 저장하는 비동기 작업
+     * @throws(ConflictException) 이미 저장된 ID인 경우 예외 발생
+     */
+    async create(quizZoneId: string): Promise<void> {
+        const player: Player = { id: quizZoneId, score: 0, submits: [], state: 'WAIT' };
         const quizZone: QuizZone = {
             currentQuizDeadlineTime: 0,
             currentQuizIndex: -1,
@@ -35,13 +42,27 @@ export class QuizZoneService {
             intervalTime: 5000,
         };
 
-        await this.repository.set(sessionId, quizZone);
+        await this.repository.set(quizZoneId, quizZone);
     }
 
-    async findOne(quizZoneId: string) {
+    /**
+     * 퀴즈 존을 ID로 조회합니다.
+     *
+     * @param quizZoneId - 조회할 퀴즈 존의 ID
+     * @returns 퀴즈 존 객체
+     * @throws {NotFoundException} 퀴즈 존을 찾을 수 없는 경우
+     */
+    async findOne(quizZoneId: string): Promise<QuizZone> {
         return this.repository.get(quizZoneId);
     }
 
+    /**
+     * 대기 중인 퀴즈 존의 정보를 반환합니다.
+     *
+     * @param quizZoneId - 대기 중인 퀴즈 존의 ID
+     * @returns 대기 중인 퀴즈 존 정보 DTO
+     * @throws {NotFoundException} 퀴즈 존을 찾을 수 없는 경우
+     */
     async getQuizWaitingRoom(quizZoneId: string): Promise<WaitingQuizZoneDto> {
         const quizZone = await this.repository.get(quizZoneId);
         return {
@@ -49,25 +70,14 @@ export class QuizZoneService {
             stage: quizZone.stage,
         };
     }
-    async progressQuizZone(quizZoneId: string) {
-        const quizZone = await this.repository.get(quizZoneId);
-        const { quizzes, currentQuizIndex, intervalTime } = quizZone;
 
-        if (quizzes.length <= currentQuizIndex) {
-            throw new BadRequestException('모든 퀴즈를 출제하였습니다.');
-        }
-
-        const quiz = quizzes.at(currentQuizIndex);
-        const { playTime } = quiz;
-
-        quizZone.stage = 'WAITING';
-        quizZone.currentQuizStartTime = Date.now() + intervalTime;
-        quizZone.currentQuizDeadlineTime = quizZone.currentQuizStartTime + playTime;
-
-        return quizZone;
-    }
-
-    async clearQuizZone(quizZoneId: string) {
+    /**
+     * 퀴즈 존을 삭제합니다.
+     *
+     * @param quizZoneId - 삭제할 퀴즈 존의 ID
+     * @returns 퀴즈 존 삭제 작업
+     */
+    async clearQuizZone(quizZoneId: string): Promise<void> {
         await this.repository.delete(quizZoneId);
     }
 }
