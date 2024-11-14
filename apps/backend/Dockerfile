@@ -44,4 +44,4 @@ RUN pnpm install --no-frozen-lockfile
 
 # 포트 설정 및 앱 실행
 EXPOSE 3000
-CMD ["pm2-runtime", "start", "dist/main.js"]
+CMD ["pm2-runtime", "start", "dist/src/main.js"]
