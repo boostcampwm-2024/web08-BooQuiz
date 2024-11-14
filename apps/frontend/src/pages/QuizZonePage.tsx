@@ -28,21 +28,21 @@ export const QuizZone = ({ pinNumber }: QuizZoneProps) => {
     const [error, setError] = useState<string | null>(null);
     const [initialData, setInitialData] = useState<QuizZoneInitialData | null>(null);
     const [ws, setWs] = useState<WebSocket>();
+    const [isLastQuiz, setIsLastQuiz] = useState(false);
 
     const {
         quizZone,
         solveStage,
-        quizProgress,
         quizZoneData,
         prepareTime,
         solutionTime,
         isTransitioning,
         updateStageData,
         startQuiz,
-        submitAnswer,
+        setQuizZone,
         setTotalQuizzes,
         setSolutionTime,
-        setPrepareTime,
+        startPrepareTimer,
         handleQuizCycle,
     } = useQuizZoneManager({
         totalQuizzes: 0,
@@ -55,6 +55,7 @@ export const QuizZone = ({ pinNumber }: QuizZoneProps) => {
         const fetchQuizZoneData = async () => {
             try {
                 setIsLoading(true);
+                //! '/api'로 요청 날리기
                 const response = await fetch(`http://localhost:3000/quiz-zone/${pinNumber}`, {
                     method: 'GET',
                     credentials: 'include',
@@ -91,23 +92,6 @@ export const QuizZone = ({ pinNumber }: QuizZoneProps) => {
                 quizTitle: initialData?.title || '퀴즈 제목',
                 description: initialData?.description || '퀴즈 설명',
             });
-
-            // 퀴즈 진행 데이터 설정
-            // updateStageData('quizProgress', {
-            //     currentQuiz: {
-            //         question: '첫 번째 문제',
-            //         timeLimit: 10,
-            //         type: 'SHORT_ANSWER',
-            //     },
-            // });
-
-            // 결과 페이지 초기 설정
-            updateStageData('result', {
-                score: 0,
-                rank: 0,
-                totalParticipants: initialData.participants?.length,
-                correctAnswers: 0,
-            });
         }
     }, [initialData]);
 
@@ -133,50 +117,46 @@ export const QuizZone = ({ pinNumber }: QuizZoneProps) => {
                     console.log(data.data);
                     break;
                 case 'nextQuiz':
-                    console.log('nextQuiz');
-
-                    //lexically scoped 하는 이유?
-                    //quizProgress를 업데이트 하기 위해서
                     {
                         const { question, currentIndex, deadlineTime, playTime, startTime, stage } =
                             data.data;
-                        // 퀴즈 진행 데이터 설정
-                        updateStageData('quizProgress', {
-                            currentQuiz: {
-                                question: question,
-                                timeLimit: playTime,
-                                type: 'SHORT_ANSWER',
-                                deadlineTime: deadlineTime,
-                                startTime: startTime,
-                                stage: stage,
-                                currentIndex: currentIndex,
-                            },
-                        });
-                        //playTime >> ms 기준이라 초로 변환
-                        setSolutionTime(playTime / 1000);
-                        console.log(data.data);
-                    }
-                    break;
-                case 'quizTimeout':
-                    {
-                        const { stage } = data.data;
-                        // 강제로 COMPLETED 상태로 전환하여 다음 대기 상태로 넘어가게 함
-                        updateStageData('quizProgress', {
-                            currentQuiz: {
-                                ...quizZoneData.quizProgress?.currentQuiz,
-                                stage: stage,
-                                submissionResult: { submitted: false, timeExpired: true },
-                            },
-                        });
-                        handleQuizCycle('COMPLETED');
+                        const currentTime = new Date().getTime();
+                        const remainingPrepTime = Math.max(0, startTime - currentTime) / 1000;
+
+                        if (question) {
+                            // question이 존재하는 경우에만 업데이트
+                            updateStageData('quizProgress', {
+                                currentQuiz: {
+                                    question: question,
+                                    timeLimit: playTime / 1000,
+                                    stage: stage,
+                                    currentIndex: currentIndex,
+                                    type: 'SHORT_ANSWER',
+                                    deadlineTime,
+                                    startTime,
+                                },
+                            });
+
+                            startPrepareTimer(remainingPrepTime);
+                            setSolutionTime(playTime / 1000);
+                            handleQuizCycle('WAITING');
+                        }
                     }
                     break;
                 case 'finish':
                     console.log('finish');
+                    setIsLastQuiz(true);
+                    handleQuizCycle('WAITING');
                     break;
                 case 'summary':
                     console.log('summary');
                     console.log(data.data);
+                    setQuizZone('RESULT');
+                    updateStageData('result', {
+                        score: data.data.score,
+                        quizzes: data.data.quizzes,
+                        submits: data.data.submits,
+                    });
                     break;
             }
         };
@@ -222,6 +202,44 @@ export const QuizZone = ({ pinNumber }: QuizZoneProps) => {
         startQuiz();
     };
 
+    const handleSubmitAnswer = (answer: string) => {
+        if (ws?.readyState === WebSocket.OPEN) {
+            const submissionData = {
+                event: 'submit',
+                data: {
+                    answer,
+                    index: quizZoneData.quizProgress?.currentQuiz.currentIndex,
+                    submittedAt: Date.now(),
+                },
+            };
+            const currentQuiz = quizZoneData.quizProgress?.currentQuiz;
+
+            if (!currentQuiz) {
+                console.error('현재 퀴즈 정보가 없습니다.');
+                return;
+            }
+
+            ws.send(JSON.stringify(submissionData));
+
+            // 제출 결과 상태 업데이트 및 COMPLETED로 전환
+            updateStageData('quizProgress', {
+                currentQuiz: {
+                    ...currentQuiz, // 기존 필수 필드들을 모두 유지
+                    question: currentQuiz.question, // 필수 필드 명시적 포함
+                    timeLimit: currentQuiz.timeLimit, // 필수 필드 명시적 포함
+                    stage: currentQuiz.stage, // 필수 필드 명시적 포함
+                    currentIndex: currentQuiz.currentIndex, // 필수 필드 명시적 포함
+                    submissionResult: {
+                        submitted: true,
+                        answer,
+                    },
+                },
+            });
+
+            handleQuizCycle('COMPLETED');
+        }
+    };
+
     const renderLobby = () => (
         <>
             {quizZoneData.Lobby && (
@@ -236,7 +254,28 @@ export const QuizZone = ({ pinNumber }: QuizZoneProps) => {
 
     const renderQuizProgress = () => {
         const currentQuiz = quizZoneData.quizProgress?.currentQuiz;
-        const isLastQuiz = quizProgress.currentQuizIndex === quizProgress.totalQuizzes - 1;
+        //시간 지나면 다음 퀴즈로 넘어가는 로직 추가
+
+        const timeOutHandler = () => {
+            if (!currentQuiz) {
+                console.error('현재 퀴즈 정보가 없습니다.');
+                return;
+            }
+            updateStageData('quizProgress', {
+                currentQuiz: {
+                    ...currentQuiz, // 기존 필수 필드들을 모두 유지
+                    question: currentQuiz.question, // 필수 필드 명시적 포함
+                    timeLimit: currentQuiz.timeLimit, // 필수 필드 명시적 포함
+                    stage: currentQuiz.stage, // 필수 필드 명시적 포함
+                    currentIndex: currentQuiz.currentIndex, // 필수 필드 명시적 포함
+                    submissionResult: {
+                        submitted: true,
+                        answer: undefined,
+                    },
+                },
+            });
+            handleQuizCycle('COMPLETED');
+        };
 
         if (solveStage === 'WAITING') {
             return <QuizWaiting prepareTime={prepareTime} />;
@@ -247,7 +286,8 @@ export const QuizZone = ({ pinNumber }: QuizZoneProps) => {
                 <QuizInProgress
                     solutionTime={solutionTime}
                     currentQuiz={currentQuiz}
-                    submitAnswer={submitAnswer}
+                    submitAnswer={handleSubmitAnswer}
+                    timeOutHandler={timeOutHandler}
                 />
             );
         }
@@ -260,11 +300,7 @@ export const QuizZone = ({ pinNumber }: QuizZoneProps) => {
     };
 
     const renderResult = () => (
-        <>
-            {quizZoneData.result && (
-                <QuizZoneResult quizZoneData={quizZoneData} quizProgress={quizProgress} />
-            )}
-        </>
+        <>{quizZoneData.result && <QuizZoneResult quizZoneData={quizZoneData} />}</>
     );
 
     if (isTransitioning) {
