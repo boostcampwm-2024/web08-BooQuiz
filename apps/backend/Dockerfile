@@ -36,7 +36,7 @@ RUN pnpm add -g pm2
 COPY --from=builder /app/apps/backend/dist ./dist
 COPY --from=builder /app/apps/backend/package.json ./
 COPY pnpm-lock.yaml pnpm-workspace.yaml ./
-
+COPY ecosystem.config.cjs ./
 # 프로덕션 실행에 필요한 의존성만 설치 (devDependencies 제외)
 # --no-frozen-lockfile: 락파일 버전 제약을 완화하여 호환되는 최신 버전 허용
 RUN pnpm install --no-frozen-lockfile
@@ -44,4 +44,4 @@ RUN pnpm install --no-frozen-lockfile
 
 # 포트 설정 및 앱 실행
 EXPOSE 3000
-CMD ["pm2-runtime", "start", "/app/dist/main.js"]
+CMD ["pm2-runtime", "start", "ecosystem.config.cjs"]
