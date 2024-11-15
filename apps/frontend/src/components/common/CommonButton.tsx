@@ -7,6 +7,7 @@ export interface CommonButtonProps {
     width?: string;
     height?: string;
     disabled?: boolean;
+    className?: string;
 }
 
 const CommonButton = ({
@@ -14,6 +15,7 @@ const CommonButton = ({
     isFulfill = false,
     clickEvent,
     disabled = false,
+    className,
 }: CommonButtonProps) => {
     const backgroundColorClass = isFulfill ? 'bg-blue-600' : 'bg-white';
     const textColorClass = isFulfill ? 'text-white' : 'text-[#3565e3]';
@@ -21,7 +23,7 @@ const CommonButton = ({
 
     return (
         <Button
-            className={`${disabled ? 'disabled' : ''} w-[557px] h-[47px] rounded-[10px] border-2 border-[#3565e3] ${backgroundColorClass} ${textColorClass} ${hoverBackgroundColorClass}`}
+            className={`${disabled ? 'disabled' : ''} rounded-[10px] border-2 border-[#3565e3] ${backgroundColorClass} ${textColorClass} ${hoverBackgroundColorClass} ${className}`}
             onClick={() => clickEvent()}
         >
             {text}

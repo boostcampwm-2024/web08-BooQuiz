@@ -18,11 +18,14 @@ import { ReactNode } from 'react';
 
 interface ContentBoxProps {
     children: ReactNode;
+    className?: string;
 }
 
-const ContentBox = ({ children }: ContentBoxProps) => {
+const ContentBox = ({ children, className }: ContentBoxProps) => {
     return (
-        <div className="p-4 box-border rounded-[10px] border-2 border-gray-200 flex flex-col gap-4">
+        <div
+            className={`p-4 box-border rounded-[10px] border-2 border-gray-200 flex flex-col gap-4 ${className} `}
+        >
             {children}
         </div>
     );

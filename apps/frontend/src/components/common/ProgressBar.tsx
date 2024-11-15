@@ -77,9 +77,10 @@ const ProgressBar = ({ deadlineTime, onTimeEnd }: ProgressBarProps) => {
         <div className="w-full flex justify-center flex-col items-center gap-2">
             <Progress value={progress} max={100} className="max-w-[60%]" />
             <Typography
-                text={`${Math.max(0, remainingSeconds).toFixed(1)}초`}
+                text={`남은시간 ${Math.max(0, remainingSeconds).toFixed(1)}초`}
                 size="xl"
                 color="black"
+                bold={true}
             />
         </div>
     );

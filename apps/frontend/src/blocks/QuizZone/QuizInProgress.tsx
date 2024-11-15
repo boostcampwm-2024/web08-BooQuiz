@@ -24,7 +24,7 @@ const QuizInProgress = ({ currentQuiz, submitAnswer, timeOutHandler }: QuizInPro
                     timeOutHandler();
                 }}
             />
-            <ContentBox>
+            <ContentBox className="md:min-w-[48rem] w-4/5">
                 <Typography
                     text={`Q. ${currentQuiz.question}`}
                     size="2xl"
@@ -38,16 +38,15 @@ const QuizInProgress = ({ currentQuiz, submitAnswer, timeOutHandler }: QuizInPro
                             name="quizAnswer"
                             value={answer}
                             placeholder={'정답을 입력해주세요'}
-                            // onKeyDown={(e) => {
-                            //     if (e.key === 'Enter') {
-                            //         submitAnswer(e.currentTarget.value);
-                            //     }
-                            // }}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                    submitAnswer(answer);
+                                }
+                            }}
                         />
                         <CommonButton
                             text={'제출하기'}
                             clickEvent={() => {
-                                console.log('작성한 답변:', answer);
                                 submitAnswer(answer);
                             }}
                         />
