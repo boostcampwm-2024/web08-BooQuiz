@@ -2,10 +2,13 @@ name: Deploy Frontend
 on:
     push:
         branches: [main]
+    pull_request:
+        branches: [develop]
 jobs:
     build-frontend:
         runs-on: ubuntu-latest
         name: Build Frontend
+        environment: ${{ github.ref == 'refs/heads/main' && 'prod' || 'staging' }}
         steps:
             - name: Checkout code
               uses: actions/checkout@v4
@@ -34,7 +37,7 @@ jobs:
         needs: build-frontend
         runs-on: ubuntu-latest
         name: Deploy Frontend
-
+        environment: ${{ github.ref == 'refs/heads/main' && 'prod' || 'staging' }}
         steps:
             - name: Download artifacts
               uses: actions/download-artifact@v4
