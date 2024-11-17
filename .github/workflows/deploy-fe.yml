@@ -1,10 +1,10 @@
 name: Deploy Frontend
 
 on:
-    workflow_run:
-        workflows: ["Test PR"]
-        types:
-          - completed
+    pull_request:
+        branches: [develop]
+    push:
+        branches: [main]
 jobs:
     build-frontend:
         runs-on: ubuntu-latest
