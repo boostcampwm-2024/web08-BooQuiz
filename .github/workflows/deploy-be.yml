@@ -1,11 +1,13 @@
 name: Deploy Backend
+
 on:
-    push:
-        branches: [main]
-    pull_request:
-        branches: [develop]
+    workflow_run:
+        workflows: ["Test PR"]
+        types:
+            - completed
 jobs:
     build-backend:
+        if: ${{ github.event.workflow_run.conclusion == 'success' }}
         runs-on: ubuntu-latest
         name: Build Backend
         environment: ${{ github.ref == 'refs/heads/main' && 'prod' || 'staging' }}
