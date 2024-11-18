@@ -13,14 +13,21 @@ import { Server, WebSocket } from 'ws';
 import { IncomingMessage } from 'http';
 import { parse } from 'cookie';
 import { QuizSubmitDto } from './dto/quiz-submit.dto';
+import { QuizJoinDto } from './dto/quiz-join.dto';
 import { BadRequestException, Inject, NotFoundException } from '@nestjs/common';
 
 /**
  * PlayInfo 인터페이스는 클라이언트의 퀴즈 진행 상태를 나타냅니다.
  */
 export interface PlayInfo {
-    quizZoneId: string;
+    quizZoneClients: Map<string, WebSocket>;
+    adminClient: WebSocket;
     submitHandle?: NodeJS.Timeout;
+}
+
+export interface ClientInfo {
+    quizZoneId: string;
+    socket: WebSocket;
 }
 
 /**
@@ -42,7 +49,9 @@ export class PlayGateway implements OnGatewayConnection, OnGatewayInit {
 
     constructor(
         @Inject('PlayInfoStorage')
-        private readonly plays: Map<WebSocket, PlayInfo>,
+        private readonly plays: Map<String, PlayInfo>,
+        @Inject('ClientInfoStorage')
+        private readonly clients: Map<String, ClientInfo>,
         private readonly playService: PlayService,
     ) {}
 
@@ -65,12 +74,40 @@ export class PlayGateway implements OnGatewayConnection, OnGatewayInit {
      */
     async handleConnection(client: WebSocket, request: IncomingMessage) {
         const cookies = parse(request.headers.cookie);
-        const quizZoneId = cookies['connect.sid'].split('.').at(0).slice(2);
-        this.plays.set(client, { quizZoneId });
+        const sessionId = cookies['connect.sid'].split('.').at(0).slice(2);
+        client['sessionId'] = sessionId;
     }
 
     async handleDisconnect(client: WebSocket) {
         client.terminate();
+    }
+
+    // 방장 유무에 따라 PlayInfo를 반환합니다.
+    private getJoinPlayInfo(client: WebSocket, quizZoneId: string): PlayInfo {
+        if (!this.plays.has(quizZoneId)) {
+            return {
+                quizZoneClients: new Map(),
+                adminClient: client,
+            };
+        }else {
+            return this.plays.get(quizZoneId);
+        }
+    }
+
+    @SubscribeMessage('join')
+    async join(@ConnectedSocket() client: WebSocket, @MessageBody() quizJoinDto: QuizJoinDto): Promise<SendEventMessage<string>> {
+        const sessionId = client['sessionId'];
+        const { quizZoneId } = quizJoinDto;
+        this.clients.set(sessionId, { quizZoneId, socket: client });
+        const playInfo = this.getJoinPlayInfo(client, quizZoneId);
+        playInfo.quizZoneClients.set(sessionId, client);
+
+        // 참여자들에게 사용자가 들어왔다고 알림
+        // 샤용자에게 현재 참여자들의 정보를 전달
+        return {
+            event: 'join',
+            data: 'OK',
+        };
     }
 
     /**
