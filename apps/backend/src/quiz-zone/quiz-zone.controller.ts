@@ -4,7 +4,7 @@ import {
     Controller,
     Get,
     HttpCode,
-    Post,
+    Post, Query,
     Session,
 } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -35,9 +35,9 @@ export class QuizZoneController {
         await this.quizZoneService.create(quizZoneId, adminId);
     }
 
-    @Get(':id')
+    @Get(':pin')
     @HttpCode(200)
-    @ApiOperation({ summary: '퀴즈존 대기실 정보 조회' })
+    @ApiOperation({ summary: '퀴즈존 대기실 정적인 정보 조회' })
     @ApiParam({ name: 'id', description: '퀴즈존의 ID' })
     @ApiResponse({
         status: 200,
@@ -45,11 +45,8 @@ export class QuizZoneController {
         type: WaitingQuizZoneDto,
     })
     @ApiResponse({ status: 400, description: '세션 정보가 없습니다.' })
-    async findOne(@Session() session: Record<string, any>): Promise<WaitingQuizZoneDto> {
-        const sessionId = session.id;
-        if (sessionId === undefined) {
-            throw new BadRequestException('세션 정보가 없습니다.');
-        }
-        return this.quizZoneService.getQuizWaitingRoom(sessionId);
+    async findOne(@Query() pin: string): Promise<WaitingQuizZoneDto> {
+
+        return this.quizZoneService.getQuizWaitingRoom(pin);
     }
 }

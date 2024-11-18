@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { Quiz } from './entities/quiz.entity';
 import { Player } from './entities/player.entity';
 import { QuizZone } from './entities/quiz-zone.entity';
@@ -35,6 +35,8 @@ export class QuizZoneService {
         const player: Player = { id: adminId, score: 0, submits: [], state: 'WAIT' };
         const quizZone: QuizZone = {
             players: new Map<string, Player>([[adminId, player]]),
+            title: "넌센스 퀴즈",
+            description: "넌센스 퀴즈 입니다",
             adminId: adminId,
             maxPlayers: MAX_PLAYERS,
             quizzes: [...quizzes],
@@ -62,13 +64,20 @@ export class QuizZoneService {
     /**
      * 대기 중인 퀴즈 존의 정보를 반환합니다.
      *
-     * @param quizZoneId - 대기 중인 퀴즈 존의 ID
+     * @param pin - 대기 중인 퀴즈 존의 ID
      * @returns 대기 중인 퀴즈 존 정보 DTO
      * @throws {NotFoundException} 퀴즈 존을 찾을 수 없는 경우
      */
-    async getQuizWaitingRoom(quizZoneId: string): Promise<WaitingQuizZoneDto> {
-        const quizZone = await this.repository.get(quizZoneId);
+    async getQuizWaitingRoom(pin: string): Promise<WaitingQuizZoneDto> {
+        const quizZone = await this.repository.get(pin);
+
+        if(quizZone.players.size >= quizZone.maxPlayers) {
+            throw new BadRequestException();
+        }
+
         return {
+            quizZoneTitle: quizZone.title,
+            quizZoneDescription: quizZone.description,
             quizCount: quizZone.quizzes.length,
             stage: quizZone.stage,
         };

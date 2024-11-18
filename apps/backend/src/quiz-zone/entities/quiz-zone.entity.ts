@@ -7,6 +7,8 @@ export interface QuizZone {
     maxPlayers: number;
     quizzes: Quiz[];
     stage: 'LOBBY' | 'WAITING' | 'IN_PROGRESS' | 'COMPLETED' | 'RESULT';
+    title: string;
+    description: string;
     currentQuizIndex: number;
     currentQuizStartTime: number;
     currentQuizDeadlineTime: number;
