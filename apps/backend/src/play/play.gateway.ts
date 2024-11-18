@@ -16,6 +16,8 @@ import { QuizSubmitDto } from './dto/quiz-submit.dto';
 import { QuizJoinDto } from './dto/quiz-join.dto';
 import { BadRequestException, Inject, NotFoundException } from '@nestjs/common';
 
+//TODO 여러명일때 service 수정해야함.
+
 /**
  * PlayInfo 인터페이스는 클라이언트의 퀴즈 진행 상태를 나타냅니다.
  */
@@ -25,6 +27,12 @@ export interface PlayInfo {
     submitHandle?: NodeJS.Timeout;
 }
 
+/**
+ * 퀴즈 클라이언트의 정보를 나타냅니다.
+ *
+ * @property quizZoneId - 클라이언트가 참여한 퀴즈존 ID
+ * @property socket - 클라이언트의 WebSocket 연결
+ */
 export interface ClientInfo {
     quizZoneId: string;
     socket: WebSocket;
@@ -61,8 +69,8 @@ export class PlayGateway implements OnGatewayConnection, OnGatewayInit {
      * @param server - WebSocket 서버 인스턴스
      */
     afterInit(server: Server) {
-        server.on('nextQuiz', (client: WebSocket) => this.playNextQuiz(client));
-        server.on('summary', (client: WebSocket) => this.summary(client));
+        server.on('nextQuiz', (quizZoneId: string) => this.playNextQuiz(quizZoneId));
+        server.on('summary', (quizZoneId: string) => this.summary(quizZoneId));
     }
 
     /**
@@ -74,8 +82,7 @@ export class PlayGateway implements OnGatewayConnection, OnGatewayInit {
      */
     async handleConnection(client: WebSocket, request: IncomingMessage) {
         const cookies = parse(request.headers.cookie);
-        const sessionId = cookies['connect.sid'].split('.').at(0).slice(2);
-        client['sessionId'] = sessionId;
+        client['sessionId'] = cookies['connect.sid'].split('.').at(0).slice(2);
     }
 
     async handleDisconnect(client: WebSocket) {
@@ -131,35 +138,39 @@ export class PlayGateway implements OnGatewayConnection, OnGatewayInit {
      * @returns {Promise<SendEventMessage<string>>} 퀴즈 시작 메시지
      */
     @SubscribeMessage('start')
-    async start(@ConnectedSocket() client: WebSocket): Promise<SendEventMessage<string>> {
-        this.server.emit('nextQuiz', client);
-        return {
-            event: 'start',
-            data: 'OK',
-        };
+    async start(@ConnectedSocket() client: WebSocket) {
+        const { quizZoneId } = this.getClientInfo(client['sessionId']);
+        this.server.emit('nextQuiz', quizZoneId);
+
+        this.broadCast(quizZoneId, 'start', 'OK');
+        // return {
+        //     event: 'start',
+        //     data: 'OK',
+        // };
     }
 
     /**
      * 다음 퀴즈를 시작하고 클라이언트에 전달합니다.
      *
-     * @param client - WebSocket 클라이언트
+     * @param quizZoneId - WebSocket 클라이언트
      */
-    private async playNextQuiz(client: WebSocket) {
+    private async playNextQuiz(quizZoneId: string) {
         try {
-            const playInfo = this.getPlayInfo(client);
-            const { quizZoneId } = playInfo;
+            const playInfo = this.getPlayInfo(quizZoneId);
+            const { quizZoneClients } = playInfo;
 
             const { intervalTime, nextQuiz } = await this.playService.playNextQuiz(quizZoneId);
 
-            this.sendToClient(client, 'nextQuiz', nextQuiz);
+            // this.sendToClient(client, 'nextQuiz', nextQuiz);
+            this.broadCast(quizZoneId, 'nextQuiz', nextQuiz);
 
             playInfo.submitHandle = setTimeout(() => {
-                this.quizTimeOut(client);
+                this.quizTimeOut(quizZoneId);
             }, intervalTime + nextQuiz.playTime);
         } catch (error) {
             if (error instanceof NotFoundException) {
-                this.sendToClient(client, 'finish');
-                this.server.emit('summary', client);
+                this.broadCast(quizZoneId, 'finish');
+                this.server.emit('summary', quizZoneId);
             }
         }
     }
@@ -176,10 +187,11 @@ export class PlayGateway implements OnGatewayConnection, OnGatewayInit {
         @ConnectedSocket() client: WebSocket,
         @MessageBody() quizSubmit: QuizSubmitDto,
     ): Promise<SendEventMessage<string>> {
-        const playInfo = this.getPlayInfo(client);
-        const { quizZoneId, submitHandle } = playInfo;
+        const { quizZoneId } = this.getClientInfo(client['sessionId']);
+        const playInfo = this.getPlayInfo(quizZoneId);
 
-        clearTimeout(submitHandle);
+        // TODO: 제출 인원 체크하고 다 제출시 이거 처리
+        clearTimeout(playInfo.submitHandle);
         playInfo.submitHandle = undefined;
 
         await this.playService.submit(quizZoneId, { ...quizSubmit, receivedAt: Date.now() });
@@ -214,32 +226,28 @@ export class PlayGateway implements OnGatewayConnection, OnGatewayInit {
     /**
      * 퀴즈 시간이 초과된 경우 호출되어, 타임아웃을 처리합니다.
      *
-     * @param client - WebSocket 클라이언트
+     * @param quizZoneId - WebSocket 클라이언트
      */
-    private async quizTimeOut(client: WebSocket) {
-        const playInfo = this.getPlayInfo(client);
-        const { quizZoneId } = playInfo;
-
+    private async quizTimeOut(quizZoneId: string) {
+        const playInfo = this.getPlayInfo(quizZoneId);
         playInfo.submitHandle = undefined;
-
-        await this.playService.quizTimeOut(quizZoneId);
-        this.sendToClient(client, 'quizTimeOut');
-        this.server.emit('nextQuiz', client);
+        await this.playService.quizTimeOut(quizZoneId); //TODO: 퀴즈 타임아웃시 못 제출한 사람 제출 처리하는 부분
+        this.broadCast(quizZoneId, 'quizTimeOut');
+        this.server.emit('nextQuiz', quizZoneId);
     }
 
     /**
      * 퀴즈 진행이 끝나면 요약 결과를 클라이언트에 전송합니다.
      *
-     * @param client - WebSocket 클라이언트
+     * @param quizZoneId - WebSocket 클라이언트
      */
-    private async summary(client: WebSocket) {
-        const playInfo = this.getPlayInfo(client);
-        const { quizZoneId } = playInfo;
-        const summaryResult = await this.playService.summary(quizZoneId);
+    private async summary(quizZoneId: string) {
+        const playInfo = this.getPlayInfo(quizZoneId);
+        const summaryResult = await this.playService.summary(quizZoneId); //TODO: 퀴즈 결과 가져오는 부분
 
         await this.playService.clearQuizZone(quizZoneId);
 
-        this.plays.delete(client);
-        this.sendToClient(client, 'summary', summaryResult);
+        this.plays.delete(quizZoneId);
+        this.broadCast(quizZoneId, 'summary', summaryResult);
     }
 }
