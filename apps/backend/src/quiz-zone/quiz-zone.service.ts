@@ -64,12 +64,12 @@ export class QuizZoneService {
     /**
      * 대기 중인 퀴즈 존의 정보를 반환합니다.
      *
-     * @param pin - 대기 중인 퀴즈 존의 ID
+     * @param quizZoneId - 대기 중인 퀴즈 존의 ID
      * @returns 대기 중인 퀴즈 존 정보 DTO
      * @throws {NotFoundException} 퀴즈 존을 찾을 수 없는 경우
      */
-    async getQuizWaitingRoom(pin: string): Promise<WaitingQuizZoneDto> {
-        const quizZone = await this.repository.get(pin);
+    async getQuizWaitingRoom(quizZoneId: string): Promise<WaitingQuizZoneDto> {
+        const quizZone = await this.repository.get(quizZoneId);
 
         if(quizZone.players.size >= quizZone.maxPlayers) {
             throw new BadRequestException();

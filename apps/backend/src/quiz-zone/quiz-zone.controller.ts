@@ -35,7 +35,7 @@ export class QuizZoneController {
         await this.quizZoneService.create(quizZoneId, adminId);
     }
 
-    @Get(':pin')
+    @Get(':quizZoneId')
     @HttpCode(200)
     @ApiOperation({ summary: '퀴즈존 대기실 정적인 정보 조회' })
     @ApiParam({ name: 'id', description: '퀴즈존의 ID' })
@@ -45,8 +45,8 @@ export class QuizZoneController {
         type: WaitingQuizZoneDto,
     })
     @ApiResponse({ status: 400, description: '세션 정보가 없습니다.' })
-    async findOne(@Query() pin: string): Promise<WaitingQuizZoneDto> {
+    async findOne(@Query() quizZoneId: string): Promise<WaitingQuizZoneDto> {
 
-        return this.quizZoneService.getQuizWaitingRoom(pin);
+        return this.quizZoneService.getQuizWaitingRoom(quizZoneId);
     }
 }
