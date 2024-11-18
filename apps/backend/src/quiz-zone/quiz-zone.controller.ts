@@ -1,7 +1,17 @@
-import { BadRequestException, Controller, Get, HttpCode, Post, Session } from '@nestjs/common';
+import {
+    BadRequestException,
+    Body,
+    Controller,
+    Get,
+    HttpCode,
+    Post,
+    Session,
+} from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { QuizZoneService } from './quiz-zone.service';
 import { WaitingQuizZoneDto } from './dto/waiting-quiz-zone.dto';
+import { CreateQuizZoneDto } from './dto/create-quiz-zone.dto';
+import { MessageBody } from '@nestjs/websockets';
 
 @ApiTags('Quiz Zone')
 @Controller('quiz-zone')
@@ -13,14 +23,16 @@ export class QuizZoneController {
     @ApiOperation({ summary: '새로운 퀴즈존 생성' })
     @ApiResponse({ status: 201, description: '퀴즈존이 성공적으로 생성되었습니다.' })
     @ApiResponse({ status: 400, description: '세션 정보가 없습니다.' })
-    async create(@Session() session: Record<string, any>): Promise<void> {
-        const sessionId = session.id;
-
-        if (sessionId === undefined) {
+    async create(
+        @Body() createQuizZoneDto: CreateQuizZoneDto,
+        @Session() session: Record<string, any>,
+    ): Promise<void> {
+        const { quizZoneId } = createQuizZoneDto;
+        const adminId = session.id;
+        if (adminId === undefined) {
             throw new BadRequestException('세션 정보가 없습니다.');
         }
-
-        await this.quizZoneService.create(sessionId);
+        await this.quizZoneService.create(quizZoneId, adminId);
     }
 
     @Get(':id')

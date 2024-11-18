@@ -6,7 +6,7 @@ import { IQuizZoneRepository } from './repository/quiz-zone.repository.interface
 import { WaitingQuizZoneDto } from './dto/waiting-quiz-zone.dto';
 
 const playTime = 30_000;
-
+const MAX_PLAYERS = 10;
 export const quizzes: Quiz[] = [
     { question: '신이 화나면?', answer: '신발끈', playTime },
     { question: '도둑이 훔친 돈을 뭐라고 하는가?', answer: '슬그머니', playTime },
@@ -27,18 +27,21 @@ export class QuizZoneService {
      * 새로운 퀴즈 존을 생성합니다.
      *
      * @param quizZoneId - 등록될 퀴즈존 ID
+     * @param adminId
      * @returns 퀴즈 존을 생성하고 저장하는 비동기 작업
      * @throws(ConflictException) 이미 저장된 ID인 경우 예외 발생
      */
-    async create(quizZoneId: string): Promise<void> {
-        const player: Player = { id: quizZoneId, score: 0, submits: [], state: 'WAIT' };
+    async create(quizZoneId: string, adminId: string): Promise<void> {
+        const player: Player = { id: adminId, score: 0, submits: [], state: 'WAIT' };
         const quizZone: QuizZone = {
-            currentQuizDeadlineTime: 0,
-            currentQuizIndex: -1,
-            currentQuizStartTime: 0,
-            player,
+            players: new Map<string, Player>([[adminId, player]]),
+            adminId: adminId,
+            maxPlayers: MAX_PLAYERS,
             quizzes: [...quizzes],
             stage: 'LOBBY',
+            currentQuizIndex: -1,
+            currentQuizStartTime: 0,
+            currentQuizDeadlineTime: 0,
             intervalTime: 5000,
         };
 
