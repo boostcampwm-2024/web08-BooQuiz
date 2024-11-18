@@ -1,11 +1,15 @@
 name: Deploy Backend
+
 on:
+    pull_request:
+        branches: [develop]
     push:
         branches: [main]
 jobs:
     build-backend:
         runs-on: ubuntu-latest
         name: Build Backend
+        environment: ${{ github.ref == 'refs/heads/main' && 'prod' || 'staging' }}
         steps:
             - name: Checkout code
               uses: actions/checkout@v4
@@ -22,7 +26,7 @@ jobs:
                   context: .
                   file: apps/backend/Dockerfile
                   push: true
-                  tags: ${{ secrets.DOCKER_USERNAME }}/booquiz-backend:latest
+                  tags: ${{ secrets.DOCKER_USERNAME }}/booquiz-backend:${{secrets.DOCKER_TAG}}
                   cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/booquiz-backend:cache
                   cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/booquiz-backend:cache,mode=max
                   build-args: |
@@ -34,6 +38,7 @@ jobs:
         needs: build-backend
         runs-on: ubuntu-latest
         name: Deploy Backend
+        environment: ${{ github.ref == 'refs/heads/main' && 'prod' || 'staging' }}
         steps:
             - name: Set up SSH agent and add SSH key
               run: |
@@ -69,10 +74,10 @@ jobs:
                       ssh-keyscan -H $PRIVATE_SERVER_IP >> ~/.ssh/known_hosts
 
                       # 프라이빗 서버에서 Docker Hub 로그인 및 이미지 배포
-                      ssh $DEPLOY_USER@$PRIVATE_SERVER_IP "sudo docker pull $DOCKER_USERNAME/booquiz-backend:latest && \
+                      ssh $DEPLOY_USER@$PRIVATE_SERVER_IP "sudo docker pull $DOCKER_USERNAME/booquiz-backend:${{secrets.DOCKER_TAG}} && \
                           sudo docker stop booquiz-backend || true && \
                           sudo docker rm booquiz-backend || true && \
-                          sudo docker run -d --name booquiz-backend -p 3000:3000 $DOCKER_USERNAME/booquiz-backend:latest && \
+                          sudo docker run -d --name booquiz-backend -p 3000:3000 $DOCKER_USERNAME/booquiz-backend:${{secrets.DOCKER_TAG}} && \
                           sudo docker image prune -f"
                   EOF
                   exit

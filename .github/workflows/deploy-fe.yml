@@ -1,11 +1,15 @@
 name: Deploy Frontend
+
 on:
+    pull_request:
+        branches: [develop]
     push:
         branches: [main]
 jobs:
     build-frontend:
         runs-on: ubuntu-latest
         name: Build Frontend
+        environment: ${{ github.ref == 'refs/heads/main' && 'prod' || 'staging' }}
         steps:
             - name: Checkout code
               uses: actions/checkout@v4
@@ -34,7 +38,7 @@ jobs:
         needs: build-frontend
         runs-on: ubuntu-latest
         name: Deploy Frontend
-
+        environment: ${{ github.ref == 'refs/heads/main' && 'prod' || 'staging' }}
         steps:
             - name: Download artifacts
               uses: actions/download-artifact@v4
@@ -55,6 +59,5 @@ jobs:
                   DEPLOY_USER=${{ secrets.DEPLOY_USER }}
                   DEPLOY_PATH=${{ secrets.DEPLOY_PATH }}
 
-                  ssh -i ~/.ssh/id_rsa $DEPLOY_USER@$PUBLIC_SERVER_IP "mkdir -p $DEPLOY_PATH"
                   scp -i ~/.ssh/id_rsa -r apps/frontend/dist/* $DEPLOY_USER@$PUBLIC_SERVER_IP:$DEPLOY_PATH
                   ssh -i ~/.ssh/id_rsa $DEPLOY_USER@$PUBLIC_SERVER_IP "chmod -R 700 $DEPLOY_PATH"
