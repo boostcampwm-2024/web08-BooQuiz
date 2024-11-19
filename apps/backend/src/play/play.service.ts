@@ -12,12 +12,13 @@ export class PlayService {
     /**
      * 특정 퀴즈 존에서 현재 퀴즈에 대한 답변을 제출합니다.
      * @param quizZoneId - 퀴즈 존 ID
+     * @param clientId - 플레이어 ID
      * @param submitQuiz - 제출된 퀴즈의 답변과 메타데이터
      * @throws {BadRequestException} 답변을 제출할 수 없는 경우 예외가 발생합니다.
      */
-    async submit(quizZoneId: string, submitQuiz: SubmittedQuiz) {
+    async submit(quizZoneId: string, clientId: string, submitQuiz: SubmittedQuiz) {
         const quizZone = await this.quizZoneService.findOne(quizZoneId);
-        this.submitQuiz(quizZone, submitQuiz);
+        this.submitQuiz(quizZone, clientId, submitQuiz);
     }
 
     /**
@@ -32,7 +33,9 @@ export class PlayService {
 
         const nextQuiz = await this.nextQuiz(quizZoneId);
 
-        quizZone.player.state = 'PLAY';
+        quizZone.players.forEach((player) => {
+            player.state = 'WAIT';
+        });
 
         return {
             intervalTime,
@@ -79,18 +82,25 @@ export class PlayService {
      */
     async quizTimeOut(quizZoneId: string) {
         const quizZone = await this.quizZoneService.findOne(quizZoneId);
-        this.submitQuiz(quizZone);
+        const { players } = quizZone;
+        players.forEach((player) => {
+            if (player.state === 'PLAY') {
+                this.submitQuiz(quizZone, player.id);
+            }
+        });
     }
 
     /**
      * 제출된 퀴즈 답변을 처리합니다.
      * @param quizZone - 퀴즈 존 객체
+     * @param clientId - 플레이어 ID
      * @param submitQuiz - (선택적) 제출된 퀴즈 데이터(사용하지 않을 경우 미제출 답변)
      * @throws {BadRequestException} 플레이어가 답변을 제출할 수 없는 상태일 경우 예외가 발생합니다.
      */
-    private submitQuiz(quizZone: QuizZone, submitQuiz?: SubmittedQuiz) {
-        const { player, currentQuizIndex, quizzes, currentQuizDeadlineTime } = quizZone;
+    private submitQuiz(quizZone: QuizZone, clientId: string, submitQuiz?: SubmittedQuiz) {
+        const { players, currentQuizIndex, quizzes, currentQuizDeadlineTime } = quizZone;
         const quiz = quizzes.at(currentQuizIndex);
+        const player = players.get(clientId);
 
         if (player.state !== 'PLAY') {
             throw new BadRequestException('정답을 제출할 수 없습니다.');
@@ -121,15 +131,16 @@ export class PlayService {
     /**
      * 퀴즈 존에서 사용자의 퀴즈 진행 요약 결과를 제공합니다.
      * @param quizZoneId - 퀴즈 존 ID
+     * @param clientId - 플레이어 ID
      * @returns 퀴즈 결과 요약 DTO를 포함한 Promise
      */
-    async summary(quizZoneId: string): Promise<QuizResultSummaryDto> {
-        const quizZone = await this.quizZoneService.findOne(quizZoneId);
-        const { player } = quizZone;
+    async summary(quizZoneId: string, clientId: string): Promise<QuizResultSummaryDto> {
+        const { players, quizzes } = await this.quizZoneService.findOne(quizZoneId);
+        const player = players.get(clientId);
         return {
             score: player.score,
             submits: player.submits,
-            quizzes: quizZone.quizzes,
+            quizzes,
         };
     }
 
@@ -138,14 +149,19 @@ export class PlayService {
      * @param quizZoneId - 퀴즈 존 ID
      */
     async clearQuizZone(quizZoneId: string) {
+        this.quizZoneService.clearQuizZone(quizZoneId);
+    }
+
+    async findOthersInfo(quizZoneId: string, clientId: string) {
+        return this.quizZoneService.findOthersInfo(quizZoneId, clientId);
+    }
+
+    async findClientInfo(quizZoneId: string, clientId: string) {
         const quizZone = await this.quizZoneService.findOne(quizZoneId);
-        quizZone.player = {
-            id: '',
-            score: 0,
-            submits: [],
-            state: 'WAIT',
-        };
-        quizZone.currentQuizIndex = -1;
-        quizZone.stage = 'WAITING';
+        const player = quizZone.players.get(clientId);
+        if (!player) {
+            throw new NotFoundException();
+        }
+        return player;
     }
 }

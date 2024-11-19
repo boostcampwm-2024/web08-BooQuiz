@@ -1,10 +1,11 @@
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule,ValidationPipe } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { QuizZoneModule } from './quiz-zone/quiz-zone.module';
 import { PlayModule } from './play/play.module';
 import { ConfigModule } from '@nestjs/config';
 import httpConfig from '../config/http.config';
+import { APP_PIPE } from '@nestjs/core';
 import { WinstonModule } from 'nest-winston';
 import { winstonConfig } from './logger/winston.config';
 import { HttpLoggingMiddleware } from './logger/http-logger.middleware';
@@ -19,7 +20,13 @@ import { HttpLoggingMiddleware } from './logger/http-logger.middleware';
         WinstonModule.forRoot(winstonConfig),
     ],
     controllers: [AppController],
-    providers: [AppService],
+    providers: [
+        AppService,
+        {
+            provide: APP_PIPE,
+            useClass: ValidationPipe,
+        },
+    ],
 })
 export class AppModule implements NestModule {
     configure(consumer: MiddlewareConsumer) {

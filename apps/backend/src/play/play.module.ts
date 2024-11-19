@@ -7,11 +7,15 @@ import { QuizZoneModule } from '../quiz-zone/quiz-zone.module';
     imports: [QuizZoneModule],
     providers: [
         PlayGateway,
-        PlayService,
         {
             provide: 'PlayInfoStorage',
             useValue: new Map(),
         },
+        {
+            provide: 'ClientInfoStorage',
+            useValue: new Map(),
+        },
+        PlayService,
     ],
 })
 export class PlayModule {}

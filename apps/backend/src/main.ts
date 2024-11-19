@@ -6,7 +6,7 @@ import { WsAdapter } from '@nestjs/platform-ws';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { Environment } from '../config/http.config';
-import { INestApplication } from '@nestjs/common';
+import { INestApplication, ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
@@ -28,7 +28,7 @@ async function bootstrap() {
     setupSessionCookie(app, sessionSecret);
 
     app.useWebSocketAdapter(new WsAdapter(app));
-
+    app.useGlobalPipes(new ValidationPipe());
     await app.listen(port);
 }
 
