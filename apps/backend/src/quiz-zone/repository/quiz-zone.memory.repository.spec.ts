@@ -39,6 +39,7 @@ describe('QuizZoneRepositoryMemory', () => {
                 currentQuizStartTime: 0,
                 currentQuizDeadlineTime: 0,
                 intervalTime: 30_000,
+                submitCount: 0,
             };
 
             await repository.set(quizZoneId, quizZone);
@@ -62,6 +63,7 @@ describe('QuizZoneRepositoryMemory', () => {
                 currentQuizStartTime: 0,
                 currentQuizDeadlineTime: 0,
                 intervalTime: 30_000,
+                submitCount: 0,
             };
 
             await repository.set(quizZoneId, quizZone);

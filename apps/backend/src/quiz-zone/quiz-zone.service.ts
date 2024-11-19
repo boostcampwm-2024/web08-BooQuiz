@@ -64,6 +64,7 @@ export class QuizZoneService {
             currentQuizStartTime: 0,
             currentQuizDeadlineTime: 0,
             intervalTime: 5000,
+            submitCount: 0,
         };
 
         await this.repository.set(quizZoneId, quizZone);
@@ -129,7 +130,14 @@ export class QuizZoneService {
                 return player.id !== sessionId;
             })
             .map((player) => {
-                return player.nickname;
+                return { nickname: player.nickname, id: player.id };
             });
+    }
+
+    async checkHost(quizZoneId: string, clientId: string) {
+        const quizZone = await this.repository.get(quizZoneId);
+        if (quizZone.hostId !== clientId) {
+            throw new BadRequestException();
+        }
     }
 }

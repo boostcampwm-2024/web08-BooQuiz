@@ -15,6 +15,7 @@ import { parse } from 'cookie';
 import { QuizSubmitDto } from './dto/quiz-submit.dto';
 import { QuizJoinDto } from './dto/quiz-join.dto';
 import { BadRequestException, Inject, NotFoundException } from '@nestjs/common';
+import session from 'express-session';
 
 //TODO 여러명일때 service 수정해야함.
 
@@ -23,7 +24,7 @@ import { BadRequestException, Inject, NotFoundException } from '@nestjs/common';
  */
 export interface PlayInfo {
     quizZoneClients: Map<string, WebSocket>;
-    adminClient: WebSocket;
+    hostClient: WebSocket;
     submitHandle?: NodeJS.Timeout;
 }
 
@@ -94,7 +95,7 @@ export class PlayGateway implements OnGatewayConnection, OnGatewayInit {
         if (!this.plays.has(quizZoneId)) {
             return {
                 quizZoneClients: new Map(),
-                adminClient: client,
+                hostClient: client,
             };
         } else {
             return this.plays.get(quizZoneId);
@@ -116,7 +117,7 @@ export class PlayGateway implements OnGatewayConnection, OnGatewayInit {
     async join(
         @ConnectedSocket() client: WebSocket,
         @MessageBody() quizJoinDto: QuizJoinDto,
-    ): Promise<SendEventMessage<String[]>> {
+    ): Promise<SendEventMessage<Object[]>> {
         const sessionId = client['sessionId'];
         const { quizZoneId } = quizJoinDto;
         this.clients.set(sessionId, { quizZoneId, socket: client });
@@ -125,13 +126,13 @@ export class PlayGateway implements OnGatewayConnection, OnGatewayInit {
         const { id, nickname } = await this.playService.findClientInfo(quizZoneId, sessionId);
         this.broadcast(quizZoneId, 'someone_join', { id, nickname });
 
-        const nicknames = await this.playService.findOthersInfo(quizZoneId, sessionId);
+        const usersInfo = await this.playService.findOthersInfo(quizZoneId, sessionId);
 
         playInfo.quizZoneClients.set(sessionId, client);
 
         return {
             event: 'join',
-            data: nicknames,
+            data: usersInfo,
         };
     }
 
@@ -139,14 +140,14 @@ export class PlayGateway implements OnGatewayConnection, OnGatewayInit {
      * 퀴즈 게임을 시작하는 메시지를 클라이언트로 전송합니다.
      *
      * @param client - WebSocket 클라이언트
-     * @returns {Promise<SendEventMessage<string>>} 퀴즈 시작 메시지
      */
     @SubscribeMessage('start')
     async start(@ConnectedSocket() client: WebSocket) {
-        const { quizZoneId } = this.getClientInfo(client['sessionId']);
-        this.server.emit('nextQuiz', quizZoneId);
-
+        const clientId = client['sessionId'];
+        const { quizZoneId } = this.getClientInfo(clientId);
+        await this.playService.checkHost(quizZoneId, clientId);
         this.broadcast(quizZoneId, 'start', 'OK');
+        this.server.emit('nextQuiz', quizZoneId);
     }
 
     /**
@@ -157,12 +158,8 @@ export class PlayGateway implements OnGatewayConnection, OnGatewayInit {
     private async playNextQuiz(quizZoneId: string) {
         try {
             const playInfo = this.getPlayInfo(quizZoneId);
-            const { quizZoneClients } = playInfo;
-
             const { intervalTime, nextQuiz } = await this.playService.playNextQuiz(quizZoneId);
-
             this.broadcast(quizZoneId, 'nextQuiz', nextQuiz);
-
             playInfo.submitHandle = setTimeout(() => {
                 this.quizTimeOut(quizZoneId);
             }, intervalTime + nextQuiz.playTime);
@@ -190,16 +187,17 @@ export class PlayGateway implements OnGatewayConnection, OnGatewayInit {
         const { quizZoneId } = this.getClientInfo(clientId);
         const playInfo = this.getPlayInfo(quizZoneId);
 
-        // TODO: 제출 인원 체크하고 다 제출시 이거 처리
-        clearTimeout(playInfo.submitHandle);
-        playInfo.submitHandle = undefined;
-
+        // 개인이 제출하는 경우
         await this.playService.submit(quizZoneId, clientId, {
             ...quizSubmit,
             receivedAt: Date.now(),
         });
-
-        this.server.emit('nextQuiz', client);
+        const isAllSubmitted = await this.playService.checkAllSubmitted(quizZoneId);
+        if (isAllSubmitted) {
+            clearTimeout(playInfo.submitHandle);
+            playInfo.submitHandle = undefined;
+            this.server.emit('nextQuiz', quizZoneId);
+        }
 
         return {
             event: 'submit',
@@ -250,6 +248,7 @@ export class PlayGateway implements OnGatewayConnection, OnGatewayInit {
             Array.from(playInfo.quizZoneClients).map(async ([clientId, websocket]) => {
                 const summaryResult = await this.playService.summary(quizZoneId, clientId);
                 this.sendToClient(websocket, 'summary', summaryResult);
+                this.clients.delete(clientId);
             }),
         );
         this.plays.delete(quizZoneId);

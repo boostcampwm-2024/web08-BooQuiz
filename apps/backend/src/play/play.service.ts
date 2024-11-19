@@ -18,6 +18,7 @@ export class PlayService {
      */
     async submit(quizZoneId: string, clientId: string, submitQuiz: SubmittedQuiz) {
         const quizZone = await this.quizZoneService.findOne(quizZoneId);
+        quizZone.submitCount++;
         this.submitQuiz(quizZone, clientId, submitQuiz);
     }
 
@@ -149,7 +150,7 @@ export class PlayService {
      * @param quizZoneId - 퀴즈 존 ID
      */
     async clearQuizZone(quizZoneId: string) {
-        this.quizZoneService.clearQuizZone(quizZoneId);
+        await this.quizZoneService.clearQuizZone(quizZoneId);
     }
 
     async findOthersInfo(quizZoneId: string, clientId: string) {
@@ -163,5 +164,14 @@ export class PlayService {
             throw new NotFoundException();
         }
         return player;
+    }
+
+    async checkHost(quizZoneId: string, clientId: string) {
+        await this.quizZoneService.checkHost(quizZoneId, clientId);
+    }
+
+    async checkAllSubmitted(quizZoneId: string) {
+        const quizZone = await this.quizZoneService.findOne(quizZoneId);
+        return quizZone.submitCount === quizZone.players.size;
     }
 }
