@@ -7,7 +7,7 @@ import { WaitingQuizZoneDto } from './dto/waiting-quiz-zone.dto';
 
 const playTime = 30_000;
 const MAX_PLAYERS = 10;
-export const quizzes: Quiz[] = [
+const quizzes: Quiz[] = [
     { question: '신이 화나면?', answer: '신발끈', playTime },
     { question: '도둑이 훔친 돈을 뭐라고 하는가?', answer: '슬그머니', playTime },
     { question: '털이 있는 동물들이 가장 좋아하는 장소는?', answer: '모텔', playTime },
@@ -16,7 +16,7 @@ export const quizzes: Quiz[] = [
     { question: '바나나가 웃으면?', answer: '바나나킥', playTime },
 ];
 
-export const nickNames: string[] = [
+const nickNames: string[] = [
     '전설의고양이',
     '피카츄꼬리',
     '킹왕짱짱맨',

@@ -105,7 +105,7 @@ export class PlayGateway implements OnGatewayConnection, OnGatewayInit {
         client.send(JSON.stringify({ event, data }));
     }
 
-    private broadCast(quizZoneId: string, event: string, data?: any) {
+    private broadcast(quizZoneId: string, event: string, data?: any) {
         const { quizZoneClients } = this.getPlayInfo(quizZoneId);
         quizZoneClients.forEach((client) => {
             this.sendToClient(client, event, data);
@@ -123,7 +123,7 @@ export class PlayGateway implements OnGatewayConnection, OnGatewayInit {
         const playInfo = this.getJoinPlayInfo(client, quizZoneId);
         // 참여자들에게 사용자가 들어왔다고 알림
         const { nickname } = await this.playService.findClientInfo(quizZoneId, sessionId);
-        this.broadCast(quizZoneId, 'someone_join', { nickname });
+        this.broadcast(quizZoneId, 'someone_join', { nickname });
 
         const nicknames = await this.playService.findOthersInfo(quizZoneId, sessionId);
 
@@ -146,11 +146,7 @@ export class PlayGateway implements OnGatewayConnection, OnGatewayInit {
         const { quizZoneId } = this.getClientInfo(client['sessionId']);
         this.server.emit('nextQuiz', quizZoneId);
 
-        this.broadCast(quizZoneId, 'start', 'OK');
-        // return {
-        //     event: 'start',
-        //     data: 'OK',
-        // };
+        this.broadcast(quizZoneId, 'start', 'OK');
     }
 
     /**
@@ -165,15 +161,14 @@ export class PlayGateway implements OnGatewayConnection, OnGatewayInit {
 
             const { intervalTime, nextQuiz } = await this.playService.playNextQuiz(quizZoneId);
 
-            // this.sendToClient(client, 'nextQuiz', nextQuiz);
-            this.broadCast(quizZoneId, 'nextQuiz', nextQuiz);
+            this.broadcast(quizZoneId, 'nextQuiz', nextQuiz);
 
             playInfo.submitHandle = setTimeout(() => {
                 this.quizTimeOut(quizZoneId);
             }, intervalTime + nextQuiz.playTime);
         } catch (error) {
             if (error instanceof NotFoundException) {
-                this.broadCast(quizZoneId, 'finish');
+                this.broadcast(quizZoneId, 'finish');
                 this.server.emit('summary', quizZoneId);
             }
         }
@@ -240,7 +235,7 @@ export class PlayGateway implements OnGatewayConnection, OnGatewayInit {
         const playInfo = this.getPlayInfo(quizZoneId);
         playInfo.submitHandle = undefined;
         await this.playService.quizTimeOut(quizZoneId); //TODO: 퀴즈 타임아웃시 못 제출한 사람 제출 처리하는 부분
-        this.broadCast(quizZoneId, 'quizTimeOut');
+        this.broadcast(quizZoneId, 'quizTimeOut');
         this.server.emit('nextQuiz', quizZoneId);
     }
 
