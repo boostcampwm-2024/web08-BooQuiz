@@ -3,8 +3,12 @@ name: Deploy Frontend
 on:
     pull_request:
         branches: [develop]
+        paths:
+          - apps/frontend/**
     push:
         branches: [main]
+        paths:
+          - apps/frontend/**
 jobs:
     build-frontend:
         runs-on: ubuntu-latest

@@ -38,7 +38,7 @@ function setupSwagger(app: INestApplication) {
         .setDescription('BooQuiz API description')
         .build();
     const document = SwaggerModule.createDocument(app, config);
-    SwaggerModule.setup('/swagger', app, document);
+    SwaggerModule.setup('/api/swagger', app, document);
 }
 
 function setupSessionCookie(app: INestApplication, sessionSecret: string) {
