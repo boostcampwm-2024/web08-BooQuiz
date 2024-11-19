@@ -44,7 +44,7 @@ describe('PlayService', () => {
                         },
                     ],
                 ]),
-                adminId: 'admin1',
+                hostId: 'admin1',
                 maxPlayers: 10,
                 quizzes: [{ question: 'test?', answer: 'correct', playTime: 30000 }],
                 stage: 'IN_PROGRESS',
@@ -127,7 +127,7 @@ describe('PlayService', () => {
                         },
                     ],
                 ]),
-                adminId: 'admin1',
+                hostId: 'admin1',
                 maxPlayers: 10,
                 quizzes: [
                     { question: 'q1?', answer: 'a1', playTime: 30000 },
@@ -179,7 +179,7 @@ describe('PlayService', () => {
                         { id: 'player3', nickname: 'P3', score: 0, submits: [], state: 'PLAY' },
                     ],
                 ]),
-                adminId: 'admin1',
+                hostId: 'admin1',
                 maxPlayers: 10,
                 quizzes: [{ question: 'test?', answer: 'answer', playTime: 30000 }],
                 stage: 'IN_PROGRESS',
@@ -226,7 +226,7 @@ describe('PlayService', () => {
                         },
                     ],
                 ]),
-                adminId: 'admin1',
+                hostId: 'admin1',
                 maxPlayers: 10,
                 quizzes: [
                     { question: 'q1?', answer: 'a1', playTime: 30000 },
@@ -256,7 +256,7 @@ describe('PlayService', () => {
             const clientId = 'nonexistent';
             const mockQuizZone: QuizZone = {
                 players: new Map(),
-                adminId: 'admin1',
+                hostId: 'admin1',
                 maxPlayers: 10,
                 quizzes: [],
                 stage: 'LOBBY',
@@ -286,7 +286,7 @@ describe('PlayService', () => {
             };
             const mockQuizZone: QuizZone = {
                 players: new Map([[clientId, mockPlayer]]),
-                adminId: 'admin1',
+                hostId: 'admin1',
                 maxPlayers: 10,
                 quizzes: [],
                 stage: 'LOBBY',

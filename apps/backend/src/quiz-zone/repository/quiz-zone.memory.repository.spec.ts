@@ -29,7 +29,7 @@ describe('QuizZoneRepositoryMemory', () => {
 
             const quizZone: QuizZone = {
                 players: new Map(),
-                adminId: 'adminId',
+                hostId: 'adminId',
                 maxPlayers: 4,
                 quizzes: [],
                 stage: 'LOBBY',
@@ -52,7 +52,7 @@ describe('QuizZoneRepositoryMemory', () => {
 
             const quizZone: QuizZone = {
                 players: new Map(),
-                adminId: 'adminId',
+                hostId: 'adminId',
                 maxPlayers: 4,
                 quizzes: [],
                 stage: 'LOBBY',
