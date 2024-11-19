@@ -54,6 +54,7 @@ describe('PlayService', () => {
                 intervalTime: 5000,
                 title: 'Test Quiz',
                 description: 'Test Description',
+                submitCount: 0,
             };
         });
         it('플레이어가 PLAY 상태가 아니면 예외가 발생한다', async () => {
@@ -140,6 +141,7 @@ describe('PlayService', () => {
                 intervalTime: 5000,
                 title: 'Test Quiz',
                 description: 'Test Description',
+                submitCount: 0,
             };
         });
         it('다음 퀴즈를 성공적으로 불러온다', async () => {
@@ -189,6 +191,7 @@ describe('PlayService', () => {
                 intervalTime: 5000,
                 title: 'Test Quiz',
                 description: 'Test Description',
+                submitCount: 0,
             };
             mockQuizZoneService.findOne.mockResolvedValue(mockQuizZone);
             // when
@@ -239,6 +242,7 @@ describe('PlayService', () => {
                 intervalTime: 5000,
                 title: 'Test Quiz',
                 description: 'Test Description',
+                submitCount: 0,
             };
             mockQuizZoneService.findOne.mockResolvedValue(mockQuizZone);
             // when
@@ -266,6 +270,7 @@ describe('PlayService', () => {
                 intervalTime: 5000,
                 title: 'Test Quiz',
                 description: 'Test Description',
+                submitCount: 0,
             };
             mockQuizZoneService.findOne.mockResolvedValue(mockQuizZone);
             // when & then
@@ -296,6 +301,7 @@ describe('PlayService', () => {
                 intervalTime: 5000,
                 title: 'Test Quiz',
                 description: 'Test Description',
+                submitCount: 0,
             };
             mockQuizZoneService.findOne.mockResolvedValue(mockQuizZone);
             // when
