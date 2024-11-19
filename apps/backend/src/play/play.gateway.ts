@@ -249,13 +249,14 @@ export class PlayGateway implements OnGatewayConnection, OnGatewayInit {
      *
      * @param quizZoneId - WebSocket 클라이언트
      */
-    //여기 경고 나오는 이유가 뭐야? ->
     private async summary(quizZoneId: string) {
         const playInfo = this.getPlayInfo(quizZoneId);
-        playInfo.quizZoneClients.forEach(async (websocket, clientId) => {
-            const summaryResult = await this.playService.summary(quizZoneId, clientId); //TODO: 퀴즈 결과 가져오는 부분
-            this.sendToClient(websocket, 'summary', summaryResult);
-        });
+        await Promise.all(
+            Array.from(playInfo.quizZoneClients).map(async ([clientId, websocket]) => {
+                const summaryResult = await this.playService.summary(quizZoneId, clientId);
+                this.sendToClient(websocket, 'summary', summaryResult);
+            }),
+        );
         this.plays.delete(quizZoneId);
         await this.playService.clearQuizZone(quizZoneId);
     }
