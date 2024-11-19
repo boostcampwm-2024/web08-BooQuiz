@@ -1,40 +1,41 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 const useWebSocket = (url: string, messageHandler: (event: MessageEvent) => void) => {
-    const ws = new WebSocket(url);
+    const ws = useRef<WebSocket | null>(null);
 
     useEffect(() => {
-        ws.onopen = () => {
+        if (!ws.current) {
+            ws.current = new WebSocket(url);
+        }
+
+        ws.current.onopen = () => {
             console.log('WebSocket connected');
         };
 
-        ws.onclose = () => {
+        ws.current.onmessage = messageHandler;
+
+        ws.current.onclose = () => {
             console.log('WebSocket disconnected');
         };
 
-        ws.onerror = (error) => {
-            console.error('WebSocket error', error);
-        };
-
-        // 메시지 수신 처리
-        ws.onmessage = (event) => {
-            messageHandler(event);
-        };
-
-        return () => {
-            ws.close();
+        ws.current.onerror = (error) => {
+            console.error('WebSocket error:', error);
         };
     }, []);
 
     const sendMessage = (message: string) => {
-        if (ws && ws.readyState === WebSocket.OPEN) {
-            ws.send(message);
+        if (ws.current?.readyState === WebSocket.OPEN) {
+            ws.current.send(message);
         } else {
-            console.error('WebSocket is not open');
+            console.warn('WebSocket is not connected. Message not sent:', message);
         }
     };
 
-    return { sendMessage };
+    const closeConnection = () => {
+        ws.current?.close();
+    };
+
+    return { sendMessage, closeConnection };
 };
 
 export default useWebSocket;
