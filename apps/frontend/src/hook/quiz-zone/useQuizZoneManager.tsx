@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useTimer } from './useTimer';
+import { useTimer } from '../useTimer.ts';
 
 // 스테이지 타입
 export type QuizZone = 'LOBBY' | 'QUIZ_PROGRESS' | 'RESULT';

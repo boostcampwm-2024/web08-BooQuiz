@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useQuizZoneManager } from '../hook/useQuizZoneManager';
+import { useQuizZoneManager } from '../hook/quiz-zone/useQuizZoneManager.tsx';
 import { useNavigate } from 'react-router-dom';
 import QuizZoneLobby from '@/blocks/QuizZone/QuizZoneLobby';
 import QuizWaiting from '@/blocks/QuizZone/QuizWaiting';
