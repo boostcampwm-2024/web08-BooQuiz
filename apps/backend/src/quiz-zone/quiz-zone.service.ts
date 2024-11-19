@@ -40,23 +40,23 @@ export class QuizZoneService {
      * 새로운 퀴즈 존을 생성합니다.
      *
      * @param quizZoneId - 등록될 퀴즈존 ID
-     * @param adminId
+     * @param hostId
      * @returns 퀴즈 존을 생성하고 저장하는 비동기 작업
      * @throws(ConflictException) 이미 저장된 ID인 경우 예외 발생
      */
-    async create(quizZoneId: string, adminId: string): Promise<void> {
+    async create(quizZoneId: string, hostId: string): Promise<void> {
         const player: Player = {
-            id: adminId,
+            id: hostId,
             nickname: nickNames[0],
             score: 0,
             submits: [],
             state: 'WAIT',
         };
         const quizZone: QuizZone = {
-            players: new Map<string, Player>([[adminId, player]]),
+            players: new Map<string, Player>([[hostId, player]]),
             title: '넌센스 퀴즈',
             description: '넌센스 퀴즈 입니다',
-            adminId: adminId,
+            hostId: hostId,
             maxPlayers: MAX_PLAYERS,
             quizzes: [...quizzes],
             stage: 'LOBBY',
@@ -80,36 +80,35 @@ export class QuizZoneService {
         return this.repository.get(quizZoneId);
     }
 
-    /**
-     * 대기 중인 퀴즈 존의 정보를 반환합니다.
-     *
-     * @param quizZoneId - 대기 중인 퀴즈 존의 ID
-     * @param sessionId - 사용자 아이디
-     * @returns 대기 중인 퀴즈 존 정보 DTO
-     * @throws {NotFoundException} 퀴즈 존을 찾을 수 없는 경우
-     */
-    async getQuizWaitingRoom(quizZoneId: string, sessionId: string): Promise<WaitingQuizZoneDto> {
+    async getWaitingInfo(quizZoneId: string): Promise<WaitingQuizZoneDto> {
         const quizZone = await this.repository.get(quizZoneId);
-        const size = quizZone.players.size;
-        if (size >= quizZone.maxPlayers) {
-            throw new BadRequestException();
-        }
-
-        const player: Player = {
-            id: sessionId,
-            nickname: nickNames[size],
-            score: 0,
-            submits: [],
-            state: 'WAIT',
-        };
-        quizZone.players.set(sessionId, player);
-
         return {
             quizZoneTitle: quizZone.title,
             quizZoneDescription: quizZone.description,
             quizCount: quizZone.quizzes.length,
             stage: quizZone.stage,
         };
+    }
+    async setPlayerInfo(quizZoneId: string, sessionId: string) {
+        const quizZone = await this.repository.get(quizZoneId);
+
+        if (quizZone.players.has(sessionId)) {
+            return;
+        }
+
+        const size = quizZone.players.size;
+        if (size >= quizZone.maxPlayers) {
+            throw new BadRequestException();
+        }
+        const nickname = nickNames[size];
+        const player: Player = {
+            id: sessionId,
+            nickname: nickname,
+            score: 0,
+            submits: [],
+            state: 'WAIT',
+        };
+        quizZone.players.set(sessionId, player);
     }
 
     /**
