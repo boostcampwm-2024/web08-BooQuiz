@@ -3,16 +3,16 @@ import ContentBox from '@/components/common/ContentBox';
 import Input from '@/components/common/Input';
 import ProgressBar from '@/components/common/ProgressBar';
 import Typography from '@/components/common/Typogrpahy';
+import { QuizZone } from '@/types/quizZone.types';
 import { useState } from 'react';
 
 interface QuizInProgressProps {
-    solutionTime: number | null;
+    playTime: number | null;
     currentQuiz: any;
     submitAnswer: (e: any) => void;
-    timeOutHandler: () => void;
 }
 
-const QuizInProgress = ({ currentQuiz, submitAnswer, timeOutHandler }: QuizInProgressProps) => {
+const QuizInProgress = ({ currentQuiz, submitAnswer }: QuizInProgressProps) => {
     const [answer, setAnswer] = useState('');
 
     return (
@@ -21,7 +21,7 @@ const QuizInProgress = ({ currentQuiz, submitAnswer, timeOutHandler }: QuizInPro
             <ProgressBar
                 deadlineTime={currentQuiz.deadlineTime}
                 onTimeEnd={() => {
-                    timeOutHandler();
+                    console.log('풀이 시간 종료');
                 }}
             />
             <ContentBox className="md:min-w-[48rem] w-4/5">
