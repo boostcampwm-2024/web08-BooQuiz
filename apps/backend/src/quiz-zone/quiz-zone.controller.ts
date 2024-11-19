@@ -45,8 +45,10 @@ export class QuizZoneController {
         type: WaitingQuizZoneDto,
     })
     @ApiResponse({ status: 400, description: '세션 정보가 없습니다.' })
-    async findOne(@Query() quizZoneId: string): Promise<WaitingQuizZoneDto> {
+    async findOne(
+        @Session() session: Record<string, any>,
+        quizZoneId: string): Promise<WaitingQuizZoneDto> {
 
-        return this.quizZoneService.getQuizWaitingRoom(quizZoneId);
+        return this.quizZoneService.getQuizWaitingRoom(quizZoneId, session.id);
     }
 }
