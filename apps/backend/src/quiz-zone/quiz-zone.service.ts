@@ -87,6 +87,7 @@ export class QuizZoneService {
             quizZoneDescription: quizZone.description,
             quizCount: quizZone.quizzes.length,
             stage: quizZone.stage,
+            hostId: quizZone.hostId,
         };
     }
     async setPlayerInfo(quizZoneId: string, sessionId: string) {

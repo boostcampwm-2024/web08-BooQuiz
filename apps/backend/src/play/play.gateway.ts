@@ -122,8 +122,8 @@ export class PlayGateway implements OnGatewayConnection, OnGatewayInit {
         this.clients.set(sessionId, { quizZoneId, socket: client });
         const playInfo = this.getJoinPlayInfo(client, quizZoneId);
         // 참여자들에게 사용자가 들어왔다고 알림
-        const { nickname } = await this.playService.findClientInfo(quizZoneId, sessionId);
-        this.broadcast(quizZoneId, 'someone_join', { nickname });
+        const { id, nickname } = await this.playService.findClientInfo(quizZoneId, sessionId);
+        this.broadcast(quizZoneId, 'someone_join', { id, nickname });
 
         const nicknames = await this.playService.findOthersInfo(quizZoneId, sessionId);
 
