@@ -20,7 +20,9 @@ export type QuizZoneAction =
     | { type: 'finish'; payload: undefined }
     | { type: 'summary'; payload: QuizZoneResultState };
 
-const quizZoneReducer = (state: QuizZone, action: QuizZoneAction) => {
+type Reducer<S, A> = (state: S, action: A) => S;
+
+const quizZoneReducer: Reducer<QuizZone, QuizZoneAction> = (state, action) => {
     const { type, payload } = action;
 
     switch (type) {
@@ -32,14 +34,14 @@ const quizZoneReducer = (state: QuizZone, action: QuizZoneAction) => {
                 description: payload.description,
                 quizCount: payload.quizCount,
                 hostId: payload.hostId,
+                players: [],
             };
         case 'join':
             return { ...state, players: payload.players };
         case 'start':
             return {
                 ...state,
-                stage: 'IN_PROGRESS',
-                playerState: 'WAIT',
+                stage: 'LOBBY',
             };
         case 'submit':
             return {
@@ -51,18 +53,27 @@ const quizZoneReducer = (state: QuizZone, action: QuizZoneAction) => {
             return {
                 ...state,
                 stage: 'IN_PROGRESS',
-                playerState: 'WAIT',
-                question: payload.question,
-                currentIndex: payload.currentIndex,
-                playTime: payload.playTime,
-                startTime: payload.startTime,
-                deadlineTime: payload.deadlineTime,
+                currentPlayer: {
+                    ...state.currentPlayer,
+                    state: 'WAIT',
+                },
+                currentQuiz: {
+                    ...state.currentQuiz,
+                    question: payload.question,
+                    currentIndex: payload.currentIndex,
+                    playTime: payload.playTime,
+                    startTime: payload.startTime,
+                    deadlineTime: payload.deadlineTime,
+                },
             };
         case 'playQuiz':
             return {
                 ...state,
                 stage: 'IN_PROGRESS',
-                playerState: 'PLAY',
+                currentPlayer: {
+                    ...state.currentPlayer,
+                    state: 'PLAY',
+                },
             };
         case 'quizTimeout':
             return {
@@ -84,22 +95,12 @@ const quizZoneReducer = (state: QuizZone, action: QuizZoneAction) => {
                 quizzes: payload.quizzes,
             };
         default:
-            throw new Error(`Unhandled stage: ${action}`);
+            return state;
     }
 };
 
-const fetchQuizZoneData = async (quizZoneId: string) => {
-    const response = await fetch(`/api/quiz-zone/${quizZoneId}`, { method: 'GET' });
-
-    if (!response.ok) {
-        throw new Error('퀴즈존을 찾을 수 없습니다.');
-    }
-
-    return response.json();
-};
-
-const useQuizZone = (url: string) => {
-    const quizZone: QuizZone = {
+const useQuizZone = () => {
+    const initialQuizZoneState: QuizZone = {
         stage: 'LOBBY',
         currentPlayer: {
             id: '',
@@ -109,35 +110,35 @@ const useQuizZone = (url: string) => {
         description: '',
         hostId: '',
         quizCount: 0,
+        players: [],
+        score: 0,
+        submits: [],
+        quizzes: [],
     };
-    const [quizZoneState, dispatch] = useReducer<QuizZone, QuizZoneAction>(
-        quizZoneReducer,
-        quizZone,
-    );
-    const [isLoading, setIsLoading] = useState(true);
-    const navigate = useNavigate();
-
-    const initQuizZone = async () => {
-        try {
-            const quizZoneInitialData = await fetchQuizZoneData(url);
-            dispatch(quizZoneInitialData);
-            setIsLoading(false);
-        } catch (e) {
-            navigate(-1);
-        }
-    };
-
-    useEffect(() => {
-        initQuizZone();
-    }, []);
+    const [quizZoneState, dispatch] = useReducer(quizZoneReducer, initialQuizZoneState);
 
     const messageHandler = (event: MessageEvent) => {
-        const { stage } = JSON.parse(event.data);
+        const { event: QuizZoneEvent, data } = JSON.parse(event.data);
 
-        dispatch({ type: stage, data: stage });
+        dispatch({
+            type: QuizZoneEvent,
+            payload: data,
+        });
+        console.log('이벤트 실행:', quizZoneState);
+    };
+    const wsUrl = import.meta.env.VITE_WS_URL;
+    const { sendMessage, closeConnection } = useWebSocket(`${wsUrl}/play`, messageHandler);
+
+    //initialize QuizZOne
+    const initQuizZoneData = (initialData): any => {
+        dispatch({ type: 'init', payload: initialData });
     };
 
-    const { sendMessage } = useWebSocket(url, messageHandler);
+    //퀴즈 시작 함수
+    const startQuiz = () => {
+        const message = JSON.stringify({ event: 'start' });
+        sendMessage(message);
+    };
 
     // 퀴즈 제출 함수
     const submitQuiz = (answer: string) => {
@@ -145,9 +146,16 @@ const useQuizZone = (url: string) => {
         sendMessage(message);
     };
 
+    const playQuiz = () => {
+        dispatch({ type: 'playQuiz', payload: undefined });
+    };
+
     return {
-        ...state,
+        quizZoneState,
+        initQuizZoneData,
         submitQuiz,
+        startQuiz,
+        playQuiz,
     };
 };
 
