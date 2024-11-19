@@ -129,6 +129,7 @@ describe('QuizZoneService', () => {
                 currentQuizStartTime: 0,
                 currentQuizDeadlineTime: 0,
                 intervalTime: 5000,
+                submitCount: 0,
             };
             mockQuizZoneRepository.get.mockResolvedValue(mockQuizZone);
             // when
@@ -156,6 +157,7 @@ describe('QuizZoneService', () => {
                 currentQuizStartTime: 0,
                 currentQuizDeadlineTime: 0,
                 intervalTime: 5000,
+                submitCount: 0,
             };
             mockQuizZoneRepository.get.mockResolvedValue(mockQuizZone);
 
@@ -165,6 +167,7 @@ describe('QuizZoneService', () => {
             // then
             // result는 대기실 정보를 담은 DTO
             expect(result).toEqual({
+                hostId: 'adminId',
                 quizZoneTitle: mockQuizZone.title,
                 quizZoneDescription: mockQuizZone.description,
                 quizCount: mockQuizZone.quizzes.length,
@@ -186,7 +189,7 @@ describe('QuizZoneService', () => {
         const quizZoneId = 'testQuizZone';
         const sessionId = 'testSession';
 
-        it('이미 players에 등록된 사용자이면 players 추가하지 않는다.', (async) => {
+        it('이미 players에 등록된 사용자이면 players 추가하지 않는다.', async () => {
             const player = { id: 'player1', nickname: '1', score: 0, submits: [], state: 'WAIT' };
 
             //given
@@ -201,7 +204,7 @@ describe('QuizZoneService', () => {
                         { id: 'player2', nickname: '2', score: 0, submits: [], state: 'WAIT' },
                     ],
                 ]),
-                maxPlayers: 2,
+                maxPlayers: 5,
                 hostId: 'adminId',
                 title: '테스트 퀴즈',
                 description: '테스트 퀴즈입니다',
@@ -211,7 +214,9 @@ describe('QuizZoneService', () => {
                 currentQuizStartTime: 0,
                 currentQuizDeadlineTime: 0,
                 intervalTime: 5000,
+                submitCount: 0,
             };
+            mockQuizZoneRepository.get.mockResolvedValue(mockQuizZone);
 
             //when
             service.setPlayerInfo(quizZoneId, player.id);
@@ -243,6 +248,7 @@ describe('QuizZoneService', () => {
                 currentQuizStartTime: 0,
                 currentQuizDeadlineTime: 0,
                 intervalTime: 5000,
+                submitCount: 0,
             };
             mockQuizZoneRepository.get.mockResolvedValue(mockQuizZone);
 
@@ -277,6 +283,7 @@ describe('QuizZoneService', () => {
                 currentQuizStartTime: 0,
                 currentQuizDeadlineTime: 0,
                 intervalTime: 5000,
+                submitCount: 0,
             };
             mockQuizZoneRepository.get.mockResolvedValue(mockQuizZone);
 
@@ -307,6 +314,7 @@ describe('QuizZoneService', () => {
                 currentQuizStartTime: 0,
                 currentQuizDeadlineTime: 0,
                 intervalTime: 5000,
+                submitCount: 0,
             };
             mockQuizZoneRepository.get.mockResolvedValue(mockQuizZone);
 
@@ -356,12 +364,16 @@ describe('QuizZoneService', () => {
                 currentQuizStartTime: 0,
                 currentQuizDeadlineTime: 0,
                 intervalTime: 5000,
+                submitCount: 0,
             };
             mockQuizZoneRepository.get.mockResolvedValue(mockQuizZone);
             // when
             const result = await service.findOthersInfo(quizZoneId, sessionId);
             // then
-            expect(result).toEqual(['nick2', 'nick3']);
+            expect(result).toEqual([
+                { nickname: 'nick2', id: 'player2' },
+                { nickname: 'nick3', id: 'player3' },
+            ]);
             expect(result).not.toContain('nick1');
         });
     });
