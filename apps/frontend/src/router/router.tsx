@@ -10,7 +10,7 @@ function Router() {
             <Route element={<RootLayout />}>
                 <Route path="/" element={<MainPage />} />
                 <Route path="/quizZone" element={<QuizZone pinNumber="123456" />} />
-                <Route path="/newQuizZone/:QuizZoneId" element={<NewQuizZonePage />} />
+                <Route path="/newQuizZone/:quizZoneId" element={<NewQuizZonePage />} />
             </Route>
         </Routes>
     );
