@@ -2,6 +2,7 @@ import { Route, Routes } from 'react-router-dom';
 import MainPage from '@/pages/MainPage';
 import RootLayout from '../pages/RootLayout';
 import QuizZone from '@/pages/QuizZonePage';
+import NewQuizZonePage from '@/pages/newQuizZonePage';
 
 function Router() {
     return (
@@ -9,6 +10,7 @@ function Router() {
             <Route element={<RootLayout />}>
                 <Route path="/" element={<MainPage />} />
                 <Route path="/quizZone" element={<QuizZone pinNumber="123456" />} />
+                <Route path="/newQuizZone/:QuizZoneId" element={<NewQuizZonePage />} />
             </Route>
         </Routes>
     );
