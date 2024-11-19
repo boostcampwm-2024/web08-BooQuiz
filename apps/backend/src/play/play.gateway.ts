@@ -191,14 +191,18 @@ export class PlayGateway implements OnGatewayConnection, OnGatewayInit {
         @ConnectedSocket() client: WebSocket,
         @MessageBody() quizSubmit: QuizSubmitDto,
     ): Promise<SendEventMessage<string>> {
-        const { quizZoneId } = this.getClientInfo(client['sessionId']);
+        const clientId = client['sessionId'];
+        const { quizZoneId } = this.getClientInfo(clientId);
         const playInfo = this.getPlayInfo(quizZoneId);
 
         // TODO: 제출 인원 체크하고 다 제출시 이거 처리
         clearTimeout(playInfo.submitHandle);
         playInfo.submitHandle = undefined;
 
-        await this.playService.submit(quizZoneId, { ...quizSubmit, receivedAt: Date.now() });
+        await this.playService.submit(quizZoneId, clientId, {
+            ...quizSubmit,
+            receivedAt: Date.now(),
+        });
 
         this.server.emit('nextQuiz', client);
 
@@ -245,13 +249,14 @@ export class PlayGateway implements OnGatewayConnection, OnGatewayInit {
      *
      * @param quizZoneId - WebSocket 클라이언트
      */
+    //여기 경고 나오는 이유가 뭐야? ->
     private async summary(quizZoneId: string) {
         const playInfo = this.getPlayInfo(quizZoneId);
-        const summaryResult = await this.playService.summary(quizZoneId); //TODO: 퀴즈 결과 가져오는 부분
-
-        await this.playService.clearQuizZone(quizZoneId);
-
+        playInfo.quizZoneClients.forEach(async (websocket, clientId) => {
+            const summaryResult = await this.playService.summary(quizZoneId, clientId); //TODO: 퀴즈 결과 가져오는 부분
+            this.sendToClient(websocket, 'summary', summaryResult);
+        });
         this.plays.delete(quizZoneId);
-        this.broadCast(quizZoneId, 'summary', summaryResult);
+        await this.playService.clearQuizZone(quizZoneId);
     }
 }
