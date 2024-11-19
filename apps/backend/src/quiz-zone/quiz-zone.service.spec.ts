@@ -3,6 +3,7 @@ import { QuizZoneService } from './quiz-zone.service';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { QuizZone } from './entities/quiz-zone.entity';
 import { IQuizZoneRepository } from './repository/quiz-zone.repository.interface';
+import { Quiz } from './entities/quiz.entity';
 
 const nickNames: string[] = [
     '전설의고양이',
@@ -17,6 +18,16 @@ const nickNames: string[] = [
     '번개의제왕',
 ];
 
+const playTime = 30_000;
+
+const quizzes: Quiz[] = [
+    { question: '신이 화나면?', answer: '신발끈', playTime },
+    { question: '도둑이 훔친 돈을 뭐라고 하는가?', answer: '슬그머니', playTime },
+    { question: '털이 있는 동물들이 가장 좋아하는 장소는?', answer: '모텔', playTime },
+    { question: '아몬드가 죽으면?', answer: '다이아몬드', playTime },
+    { question: '왕이 넘어지면?', answer: '킹콩', playTime },
+    { question: '바나나가 웃으면?', answer: '바나나킥', playTime },
+];
 
 describe('QuizZoneService', () => {
     let service: QuizZoneService;
@@ -55,7 +66,7 @@ describe('QuizZoneService', () => {
                     currentQuizIndex: -1,
                     title: '넌센스 퀴즈',
                     description: '넌센스 퀴즈 입니다',
-                })
+                }),
             );
         });
         it('퀴즈존이 초기화되면 현재 퀴즈 번호는 -1로 초기화된다.', async () => {
@@ -69,7 +80,7 @@ describe('QuizZoneService', () => {
                 quizZoneId,
                 expect.objectContaining({
                     currentQuizIndex: -1,
-                })
+                }),
             );
         });
         it('퀴즈존이 초기화되면 문제들이 할당된다.', async () => {
@@ -82,8 +93,8 @@ describe('QuizZoneService', () => {
             expect(repository.set).toHaveBeenCalledWith(
                 quizZoneId,
                 expect.objectContaining({
-                    quizzes: expect.any(Array),
-                })
+                    quizzes: quizzes,
+                }),
             );
         });
 
@@ -93,7 +104,7 @@ describe('QuizZoneService', () => {
             const adminId = 'adminId';
             // when
             await service.create(quizZoneId, adminId);
-        
+
             expect(repository.set).toHaveBeenCalledWith(
                 quizZoneId,
                 expect.objectContaining({
@@ -130,13 +141,19 @@ describe('QuizZoneService', () => {
     describe('getQuizWaitingRoom', () => {
         const quizZoneId = 'testQuizZone';
         const sessionId = 'testSession';
-     
+
         it('최대 인원을 초과하면 예외가 발생한다', async () => {
             // given
             const mockQuizZone: QuizZone = {
                 players: new Map([
-                    ['player1', { id: 'player1', nickname: '1', score: 0, submits: [], state: 'WAIT' }],
-                    ['player2', { id: 'player2', nickname: '2', score: 0, submits: [], state: 'WAIT' }],
+                    [
+                        'player1',
+                        { id: 'player1', nickname: '1', score: 0, submits: [], state: 'WAIT' },
+                    ],
+                    [
+                        'player2',
+                        { id: 'player2', nickname: '2', score: 0, submits: [], state: 'WAIT' },
+                    ],
                 ]),
                 maxPlayers: 2,
                 adminId: 'adminId',
@@ -150,18 +167,27 @@ describe('QuizZoneService', () => {
                 intervalTime: 5000,
             };
             mockQuizZoneRepository.get.mockResolvedValue(mockQuizZone);
-     
+
             // when & then
-            await expect(
-                service.getQuizWaitingRoom(quizZoneId, sessionId)
-            ).rejects.toThrow(BadRequestException);
+            await expect(service.getQuizWaitingRoom(quizZoneId, sessionId)).rejects.toThrow(
+                BadRequestException,
+            );
         });
-     
+
         it('플레이어가 추가될 때 닉네임이 순서대로 할당된다', async () => {
             // given
             const mockQuizZone: QuizZone = {
                 players: new Map([
-                    ['player1', { id: 'player1', nickname: nickNames[0], score: 0, submits: [], state: 'WAIT' }],
+                    [
+                        'player1',
+                        {
+                            id: 'player1',
+                            nickname: nickNames[0],
+                            score: 0,
+                            submits: [],
+                            state: 'WAIT',
+                        },
+                    ],
                 ]),
                 maxPlayers: 10,
                 adminId: 'adminId',
@@ -175,21 +201,21 @@ describe('QuizZoneService', () => {
                 intervalTime: 5000,
             };
             mockQuizZoneRepository.get.mockResolvedValue(mockQuizZone);
-     
+
             // when
             await service.getQuizWaitingRoom(quizZoneId, sessionId);
-     
+
             // then
             const expectedPlayer = {
                 id: sessionId,
                 nickname: nickNames[1], // 두 번째 닉네임이 할당되어야 함
                 score: 0,
                 submits: [],
-                state: 'WAIT'
+                state: 'WAIT',
             };
             expect(mockQuizZone.players.get(sessionId)).toEqual(expectedPlayer);
         });
-     
+
         it('대기실 정보를 성공적으로 반환한다', async () => {
             // given
             const mockQuizZone: QuizZone = {
@@ -206,10 +232,10 @@ describe('QuizZoneService', () => {
                 intervalTime: 5000,
             };
             mockQuizZoneRepository.get.mockResolvedValue(mockQuizZone);
-     
+
             // when
             const result = await service.getQuizWaitingRoom(quizZoneId, sessionId);
-     
+
             // then
             // result는 대기실 정보를 담은 DTO
             expect(result).toEqual({
@@ -218,7 +244,7 @@ describe('QuizZoneService', () => {
                 quizCount: mockQuizZone.quizzes.length,
                 stage: mockQuizZone.stage,
             });
-     
+
             // 플레이어가 제대로 추가되었는지 확인
             const addedPlayer = mockQuizZone.players.get(sessionId);
             expect(addedPlayer).toBeDefined();
@@ -227,10 +253,10 @@ describe('QuizZoneService', () => {
                 nickname: nickNames[0],
                 score: 0,
                 submits: [],
-                state: 'WAIT'
+                state: 'WAIT',
             });
         });
-     });
+    });
     describe('findOthersInfo', () => {
         it('다른 플레이어들의 닉네임 목록을 반환한다', async () => {
             // given
@@ -238,9 +264,18 @@ describe('QuizZoneService', () => {
             const sessionId = 'player1';
             const mockQuizZone: QuizZone = {
                 players: new Map([
-                    ['player1', { id: 'player1', nickname: 'nick1', score: 0, submits: [], state: 'WAIT' }],
-                    ['player2', { id: 'player2', nickname: 'nick2', score: 0, submits: [], state: 'WAIT' }],
-                    ['player3', { id: 'player3', nickname: 'nick3', score: 0, submits: [], state: 'WAIT' }],
+                    [
+                        'player1',
+                        { id: 'player1', nickname: 'nick1', score: 0, submits: [], state: 'WAIT' },
+                    ],
+                    [
+                        'player2',
+                        { id: 'player2', nickname: 'nick2', score: 0, submits: [], state: 'WAIT' },
+                    ],
+                    [
+                        'player3',
+                        { id: 'player3', nickname: 'nick3', score: 0, submits: [], state: 'WAIT' },
+                    ],
                 ]),
                 maxPlayers: 10,
                 adminId: 'adminId',
