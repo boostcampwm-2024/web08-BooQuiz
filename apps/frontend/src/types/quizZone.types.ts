@@ -26,7 +26,8 @@ export interface QuizZoneLobbyState {
     title: string;
     description: string;
     quizCount: number;
-    hostId: boolean;
+    hostId: string;
+    players: Player[];
 }
 
 export interface CurrentQuiz {
