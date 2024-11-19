@@ -148,4 +148,17 @@ export class PlayService {
         quizZone.currentQuizIndex = -1;
         quizZone.stage = 'WAITING';
     }
+
+    async findOthersInfo(quizZoneId: string, sessionId: string) {
+        return this.quizZoneService.findOthersInfo(quizZoneId, sessionId);
+    }
+
+    async findClientInfo(quizZoneId: string, sessionId: string) {
+        const quizZone = await this.quizZoneService.findOne(quizZoneId);
+        const player = quizZone.players.get(sessionId);
+        if (!player) {
+            throw new NotFoundException();
+        }
+        return player;
+    }
 }

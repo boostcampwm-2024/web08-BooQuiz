@@ -16,6 +16,19 @@ export const quizzes: Quiz[] = [
     { question: '바나나가 웃으면?', answer: '바나나킥', playTime },
 ];
 
+export const nickNames: string[] = [
+    '전설의고양이',
+    '피카츄꼬리',
+    '킹왕짱짱맨',
+    '용맹한기사단',
+    '무적의검사',
+    '그림자암살자',
+    '마법의마스터',
+    '불꽃의전사',
+    '어둠의기사',
+    '번개의제왕',
+];
+
 @Injectable()
 export class QuizZoneService {
     constructor(
@@ -32,11 +45,17 @@ export class QuizZoneService {
      * @throws(ConflictException) 이미 저장된 ID인 경우 예외 발생
      */
     async create(quizZoneId: string, adminId: string): Promise<void> {
-        const player: Player = { id: adminId, score: 0, submits: [], state: 'WAIT' };
+        const player: Player = {
+            id: adminId,
+            nickname: nickNames[0],
+            score: 0,
+            submits: [],
+            state: 'WAIT',
+        };
         const quizZone: QuizZone = {
             players: new Map<string, Player>([[adminId, player]]),
-            title: "넌센스 퀴즈",
-            description: "넌센스 퀴즈 입니다",
+            title: '넌센스 퀴즈',
+            description: '넌센스 퀴즈 입니다',
             adminId: adminId,
             maxPlayers: MAX_PLAYERS,
             quizzes: [...quizzes],
@@ -71,12 +90,18 @@ export class QuizZoneService {
      */
     async getQuizWaitingRoom(quizZoneId: string, sessionId: string): Promise<WaitingQuizZoneDto> {
         const quizZone = await this.repository.get(quizZoneId);
-
-        if (quizZone.players.size >= quizZone.maxPlayers) {
+        const size = quizZone.players.size;
+        if (size >= quizZone.maxPlayers) {
             throw new BadRequestException();
         }
 
-        const player: Player = { id: sessionId, score: 0, submits: [], state: 'WAIT' };
+        const player: Player = {
+            id: sessionId,
+            nickname: nickNames[size],
+            score: 0,
+            submits: [],
+            state: 'WAIT',
+        };
         quizZone.players.set(sessionId, player);
 
         return {
@@ -95,5 +120,16 @@ export class QuizZoneService {
      */
     async clearQuizZone(quizZoneId: string): Promise<void> {
         await this.repository.delete(quizZoneId);
+    }
+
+    async findOthersInfo(quizZoneId: string, sessionId: string) {
+        const quizZone = await this.repository.get(quizZoneId);
+        return Array.from(quizZone.players.values())
+            .filter((player) => {
+                return player.id !== sessionId;
+            })
+            .map((player) => {
+                return player.nickname;
+            });
     }
 }

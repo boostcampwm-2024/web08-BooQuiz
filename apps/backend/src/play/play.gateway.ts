@@ -116,18 +116,22 @@ export class PlayGateway implements OnGatewayConnection, OnGatewayInit {
     async join(
         @ConnectedSocket() client: WebSocket,
         @MessageBody() quizJoinDto: QuizJoinDto,
-    ): Promise<SendEventMessage<string>> {
+    ): Promise<SendEventMessage<String[]>> {
         const sessionId = client['sessionId'];
         const { quizZoneId } = quizJoinDto;
         this.clients.set(sessionId, { quizZoneId, socket: client });
         const playInfo = this.getJoinPlayInfo(client, quizZoneId);
         // 참여자들에게 사용자가 들어왔다고 알림
-        this.broadCast(quizZoneId, 'someone_join', { clientId: sessionId }); //TODO: 클라이언트 넥네임으로 변경하기
+        const { nickname } = await this.playService.findClientInfo(quizZoneId, sessionId);
+        this.broadCast(quizZoneId, 'someone_join', { nickname });
+
+        const nicknames = await this.playService.findOthersInfo(quizZoneId, sessionId);
+
         playInfo.quizZoneClients.set(sessionId, client);
 
         return {
             event: 'join',
-            data: 'OK', //TODO 샤용자에게 현재 참여자들의 정보를 전달
+            data: nicknames,
         };
     }
 
