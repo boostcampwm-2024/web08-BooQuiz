@@ -28,10 +28,10 @@ export class QuizZoneController {
         @Session() session: Record<string, any>,
     ): Promise<void> {
         const { quizZoneId } = createQuizZoneDto;
-        const adminId = session.id;
-        if (adminId === undefined) {
+        if(!session || !session.id) {
             throw new BadRequestException('세션 정보가 없습니다.');
         }
+        const adminId = session.id;
         await this.quizZoneService.create(quizZoneId, adminId);
     }
 
