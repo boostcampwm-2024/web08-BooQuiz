@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 interface TimerConfig {
     initialTime: number;
@@ -43,36 +43,32 @@ interface TimerConfig {
  * @returns {() => void} returns.stop - 타이머를 정지하는 함수.
  * @returns {() => void} returns.reset - 타이머를 재설정하는 함수.
  */
-export const useTimer = ({ initialTime, onComplete, autoStart = false }: TimerConfig) => {
-    const [time, setTime] = useState<number | null>(autoStart ? initialTime : null);
-    const [isRunning, setIsRunning] = useState(autoStart);
+export const useTimer = ({ initialTime, onComplete }: TimerConfig) => {
+    const [time, setTime] = useState(initialTime);
+    const [isRunning, setIsRunning] = useState(false);
+    const timer = useRef<NodeJS.Timeout | null>(null);
 
     useEffect(() => {
-        if (!isRunning || time === null) return;
-
-        const timer = setInterval(() => {
-            setTime((prev) => {
-                if (prev === null || prev <= 0) {
-                    setIsRunning(false);
-                    onComplete?.();
-                    return null;
-                }
-                // 0.1초 단위로 감소
-                return Math.max(0, prev - 0.1);
-            });
+        timer.current = setInterval(() => {
+            setTime((prev) => prev - 0.1);
         }, 100); // 100ms 간격으로 업데이트
+    }, []);
 
-        return () => clearInterval(timer);
-    }, [isRunning, time, onComplete]);
+    useEffect(() => {
+        if (time <= 0) {
+            clearInterval(timer.current!);
+            onComplete?.();
+        }
+    }, [time]);
 
     const start = (newTime?: number) => {
-        setTime(newTime ?? initialTime); // newTime이 없으면 initialTime 사용
+        // setTime(newTime ?? initialTime); // newTime이 없으면 initialTime 사용
         setIsRunning(true);
     };
 
     const stop = () => {
         setIsRunning(false);
-        setTime(null);
+        setTime(0);
     };
 
     const reset = () => {
@@ -80,16 +76,16 @@ export const useTimer = ({ initialTime, onComplete, autoStart = false }: TimerCo
         setIsRunning(false);
     };
 
-    const setNewTime = (newTime: number) => {
-        setTime(Math.max(0, newTime));
-    };
+    // const setNewTime = (newTime: number) => {
+    //     setTime(Math.max(0, newTime));
+    // };
 
     return {
         time,
-        isRunning,
+        // isRunning,
         start,
-        stop,
-        reset,
-        setTime: setNewTime,
+        // stop,
+        // reset,
+        // setTime: setNewTime,
     };
 };
