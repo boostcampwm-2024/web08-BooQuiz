@@ -92,19 +92,21 @@ export class QuizZoneService {
      * @throws {NotFoundException} 퀴즈 존을 찾을 수 없는 경우
      */
     async findOne(quizZoneId: string): Promise<QuizZone> {
-        const quizZone = this.repository.get(quizZoneId);
+        const quizZone = await this.repository.get(quizZoneId);
 
-        if (quizZone === null) {
+        if (!quizZone) {
             throw new NotFoundException('퀴즈존 정보를 확인할 수 없습니다.');
         }
 
         return quizZone;
     }
 
-    async getWaitingInfo(quizZoneId: string): Promise<WaitingQuizZoneDto> {
-        const { title, description, quizzes, stage, hostId } = await this.findOne(quizZoneId);
+    async getLobbyInfo(clinetId: string, quizZoneId: string) {
+        const { players, title, description, quizzes, stage, hostId } = await this.findOne(quizZoneId);
+        const { id, nickname, state } = players.get(clinetId);
 
         return {
+            currentPlayer: { id, nickname, state },
             quizZoneTitle: title,
             quizZoneDescription: description,
             quizCount: quizzes.length,
@@ -113,25 +115,66 @@ export class QuizZoneService {
         };
     }
 
-    async setPlayerInfo(quizZoneId: string, sessionId: string) {
+    async getProgressInfo(clientId: string, quizZoneId: string) {
+        const { players, stage, currentQuizIndex, currentQuizStartTime, currentQuizDeadlineTime, hostId, title, description, intervalTime } = await this.findOne(quizZoneId);
+        const { id, nickname, state } = players.get(clientId);
+
+        return {
+            currentPlayer: { id, nickname, state },
+            stage: stage,
+            currentQuizIndex: currentQuizIndex,
+            currentQuizStartTime: currentQuizStartTime,
+            currentQuizDeadlineTime: currentQuizDeadlineTime,
+            quizZoneTitle: title,
+            quizZoneDescription: description,
+            quizCount: quizzes.length,
+            intervalTime: intervalTime,
+            hostId: hostId,
+        };
+    }
+
+    async getResultInfo(clientId: string, quizZoneId: string) {
+        const { players, stage, title, description, quizzes } = await this.findOne(quizZoneId);
+        const { id, nickname, state, submits, score } = players.get(clientId);
+
+        return {
+            currentPlayer: { id, nickname, state, score, submits },
+            stage: stage,
+            quizzes: quizzes,
+            quizZoneTitle: title,
+            quizZoneDescription: description,
+        };
+    }
+
+    async setPlayerInfo(clientId: string, quizZoneId: string) {
         const { players, maxPlayers } = await this.findOne(quizZoneId);
         const playerCount = players.size;
 
-        if (players.has(sessionId)) {
+        // 이미 참가한 플레이어인 경우 그냥 리턴
+        if (players.has(clientId)) {
             return;
         }
 
+        // 정원 초과인 경우 예외 발생
         if (playerCount >= maxPlayers) {
             throw new BadRequestException('퀴즈존 정원이 초과되었습니다.');
         }
 
-        players.set(sessionId, {
-            id: sessionId,
+        players.set(clientId, {
+            id: clientId,
             nickname: nickNames[playerCount],
             score: 0,
             submits: [],
             state: PLAYER_STATE.WAIT,
         });
+    }
+
+    async checkValidPlayer(clientId: string, quizZoneId: string) {
+        const { players } = await this.findOne(quizZoneId);
+
+        if (!players.has(clientId)) {
+            throw new BadRequestException('참가하지 않은 플레이어입니다.');
+        }
     }
 
     /**
@@ -150,11 +193,17 @@ export class QuizZoneService {
         await this.repository.delete(quizZoneId);
     }
 
-    async findOthersInfo(quizZoneId: string, sessionId: string) {
+    async findOthersInfo(quizZoneId: string, clientId: string) {
         const { players } = await this.findOne(quizZoneId);
 
         return [...players.values()]
-            .filter((player) => player.id !== sessionId)
+            .filter((player) => player.id !== clientId)
             .map(({ id, nickname }) => ({ nickname, id }));
+    }
+
+    async getQuizZoneStage(quizZoneId: string) {
+        const { stage } = await this.findOne(quizZoneId);
+
+        return stage;
     }
 }

@@ -123,6 +123,7 @@ export class PlayGateway implements OnGatewayConnection, OnGatewayInit {
         const { quizZoneId } = quizJoinDto;
 
         await this.playService.validatePlayer(quizZoneId, sessionId);
+        
         this.clients.set(sessionId, { quizZoneId, socket: client });
 
         const playInfo = this.getJoinPlayInfo(client, quizZoneId);
