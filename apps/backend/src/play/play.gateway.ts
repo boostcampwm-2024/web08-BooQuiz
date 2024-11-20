@@ -2,7 +2,6 @@ import {
     ConnectedSocket,
     MessageBody,
     OnGatewayConnection,
-    OnGatewayDisconnect,
     OnGatewayInit,
     SubscribeMessage,
     WebSocketGateway,
@@ -15,7 +14,6 @@ import { parse } from 'cookie';
 import { QuizSubmitDto } from './dto/quiz-submit.dto';
 import { QuizJoinDto } from './dto/quiz-join.dto';
 import { BadRequestException, Inject, NotFoundException } from '@nestjs/common';
-import session from 'express-session';
 
 //TODO 여러명일때 service 수정해야함.
 
@@ -108,6 +106,7 @@ export class PlayGateway implements OnGatewayConnection, OnGatewayInit {
 
     private broadcast(quizZoneId: string, event: string, data?: any) {
         const { quizZoneClients } = this.getPlayInfo(quizZoneId);
+
         quizZoneClients.forEach((client) => {
             this.sendToClient(client, event, data);
         });
@@ -120,10 +119,13 @@ export class PlayGateway implements OnGatewayConnection, OnGatewayInit {
     ): Promise<SendEventMessage<Object[]>> {
         const sessionId = client['sessionId'];
         const { quizZoneId } = quizJoinDto;
+
         this.clients.set(sessionId, { quizZoneId, socket: client });
+
         const playInfo = this.getJoinPlayInfo(client, quizZoneId);
         // 참여자들에게 사용자가 들어왔다고 알림
         const { id, nickname } = await this.playService.findClientInfo(quizZoneId, sessionId);
+
         this.broadcast(quizZoneId, 'someone_join', { id, nickname });
 
         const usersInfo = await this.playService.findOthersInfo(quizZoneId, sessionId);
@@ -145,8 +147,15 @@ export class PlayGateway implements OnGatewayConnection, OnGatewayInit {
     async start(@ConnectedSocket() client: WebSocket) {
         const clientId = client['sessionId'];
         const { quizZoneId } = this.getClientInfo(clientId);
-        await this.playService.checkHost(quizZoneId, clientId);
+
+        const isHost = await this.playService.isHostPlayer(quizZoneId, clientId);
+
+        if (!isHost) {
+            return;
+        }
+
         this.broadcast(quizZoneId, 'start', 'OK');
+
         this.server.emit('nextQuiz', quizZoneId);
     }
 
@@ -159,7 +168,9 @@ export class PlayGateway implements OnGatewayConnection, OnGatewayInit {
         try {
             const playInfo = this.getPlayInfo(quizZoneId);
             const { intervalTime, nextQuiz } = await this.playService.playNextQuiz(quizZoneId);
+
             this.broadcast(quizZoneId, 'nextQuiz', nextQuiz);
+
             playInfo.submitHandle = setTimeout(() => {
                 this.quizTimeOut(quizZoneId);
             }, intervalTime + nextQuiz.playTime);
@@ -192,7 +203,9 @@ export class PlayGateway implements OnGatewayConnection, OnGatewayInit {
             ...quizSubmit,
             receivedAt: Date.now(),
         });
+
         const isAllSubmitted = await this.playService.checkAllSubmitted(quizZoneId);
+
         if (isAllSubmitted) {
             clearTimeout(playInfo.submitHandle);
             playInfo.submitHandle = undefined;
@@ -231,9 +244,13 @@ export class PlayGateway implements OnGatewayConnection, OnGatewayInit {
      */
     private async quizTimeOut(quizZoneId: string) {
         const playInfo = this.getPlayInfo(quizZoneId);
+
         playInfo.submitHandle = undefined;
+
         await this.playService.quizTimeOut(quizZoneId); //TODO: 퀴즈 타임아웃시 못 제출한 사람 제출 처리하는 부분
+
         this.broadcast(quizZoneId, 'quizTimeOut');
+
         this.server.emit('nextQuiz', quizZoneId);
     }
 
@@ -244,6 +261,7 @@ export class PlayGateway implements OnGatewayConnection, OnGatewayInit {
      */
     private async summary(quizZoneId: string) {
         const playInfo = this.getPlayInfo(quizZoneId);
+
         await Promise.all(
             Array.from(playInfo.quizZoneClients).map(async ([clientId, websocket]) => {
                 const summaryResult = await this.playService.summary(quizZoneId, clientId);
@@ -251,7 +269,9 @@ export class PlayGateway implements OnGatewayConnection, OnGatewayInit {
                 this.clients.delete(clientId);
             }),
         );
+
         this.plays.delete(quizZoneId);
+
         await this.playService.clearQuizZone(quizZoneId);
     }
 }
