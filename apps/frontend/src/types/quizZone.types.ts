@@ -1,5 +1,6 @@
 export type QuizZoneStage = 'LOBBY' | 'IN_PROGRESS' | 'RESULT';
 export type PlayerState = 'WAIT' | 'PLAY' | 'SUBMIT';
+export type ProblemType = 'SHORT';
 
 export interface Player {
     id: string;
@@ -36,6 +37,7 @@ export interface CurrentQuiz {
     playTime: number;
     startTime: number;
     deadlineTime: number;
+    type?: ProblemType;
 }
 
 export interface QuizZoneProgressState {
