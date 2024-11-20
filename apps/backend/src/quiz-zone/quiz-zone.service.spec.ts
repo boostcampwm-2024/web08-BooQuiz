@@ -132,7 +132,18 @@ describe('QuizZoneService', () => {
             const quizZoneId = 'testQuizZone';
             const clientId = 'clientId';
             const mockQuizZone: QuizZone = {
-                players: new Map([[clientId, { id: clientId, nickname: '닉네임', state: PLAYER_STATE.WAIT, score: 0, submits: [] }]]),
+                players: new Map([
+                    [
+                        clientId,
+                        {
+                            id: clientId,
+                            nickname: '닉네임',
+                            state: PLAYER_STATE.WAIT,
+                            score: 0,
+                            submits: [],
+                        },
+                    ],
+                ]),
                 hostId: 'adminId',
                 maxPlayers: 10,
                 title: '테스트 퀴즈',
@@ -152,8 +163,8 @@ describe('QuizZoneService', () => {
 
             expect(result).toEqual({
                 currentPlayer: { id: clientId, nickname: '닉네임', state: PLAYER_STATE.WAIT },
-                quizZoneTitle: '테스트 퀴즈',
-                quizZoneDescription: '테스트 퀴즈입니다',
+                title: '테스트 퀴즈',
+                description: '테스트 퀴즈입니다',
                 quizCount: quizzes.length,
                 stage: QUIZ_ZONE_STAGE.LOBBY,
                 hostId: 'adminId',
@@ -166,7 +177,18 @@ describe('QuizZoneService', () => {
             const quizZoneId = 'testQuizZone';
             const clientId = 'clientId';
             const mockQuizZone: QuizZone = {
-                players: new Map([[clientId, { id: clientId, nickname: '닉네임', state: PLAYER_STATE.WAIT, score: 0, submits: [] }]]),
+                players: new Map([
+                    [
+                        clientId,
+                        {
+                            id: clientId,
+                            nickname: '닉네임',
+                            state: PLAYER_STATE.WAIT,
+                            score: 0,
+                            submits: [],
+                        },
+                    ],
+                ]),
                 hostId: 'adminId',
                 maxPlayers: 10,
                 title: '테스트 퀴즈',
@@ -186,15 +208,19 @@ describe('QuizZoneService', () => {
 
             expect(result).toEqual({
                 currentPlayer: { id: clientId, nickname: '닉네임', state: PLAYER_STATE.WAIT },
-                stage: QUIZ_ZONE_STAGE.IN_PROGRESS,
-                currentQuizIndex: 1,
-                currentQuizStartTime: mockQuizZone.currentQuizStartTime,
-                currentQuizDeadlineTime: mockQuizZone.currentQuizDeadlineTime,
-                quizZoneTitle: '테스트 퀴즈',
-                quizZoneDescription: '테스트 퀴즈입니다',
+                title: '테스트 퀴즈',
+                description: '테스트 퀴즈입니다',
                 quizCount: quizzes.length,
-                intervalTime: 5000,
+                stage: QUIZ_ZONE_STAGE.IN_PROGRESS,
                 hostId: 'adminId',
+                currentQuiz: {
+                    currentIndex: 1,
+                    startTime: mockQuizZone.currentQuizStartTime,
+                    deadlineTime: mockQuizZone.currentQuizDeadlineTime,
+                    playTime: quizzes[1].playTime,
+                    question: quizzes[1].question,
+                    stage: QUIZ_ZONE_STAGE.IN_PROGRESS,
+                },
             });
         });
     });
@@ -204,14 +230,25 @@ describe('QuizZoneService', () => {
             const quizZoneId = 'testQuizZone';
             const clientId = 'clientId';
             const mockQuizZone: QuizZone = {
-                players: new Map([[clientId, { id: clientId, nickname: '닉네임', state: PLAYER_STATE.WAIT, submits: [], score: 100 }]]),
+                players: new Map([
+                    [
+                        clientId,
+                        {
+                            id: clientId,
+                            nickname: '닉네임',
+                            state: PLAYER_STATE.WAIT,
+                            score: 100,
+                            submits: [],
+                        },
+                    ],
+                ]),
                 hostId: 'adminId',
                 maxPlayers: 10,
                 title: '테스트 퀴즈',
                 description: '테스트 퀴즈입니다',
                 quizzes: quizzes,
                 stage: QUIZ_ZONE_STAGE.RESULT,
-                currentQuizIndex: 1,
+                currentQuizIndex: -1,
                 currentQuizStartTime: Date.now(),
                 currentQuizDeadlineTime: Date.now() + playTime,
                 intervalTime: 5000,
@@ -223,11 +260,18 @@ describe('QuizZoneService', () => {
             const result = await service.getResultInfo(clientId, quizZoneId);
 
             expect(result).toEqual({
-                currentPlayer: { id: clientId, nickname: '닉네임', state: PLAYER_STATE.WAIT, score: 100, submits: [] },
+                currentPlayer: {
+                    id: clientId,
+                    nickname: '닉네임',
+                    state: PLAYER_STATE.WAIT,
+                    score: 100,
+                    submits: [],
+                },
+                title: '테스트 퀴즈',
+                description: '테스트 퀴즈입니다',
+                quizCount: quizzes.length,
                 stage: QUIZ_ZONE_STAGE.RESULT,
-                quizzes: quizzes,
-                quizZoneTitle: '테스트 퀴즈',
-                quizZoneDescription: '테스트 퀴즈입니다',
+                hostId: 'adminId',
             });
         });
     });
@@ -237,7 +281,18 @@ describe('QuizZoneService', () => {
             const quizZoneId = 'testQuizZone';
             const clientId = 'clientId';
             const mockQuizZone: QuizZone = {
-                players: new Map([[clientId, { id: clientId, nickname: '닉네임', state: PLAYER_STATE.WAIT, score: 0, submits: [] }]]),
+                players: new Map([
+                    [
+                        clientId,
+                        {
+                            id: clientId,
+                            nickname: '닉네임',
+                            state: PLAYER_STATE.WAIT,
+                            score: 0,
+                            submits: [],
+                        },
+                    ],
+                ]),
                 hostId: 'adminId',
                 maxPlayers: 10,
                 title: '테스트 퀴즈',
@@ -263,8 +318,26 @@ describe('QuizZoneService', () => {
             const clientId = 'clientId';
             const mockQuizZone: QuizZone = {
                 players: new Map([
-                    ['player1', { id: 'player1', nickname: '닉네임1', state: PLAYER_STATE.WAIT, score: 0, submits: [] }],
-                    ['player2', { id: 'player2', nickname: '닉네임2', state: PLAYER_STATE.WAIT, score: 0, submits: [] }],
+                    [
+                        'player1',
+                        {
+                            id: 'player1',
+                            nickname: '닉네임1',
+                            state: PLAYER_STATE.WAIT,
+                            score: 0,
+                            submits: [],
+                        },
+                    ],
+                    [
+                        'player2',
+                        {
+                            id: 'player2',
+                            nickname: '닉네임2',
+                            state: PLAYER_STATE.WAIT,
+                            score: 0,
+                            submits: [],
+                        },
+                    ],
                 ]),
                 hostId: 'adminId',
                 maxPlayers: 2,
@@ -281,7 +354,9 @@ describe('QuizZoneService', () => {
 
             mockQuizZoneRepository.get.mockResolvedValue(mockQuizZone);
 
-            await expect(service.setPlayerInfo(clientId, quizZoneId)).rejects.toThrow(BadRequestException);
+            await expect(service.setPlayerInfo(clientId, quizZoneId)).rejects.toThrow(
+                BadRequestException,
+            );
         });
 
         it('플레이어가 추가될 때 닉네임이 순서대로 할당된다', async () => {
@@ -289,7 +364,16 @@ describe('QuizZoneService', () => {
             const clientId = 'clientId';
             const mockQuizZone: QuizZone = {
                 players: new Map([
-                    ['player1', { id: 'player1', nickname: nickNames[0], state: PLAYER_STATE.WAIT, score: 0, submits: [] }],
+                    [
+                        'player1',
+                        {
+                            id: 'player1',
+                            nickname: nickNames[0],
+                            state: PLAYER_STATE.WAIT,
+                            score: 0,
+                            submits: [],
+                        },
+                    ],
                 ]),
                 hostId: 'adminId',
                 maxPlayers: 10,
@@ -324,7 +408,18 @@ describe('QuizZoneService', () => {
             const quizZoneId = 'testQuizZone';
             const clientId = 'clientId';
             const mockQuizZone: QuizZone = {
-                players: new Map([[clientId, { id: clientId, nickname: '닉네임', state: PLAYER_STATE.WAIT, score: 0, submits: [] }]]),
+                players: new Map([
+                    [
+                        clientId,
+                        {
+                            id: clientId,
+                            nickname: '닉네임',
+                            state: PLAYER_STATE.WAIT,
+                            score: 0,
+                            submits: [],
+                        },
+                    ],
+                ]),
                 hostId: 'adminId',
                 maxPlayers: 10,
                 title: '테스트 퀴즈',
@@ -363,7 +458,9 @@ describe('QuizZoneService', () => {
 
             mockQuizZoneRepository.get.mockResolvedValue(mockQuizZone);
 
-            await expect(service.checkValidPlayer(clientId, quizZoneId)).rejects.toThrow(BadRequestException);
+            await expect(service.checkValidPlayer(clientId, quizZoneId)).rejects.toThrow(
+                BadRequestException,
+            );
         });
     });
 
@@ -393,9 +490,36 @@ describe('QuizZoneService', () => {
             const clientId = 'clientId';
             const mockQuizZone: QuizZone = {
                 players: new Map([
-                    ['clientId', { id: 'clientId', nickname: 'nick1', state: PLAYER_STATE.WAIT, score: 0, submits: [] }],
-                    ['player2', { id: 'player2', nickname: 'nick2', state: PLAYER_STATE.WAIT, score: 0, submits: [] }],
-                    ['player3', { id: 'player3', nickname: 'nick3', state: PLAYER_STATE.WAIT, score: 0, submits: [] }],
+                    [
+                        'clientId',
+                        {
+                            id: 'clientId',
+                            nickname: 'nick1',
+                            state: PLAYER_STATE.WAIT,
+                            score: 0,
+                            submits: [],
+                        },
+                    ],
+                    [
+                        'player2',
+                        {
+                            id: 'player2',
+                            nickname: 'nick2',
+                            state: PLAYER_STATE.WAIT,
+                            score: 0,
+                            submits: [],
+                        },
+                    ],
+                    [
+                        'player3',
+                        {
+                            id: 'player3',
+                            nickname: 'nick3',
+                            state: PLAYER_STATE.WAIT,
+                            score: 0,
+                            submits: [],
+                        },
+                    ],
                 ]),
                 hostId: 'adminId',
                 maxPlayers: 10,

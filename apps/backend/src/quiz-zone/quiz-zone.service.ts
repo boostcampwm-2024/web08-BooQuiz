@@ -11,6 +11,7 @@ import { QuizZone } from './entities/quiz-zone.entity';
 import { IQuizZoneRepository } from './repository/quiz-zone.repository.interface';
 import { WaitingQuizZoneDto } from './dto/waiting-quiz-zone.dto';
 import { PLAYER_STATE, QUIZ_ZONE_STAGE } from '../common/constants';
+import { FindQuizZoneDto } from './dto/find-quiz-zone.dto';
 
 const playTime = 30_000;
 const MAX_PLAYERS = 10;
@@ -101,22 +102,22 @@ export class QuizZoneService {
         return quizZone;
     }
 
-    async getLobbyInfo(clinetId: string, quizZoneId: string) {
+    async getLobbyInfo(clinetId: string, quizZoneId: string): Promise<FindQuizZoneDto> {
         const { players, title, description, quizzes, stage, hostId } =
             await this.findOne(quizZoneId);
         const { id, nickname, state } = players.get(clinetId);
 
         return {
             currentPlayer: { id, nickname, state },
-            quizZoneTitle: title,
-            quizZoneDescription: description,
+            title: title,
+            description: description,
             quizCount: quizzes.length,
             stage: stage,
             hostId: hostId,
         };
     }
 
-    async getProgressInfo(clientId: string, quizZoneId: string) {
+    async getProgressInfo(clientId: string, quizZoneId: string): Promise<FindQuizZoneDto> {
         const {
             players,
             stage,
@@ -132,28 +133,33 @@ export class QuizZoneService {
 
         return {
             currentPlayer: { id, nickname, state },
-            stage: stage,
-            currentQuizIndex: currentQuizIndex,
-            currentQuizStartTime: currentQuizStartTime,
-            currentQuizDeadlineTime: currentQuizDeadlineTime,
-            quizZoneTitle: title,
-            quizZoneDescription: description,
+            title,
+            description,
             quizCount: quizzes.length,
-            intervalTime: intervalTime,
+            stage,
             hostId: hostId,
+            currentQuiz: {
+                currentIndex: currentQuizIndex,
+                startTime: currentQuizStartTime,
+                deadlineTime: currentQuizDeadlineTime,
+                playTime: quizzes[currentQuizIndex].playTime,
+                question: quizzes[currentQuizIndex].question,
+                stage: stage,
+            },
         };
     }
 
-    async getResultInfo(clientId: string, quizZoneId: string) {
-        const { players, stage, title, description, quizzes } = await this.findOne(quizZoneId);
+    async getResultInfo(clientId: string, quizZoneId: string): Promise<FindQuizZoneDto> {
+        const { players, stage, title, description, hostId } = await this.findOne(quizZoneId);
         const { id, nickname, state, submits, score } = players.get(clientId);
 
         return {
             currentPlayer: { id, nickname, state, score, submits },
+            title,
+            description,
+            quizCount: quizzes.length,
             stage: stage,
-            quizzes: quizzes,
-            quizZoneTitle: title,
-            quizZoneDescription: description,
+            hostId,
         };
     }
 
