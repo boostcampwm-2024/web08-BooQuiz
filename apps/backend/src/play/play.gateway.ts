@@ -45,6 +45,7 @@ interface SendEventMessage<T> {
     data: T;
 }
 
+const CLOSE_NORMAL = 1000;
 /**
  * 퀴즈 게임에 대한 WebSocket 연결을 관리하는 Gateway입니다.
  * 클라이언트가 퀴즈 진행, 제출, 타임아웃 및 결과 요약과 관련된 이벤트를 처리합니다.
@@ -84,9 +85,9 @@ export class PlayGateway implements OnGatewayConnection, OnGatewayInit {
         client['sessionId'] = cookies['connect.sid'].split('.').at(0).slice(2);
     }
 
-    async handleDisconnect(client: WebSocket) {
-        client.terminate();
-    }
+    // async handleDisconnect(client: WebSocket) {
+    //     client.terminate();
+    // }
 
     // 방장 유무에 따라 PlayInfo를 반환합니다.
     private getJoinPlayInfo(client: WebSocket, quizZoneId: string): PlayInfo {
@@ -267,6 +268,7 @@ export class PlayGateway implements OnGatewayConnection, OnGatewayInit {
                 const summaryResult = await this.playService.summary(quizZoneId, clientId);
                 this.sendToClient(websocket, 'summary', summaryResult);
                 this.clients.delete(clientId);
+                websocket.close(CLOSE_NORMAL, '퀴즈가 종료되었습니다.');
             }),
         );
 
