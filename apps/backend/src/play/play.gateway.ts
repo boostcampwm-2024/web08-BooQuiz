@@ -14,6 +14,7 @@ import { parse } from 'cookie';
 import { QuizSubmitDto } from './dto/quiz-submit.dto';
 import { QuizJoinDto } from './dto/quiz-join.dto';
 import { BadRequestException, Inject, NotFoundException } from '@nestjs/common';
+import { QUIZ_ZONE_STAGE } from '../common/constants';
 
 //TODO 여러명일때 service 수정해야함.
 
@@ -121,6 +122,7 @@ export class PlayGateway implements OnGatewayConnection, OnGatewayInit {
         const sessionId = client['sessionId'];
         const { quizZoneId } = quizJoinDto;
 
+        await this.playService.validatePlayer(quizZoneId, sessionId);
         this.clients.set(sessionId, { quizZoneId, socket: client });
 
         const playInfo = this.getJoinPlayInfo(client, quizZoneId);
@@ -155,8 +157,10 @@ export class PlayGateway implements OnGatewayConnection, OnGatewayInit {
             return;
         }
 
+        await this.playService.checkQuizZoneStage(quizZoneId, QUIZ_ZONE_STAGE.LOBBY);
         this.broadcast(quizZoneId, 'start', 'OK');
 
+        await this.playService.changeQuizZoneStage(quizZoneId, QUIZ_ZONE_STAGE.IN_PROGRESS);
         this.server.emit('nextQuiz', quizZoneId);
     }
 
@@ -171,6 +175,9 @@ export class PlayGateway implements OnGatewayConnection, OnGatewayInit {
             const { intervalTime, nextQuiz } = await this.playService.playNextQuiz(quizZoneId);
 
             this.broadcast(quizZoneId, 'nextQuiz', nextQuiz);
+            // setTimeout(() => {
+            //     this.playService.changePlayerState(quizZoneId, 'PLAY');
+            // }, intervalTime);
 
             playInfo.submitHandle = setTimeout(() => {
                 this.quizTimeOut(quizZoneId);
@@ -198,7 +205,7 @@ export class PlayGateway implements OnGatewayConnection, OnGatewayInit {
         const clientId = client['sessionId'];
         const { quizZoneId } = this.getClientInfo(clientId);
         const playInfo = this.getPlayInfo(quizZoneId);
-
+        await this.playService.checkQuizZoneStage(quizZoneId, QUIZ_ZONE_STAGE.IN_PROGRESS);
         // 개인이 제출하는 경우
         await this.playService.submit(quizZoneId, clientId, {
             ...quizSubmit,

@@ -1,0 +1,5 @@
+export enum QUIZ_ZONE_STAGE {
+    LOBBY = 'LOBBY',
+    IN_PROGRESS = 'IN_PROGRESS',
+    RESULT = 'RESULT',
+}

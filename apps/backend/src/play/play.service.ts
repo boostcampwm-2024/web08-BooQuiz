@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { QuizZoneService } from '../quiz-zone/quiz-zone.service';
 import { SubmittedQuiz } from '../quiz-zone/entities/submitted-quiz.entity';
-import { QuizZone } from '../quiz-zone/entities/quiz-zone.entity';
+import { QUIZ_ZONE_STAGE, QuizZone } from '../quiz-zone/entities/quiz-zone.entity';
 import { QuizResultSummaryDto } from './dto/quiz-result-summary.dto';
 import { CurrentQuizDto } from './dto/current-quiz.dto';
 
@@ -174,5 +174,33 @@ export class PlayService {
     async isHostPlayer(quizZoneId: string, clientId: string) {
         const { hostId } = await this.quizZoneService.findOne(quizZoneId);
         return hostId === clientId;
+    }
+
+    async validatePlayer(quizZoneId: string, clientId: string) {
+        const quizZone = await this.quizZoneService.findOne(quizZoneId);
+        if (!quizZone.players.has(clientId)) {
+            throw new BadRequestException('플레이어 정보를 찾을 수 없습니다.');
+        }
+    }
+
+    async checkQuizZoneStage(quizZoneId: string, stage: string) {
+        const quizZone = await this.quizZoneService.findOne(quizZoneId);
+        if (quizZone.stage !== stage) {
+            throw new BadRequestException(`퀴즈 존의 상태가 ${stage}가 아닙니다.`);
+        }
+    }
+    async checkPlayerState(quizZoneId: string, clientId: string, state: string) {
+        const { players } = await this.quizZoneService.findOne(quizZoneId);
+        if (players.get(clientId).state !== state) {
+            throw new BadRequestException(`사용자의 상태가 ${state}가 아닙니다.`);
+        }
+    }
+    async changeQuizZoneStage(quizZoneId: string, stage: QUIZ_ZONE_STAGE) {
+        const quizZone = await this.quizZoneService.findOne(quizZoneId);
+        quizZone.stage = stage;
+    }
+    async changePlayerState(quizZoneId: string, stage: QUIZ_ZONE_STAGE) {
+        const quizZone = await this.quizZoneService.findOne(quizZoneId);
+        quizZone.stage = stage;
     }
 }
