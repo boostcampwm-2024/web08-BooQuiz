@@ -47,6 +47,7 @@ interface SendEventMessage<T> {
 }
 
 const CLOSE_NORMAL = 1000;
+
 /**
  * 퀴즈 게임에 대한 WebSocket 연결을 관리하는 Gateway입니다.
  * 클라이언트가 퀴즈 진행, 제출, 타임아웃 및 결과 요약과 관련된 이벤트를 처리합니다.
@@ -123,7 +124,7 @@ export class PlayGateway implements OnGatewayConnection, OnGatewayInit {
         const { quizZoneId } = quizJoinDto;
 
         await this.playService.validatePlayer(quizZoneId, sessionId);
-        
+
         this.clients.set(sessionId, { quizZoneId, socket: client });
 
         const playInfo = this.getJoinPlayInfo(client, quizZoneId);
@@ -165,6 +166,39 @@ export class PlayGateway implements OnGatewayConnection, OnGatewayInit {
         await this.playService.changeQuizZoneStage(quizZoneId, QUIZ_ZONE_STAGE.IN_PROGRESS);
 
         this.server.emit('nextQuiz', quizZoneId);
+    }
+
+    //대기실에서 나가기
+    @SubscribeMessage('leave')
+    async leave(@ConnectedSocket() client: WebSocket) {
+        const clientId = client['sessionId'];
+        const { quizZoneId } = this.getClientInfo(clientId);
+        const playInfo = this.getPlayInfo(quizZoneId);
+        const isLobby = await this.playService.isLobbyStage(quizZoneId);
+
+        if (!isLobby) {
+            throw new BadRequestException('게임이 진행중입니다.');
+        }
+
+        const isHost = await this.playService.isHostPlayer(quizZoneId, clientId);
+
+        if (isHost) {
+            //방전체폭파
+            await Promise.all(
+                Array.from(playInfo.quizZoneClients).map(async ([clientId, websocket]) => {
+                    this.clients.delete(clientId);
+                    websocket.close(CLOSE_NORMAL, '방장이 나가 퀴즈가 종료되었습니다.');
+                }),
+            );
+            this.plays.delete(quizZoneId);
+            await this.playService.clearQuizZone(quizZoneId);
+            return { event: 'leave', data: 'OK' };
+        }
+        //대기실에서 일반 사용자 나가는 경우
+        await this.playService.leave(quizZoneId, clientId);
+        this.clients.delete(clientId);
+        client.close(CLOSE_NORMAL, '퀴즈존을 나갔습니다.');
+        this.broadcast(quizZoneId, 'someone_leave', clientId);
     }
 
     /**

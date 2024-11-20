@@ -188,6 +188,10 @@ export class PlayService {
             throw new BadRequestException(`퀴즈 존의 상태가 ${stage}가 아닙니다.`);
         }
     }
+    async isLobbyStage(quizZoneId: string) {
+        const quizZone = await this.quizZoneService.findOne(quizZoneId);
+        return quizZone.stage === QUIZ_ZONE_STAGE.LOBBY;
+    }
     async checkPlayerState(quizZoneId: string, clientId: string, state: string) {
         const { players } = await this.quizZoneService.findOne(quizZoneId);
         if (players.get(clientId).state !== state) {
@@ -203,5 +207,9 @@ export class PlayService {
         players.forEach((player) => {
             player.state = stage;
         });
+    }
+
+    async leave(quizZoneId: string, clientId: any) {
+        await this.quizZoneService.leave(quizZoneId, clientId);
     }
 }

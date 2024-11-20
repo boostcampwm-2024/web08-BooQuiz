@@ -102,7 +102,8 @@ export class QuizZoneService {
     }
 
     async getLobbyInfo(clinetId: string, quizZoneId: string) {
-        const { players, title, description, quizzes, stage, hostId } = await this.findOne(quizZoneId);
+        const { players, title, description, quizzes, stage, hostId } =
+            await this.findOne(quizZoneId);
         const { id, nickname, state } = players.get(clinetId);
 
         return {
@@ -116,7 +117,17 @@ export class QuizZoneService {
     }
 
     async getProgressInfo(clientId: string, quizZoneId: string) {
-        const { players, stage, currentQuizIndex, currentQuizStartTime, currentQuizDeadlineTime, hostId, title, description, intervalTime } = await this.findOne(quizZoneId);
+        const {
+            players,
+            stage,
+            currentQuizIndex,
+            currentQuizStartTime,
+            currentQuizDeadlineTime,
+            hostId,
+            title,
+            description,
+            intervalTime,
+        } = await this.findOne(quizZoneId);
         const { id, nickname, state } = players.get(clientId);
 
         return {
@@ -205,5 +216,10 @@ export class QuizZoneService {
         const { stage } = await this.findOne(quizZoneId);
 
         return stage;
+    }
+
+    async leave(quizZoneId: string, clientId: any) {
+        const quizZone = await this.repository.get(quizZoneId);
+        quizZone.players.delete(clientId);
     }
 }
