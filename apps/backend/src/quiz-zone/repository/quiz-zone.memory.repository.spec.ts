@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { QuizZoneRepositoryMemory } from './quiz-zone.memory.repository';
 import { QuizZone } from '../entities/quiz-zone.entity';
+import { QUIZ_ZONE_STAGE } from '../../common/constants';
 
 describe('QuizZoneRepositoryMemory', () => {
     let storage: Map<string, QuizZone>;
@@ -31,7 +32,7 @@ describe('QuizZoneRepositoryMemory', () => {
                 hostId: 'adminId',
                 maxPlayers: 4,
                 quizzes: [],
-                stage: 'LOBBY',
+                stage: QUIZ_ZONE_STAGE.LOBBY,
                 title: 'title',
                 description: 'description',
                 currentQuizIndex: 0,

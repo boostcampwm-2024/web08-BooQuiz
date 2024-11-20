@@ -1,9 +1,10 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { QuizZoneService } from '../quiz-zone/quiz-zone.service';
 import { SubmittedQuiz } from '../quiz-zone/entities/submitted-quiz.entity';
-import { QUIZ_ZONE_STAGE, QuizZone } from '../quiz-zone/entities/quiz-zone.entity';
+import { QuizZone } from '../quiz-zone/entities/quiz-zone.entity';
 import { QuizResultSummaryDto } from './dto/quiz-result-summary.dto';
 import { CurrentQuizDto } from './dto/current-quiz.dto';
+import { PLAYER_STATE, QUIZ_ZONE_STAGE } from '../common/constants';
 
 @Injectable()
 export class PlayService {
@@ -35,7 +36,7 @@ export class PlayService {
         const nextQuiz = await this.nextQuiz(quizZoneId);
 
         quizZone.players.forEach((player) => {
-            player.state = 'WAIT';
+            player.state = PLAYER_STATE.WAIT;
         });
 
         return {
@@ -63,7 +64,6 @@ export class PlayService {
 
         const nextQuiz = quizzes.at(currentQuizIndex);
 
-        quizZone.stage = 'WAITING';
         quizZone.currentQuizStartTime = Date.now() + intervalTime;
         quizZone.currentQuizDeadlineTime = quizZone.currentQuizStartTime + nextQuiz.playTime;
 
@@ -126,7 +126,7 @@ export class PlayService {
             player.score++;
         }
 
-        player.state = 'SUBMIT';
+        player.state = PLAYER_STATE.SUBMIT;
     }
 
     /**

@@ -10,6 +10,7 @@ import { Player } from './entities/player.entity';
 import { QuizZone } from './entities/quiz-zone.entity';
 import { IQuizZoneRepository } from './repository/quiz-zone.repository.interface';
 import { WaitingQuizZoneDto } from './dto/waiting-quiz-zone.dto';
+import { PLAYER_STATE, QUIZ_ZONE_STAGE } from '../common/constants';
 
 const playTime = 30_000;
 const MAX_PLAYERS = 10;
@@ -62,7 +63,7 @@ export class QuizZoneService {
             nickname: nickNames[0],
             score: 0,
             submits: [],
-            state: 'WAIT',
+            state: PLAYER_STATE.WAIT,
         };
 
         const quizZone: QuizZone = {
@@ -72,7 +73,7 @@ export class QuizZoneService {
             hostId: hostId,
             maxPlayers: MAX_PLAYERS,
             quizzes: [...quizzes],
-            stage: 'LOBBY',
+            stage: QUIZ_ZONE_STAGE.LOBBY,
             currentQuizIndex: -1,
             currentQuizStartTime: 0,
             currentQuizDeadlineTime: 0,
@@ -129,7 +130,7 @@ export class QuizZoneService {
             nickname: nickNames[playerCount],
             score: 0,
             submits: [],
-            state: 'WAIT',
+            state: PLAYER_STATE.WAIT,
         });
     }
 

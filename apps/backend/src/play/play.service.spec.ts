@@ -4,6 +4,7 @@ import { PlayService } from './play.service';
 import { QuizZoneService } from '../quiz-zone/quiz-zone.service';
 import { QuizZone } from '../quiz-zone/entities/quiz-zone.entity';
 import { SubmittedQuiz } from '../quiz-zone/entities/submitted-quiz.entity';
+import { PLAYER_STATE, QUIZ_ZONE_STAGE } from '../common/constants';
 
 describe('PlayService', () => {
     let service: PlayService;
@@ -11,7 +12,7 @@ describe('PlayService', () => {
 
     const mockQuizZone: QuizZone = {
         hostId: 'host-1',
-        stage: 'WAITING',
+        stage: QUIZ_ZONE_STAGE.LOBBY,
         intervalTime: 5000,
         maxPlayers: 10,
         currentQuizIndex: -1,
@@ -30,7 +31,7 @@ describe('PlayService', () => {
                 {
                     id: 'player-1',
                     nickname: 'player1',
-                    state: 'PLAY',
+                    state: PLAYER_STATE.PLAY,
                     score: 0,
                     submits: [],
                 },
@@ -78,7 +79,7 @@ describe('PlayService', () => {
                         'player-1',
                         {
                             ...mockQuizZone.players.get('player-1'),
-                            state: 'SUBMIT',
+                            state: PLAYER_STATE.SUBMIT,
                         },
                     ],
                 ]),
@@ -151,7 +152,10 @@ describe('PlayService', () => {
                 ...mockQuizZone,
                 submitCount: 1,
                 players: new Map([
-                    ['player-1', { ...mockQuizZone.players.get('player-1'), state: 'SUBMIT' }],
+                    [
+                        'player-1',
+                        { ...mockQuizZone.players.get('player-1'), state: PLAYER_STATE.SUBMIT },
+                    ],
                 ]),
             };
 
@@ -166,8 +170,14 @@ describe('PlayService', () => {
                 ...mockQuizZone,
                 submitCount: 0,
                 players: new Map([
-                    ['player-1', { ...mockQuizZone.players.get('player-1'), state: 'PLAY' }],
-                    ['player-2', { ...mockQuizZone.players.get('player-2'), state: 'SUBMIT' }],
+                    [
+                        'player-1',
+                        { ...mockQuizZone.players.get('player-1'), state: PLAYER_STATE.PLAY },
+                    ],
+                    [
+                        'player-2',
+                        { ...mockQuizZone.players.get('player-2'), state: PLAYER_STATE.SUBMIT },
+                    ],
                 ]),
             };
 

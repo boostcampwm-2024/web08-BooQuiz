@@ -5,6 +5,7 @@ import { QuizZone } from './entities/quiz-zone.entity';
 import { IQuizZoneRepository } from './repository/quiz-zone.repository.interface';
 import { Quiz } from './entities/quiz.entity';
 import { Player } from './entities/player.entity';
+import { PLAYER_STATE, QUIZ_ZONE_STAGE } from '../common/constants';
 
 const nickNames: string[] = [
     '전설의고양이',
@@ -132,7 +133,7 @@ describe('QuizZoneService', () => {
                 title: '테스트 퀴즈',
                 description: '테스트 퀴즈입니다',
                 quizzes: [],
-                stage: 'LOBBY',
+                stage: QUIZ_ZONE_STAGE.LOBBY,
                 currentQuizIndex: -1,
                 currentQuizStartTime: 0,
                 currentQuizDeadlineTime: 0,
@@ -159,7 +160,7 @@ describe('QuizZoneService', () => {
                 title: '테스트 퀴즈',
                 description: '테스트 퀴즈입니다',
                 quizzes: [{ question: 'test?', answer: 'test', playTime: 30000 }],
-                stage: 'LOBBY',
+                stage: QUIZ_ZONE_STAGE.LOBBY,
                 currentQuizIndex: -1,
                 currentQuizStartTime: 0,
                 currentQuizDeadlineTime: 0,
@@ -197,18 +198,36 @@ describe('QuizZoneService', () => {
         const sessionId = 'testSession';
 
         it('이미 players에 등록된 사용자이면 players 추가하지 않는다.', async () => {
-            const player = { id: 'player1', nickname: '1', score: 0, submits: [], state: 'WAIT' };
+            const player = {
+                id: 'player1',
+                nickname: '1',
+                score: 0,
+                submits: [],
+                state: PLAYER_STATE.WAIT,
+            };
 
             //given
             const mockQuizZone: QuizZone = {
                 players: new Map([
                     [
                         'player1',
-                        { id: 'player1', nickname: '1', score: 0, submits: [], state: 'WAIT' },
+                        {
+                            id: 'player1',
+                            nickname: '1',
+                            score: 0,
+                            submits: [],
+                            state: PLAYER_STATE.WAIT,
+                        },
                     ],
                     [
                         'player2',
-                        { id: 'player2', nickname: '2', score: 0, submits: [], state: 'WAIT' },
+                        {
+                            id: 'player2',
+                            nickname: '2',
+                            score: 0,
+                            submits: [],
+                            state: PLAYER_STATE.WAIT,
+                        },
                     ],
                 ]),
                 maxPlayers: 5,
@@ -216,7 +235,7 @@ describe('QuizZoneService', () => {
                 title: '테스트 퀴즈',
                 description: '테스트 퀴즈입니다',
                 quizzes: [],
-                stage: 'LOBBY',
+                stage: QUIZ_ZONE_STAGE.LOBBY,
                 currentQuizIndex: -1,
                 currentQuizStartTime: 0,
                 currentQuizDeadlineTime: 0,
@@ -226,7 +245,7 @@ describe('QuizZoneService', () => {
             mockQuizZoneRepository.get.mockResolvedValue(mockQuizZone);
 
             //when
-            service.setPlayerInfo(quizZoneId, player.id);
+            await service.setPlayerInfo(quizZoneId, player.id);
 
             //then
             expect(mockQuizZone.players.size).toEqual(2);
@@ -238,11 +257,23 @@ describe('QuizZoneService', () => {
                 players: new Map([
                     [
                         'player1',
-                        { id: 'player1', nickname: '1', score: 0, submits: [], state: 'WAIT' },
+                        {
+                            id: 'player1',
+                            nickname: '1',
+                            score: 0,
+                            submits: [],
+                            state: PLAYER_STATE.WAIT,
+                        },
                     ],
                     [
                         'player2',
-                        { id: 'player2', nickname: '2', score: 0, submits: [], state: 'WAIT' },
+                        {
+                            id: 'player2',
+                            nickname: '2',
+                            score: 0,
+                            submits: [],
+                            state: PLAYER_STATE.WAIT,
+                        },
                     ],
                 ]),
                 maxPlayers: 2,
@@ -250,7 +281,7 @@ describe('QuizZoneService', () => {
                 title: '테스트 퀴즈',
                 description: '테스트 퀴즈입니다',
                 quizzes: [],
-                stage: 'LOBBY',
+                stage: QUIZ_ZONE_STAGE.LOBBY,
                 currentQuizIndex: -1,
                 currentQuizStartTime: 0,
                 currentQuizDeadlineTime: 0,
@@ -276,7 +307,7 @@ describe('QuizZoneService', () => {
                             nickname: nickNames[0],
                             score: 0,
                             submits: [],
-                            state: 'WAIT',
+                            state: PLAYER_STATE.WAIT,
                         },
                     ],
                 ]),
@@ -285,7 +316,7 @@ describe('QuizZoneService', () => {
                 title: '테스트 퀴즈',
                 description: '테스트 퀴즈입니다',
                 quizzes: [],
-                stage: 'LOBBY',
+                stage: QUIZ_ZONE_STAGE.LOBBY,
                 currentQuizIndex: -1,
                 currentQuizStartTime: 0,
                 currentQuizDeadlineTime: 0,
@@ -316,7 +347,7 @@ describe('QuizZoneService', () => {
                 title: '테스트 퀴즈',
                 description: '테스트 퀴즈입니다',
                 quizzes: [{ question: 'test?', answer: 'test', playTime: 30000 }],
-                stage: 'LOBBY',
+                stage: QUIZ_ZONE_STAGE.LOBBY,
                 currentQuizIndex: -1,
                 currentQuizStartTime: 0,
                 currentQuizDeadlineTime: 0,
@@ -349,15 +380,33 @@ describe('QuizZoneService', () => {
             const players = new Map<string, Player>([
                 [
                     'player1',
-                    { id: 'player1', nickname: 'nick1', score: 0, submits: [], state: 'WAIT' },
+                    {
+                        id: 'player1',
+                        nickname: 'nick1',
+                        score: 0,
+                        submits: [],
+                        state: PLAYER_STATE.WAIT,
+                    },
                 ],
                 [
                     'player2',
-                    { id: 'player2', nickname: 'nick2', score: 0, submits: [], state: 'WAIT' },
+                    {
+                        id: 'player2',
+                        nickname: 'nick2',
+                        score: 0,
+                        submits: [],
+                        state: PLAYER_STATE.WAIT,
+                    },
                 ],
                 [
                     'player3',
-                    { id: 'player3', nickname: 'nick3', score: 0, submits: [], state: 'WAIT' },
+                    {
+                        id: 'player3',
+                        nickname: 'nick3',
+                        score: 0,
+                        submits: [],
+                        state: PLAYER_STATE.WAIT,
+                    },
                 ],
             ]);
 
@@ -368,7 +417,7 @@ describe('QuizZoneService', () => {
                 title: '테스트 퀴즈',
                 description: '테스트 퀴즈입니다',
                 quizzes: [],
-                stage: 'LOBBY',
+                stage: QUIZ_ZONE_STAGE.LOBBY,
                 currentQuizIndex: -1,
                 currentQuizStartTime: 0,
                 currentQuizDeadlineTime: 0,
