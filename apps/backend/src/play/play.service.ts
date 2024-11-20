@@ -166,12 +166,13 @@ export class PlayService {
         return player;
     }
 
-    async checkHost(quizZoneId: string, clientId: string) {
-        await this.quizZoneService.checkHost(quizZoneId, clientId);
-    }
-
     async checkAllSubmitted(quizZoneId: string) {
         const quizZone = await this.quizZoneService.findOne(quizZoneId);
         return quizZone.submitCount === quizZone.players.size;
+    }
+
+    async isHostPlayer(quizZoneId: string, clientId: string) {
+        const { hostId } = await this.quizZoneService.findOne(quizZoneId);
+        return hostId === clientId;
     }
 }

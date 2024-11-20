@@ -1,4 +1,10 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import {
+    BadRequestException,
+    ConflictException,
+    Inject,
+    Injectable,
+    NotFoundException,
+} from '@nestjs/common';
 import { Quiz } from './entities/quiz.entity';
 import { Player } from './entities/player.entity';
 import { QuizZone } from './entities/quiz-zone.entity';
@@ -45,6 +51,12 @@ export class QuizZoneService {
      * @throws(ConflictException) 이미 저장된 ID인 경우 예외 발생
      */
     async create(quizZoneId: string, hostId: string): Promise<void> {
+        const hasQuizZone = await this.repository.has(quizZoneId);
+
+        if (hasQuizZone) {
+            throw new ConflictException('이미 존재하는 퀴즈존입니다.');
+        }
+
         const player: Player = {
             id: hostId,
             nickname: nickNames[0],
@@ -52,6 +64,7 @@ export class QuizZoneService {
             submits: [],
             state: 'WAIT',
         };
+
         const quizZone: QuizZone = {
             players: new Map<string, Player>([[hostId, player]]),
             title: '넌센스 퀴즈',
@@ -78,39 +91,46 @@ export class QuizZoneService {
      * @throws {NotFoundException} 퀴즈 존을 찾을 수 없는 경우
      */
     async findOne(quizZoneId: string): Promise<QuizZone> {
-        return this.repository.get(quizZoneId);
+        const quizZone = this.repository.get(quizZoneId);
+
+        if (quizZone === null) {
+            throw new NotFoundException('퀴즈존 정보를 확인할 수 없습니다.');
+        }
+
+        return quizZone;
     }
 
     async getWaitingInfo(quizZoneId: string): Promise<WaitingQuizZoneDto> {
-        const quizZone = await this.repository.get(quizZoneId);
+        const { title, description, quizzes, stage, hostId } = await this.findOne(quizZoneId);
+
         return {
-            quizZoneTitle: quizZone.title,
-            quizZoneDescription: quizZone.description,
-            quizCount: quizZone.quizzes.length,
-            stage: quizZone.stage,
-            hostId: quizZone.hostId,
+            quizZoneTitle: title,
+            quizZoneDescription: description,
+            quizCount: quizzes.length,
+            stage: stage,
+            hostId: hostId,
         };
     }
-    async setPlayerInfo(quizZoneId: string, sessionId: string) {
-        const quizZone = await this.repository.get(quizZoneId);
 
-        if (quizZone.players.has(sessionId)) {
+    async setPlayerInfo(quizZoneId: string, sessionId: string) {
+        const { players, maxPlayers } = await this.findOne(quizZoneId);
+        const playerCount = players.size;
+
+        if (players.has(sessionId)) {
             return;
         }
 
-        const size = quizZone.players.size;
-        if (size >= quizZone.maxPlayers) {
-            throw new BadRequestException();
+        if (playerCount >= maxPlayers) {
+            throw new BadRequestException('퀴즈존 정원이 초과되었습니다.');
         }
-        const nickname = nickNames[size];
-        const player: Player = {
+
+        players.set(sessionId, {
             id: sessionId,
-            nickname: nickname,
+            nickname: nickNames[playerCount],
             score: 0,
             submits: [],
             state: 'WAIT',
-        };
-        quizZone.players.set(sessionId, player);
+        });
     }
 
     /**
@@ -120,24 +140,20 @@ export class QuizZoneService {
      * @returns 퀴즈 존 삭제 작업
      */
     async clearQuizZone(quizZoneId: string): Promise<void> {
+        const hasQuizZone = await this.repository.has(quizZoneId);
+
+        if (!hasQuizZone) {
+            throw new BadRequestException('존재하지 않는 퀴즈존입니다.');
+        }
+
         await this.repository.delete(quizZoneId);
     }
 
     async findOthersInfo(quizZoneId: string, sessionId: string) {
-        const quizZone = await this.repository.get(quizZoneId);
-        return Array.from(quizZone.players.values())
-            .filter((player) => {
-                return player.id !== sessionId;
-            })
-            .map((player) => {
-                return { nickname: player.nickname, id: player.id };
-            });
-    }
+        const { players } = await this.findOne(quizZoneId);
 
-    async checkHost(quizZoneId: string, clientId: string) {
-        const quizZone = await this.repository.get(quizZoneId);
-        if (quizZone.hostId !== clientId) {
-            throw new BadRequestException();
-        }
+        return [...players.values()]
+            .filter((player) => player.id !== sessionId)
+            .map(({ id, nickname }) => ({ nickname, id }));
     }
 }

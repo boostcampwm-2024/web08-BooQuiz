@@ -1,9 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { QuizZoneService } from './quiz-zone.service';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common';
 import { QuizZone } from './entities/quiz-zone.entity';
 import { IQuizZoneRepository } from './repository/quiz-zone.repository.interface';
 import { Quiz } from './entities/quiz.entity';
+import { Player } from './entities/player.entity';
 
 const nickNames: string[] = [
     '전설의고양이',
@@ -32,11 +33,14 @@ const quizzes: Quiz[] = [
 describe('QuizZoneService', () => {
     let service: QuizZoneService;
     let repository: IQuizZoneRepository;
+
     const mockQuizZoneRepository = {
         set: jest.fn(),
         get: jest.fn(),
         delete: jest.fn(),
+        has: jest.fn(),
     };
+
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [
@@ -47,16 +51,20 @@ describe('QuizZoneService', () => {
                 },
             ],
         }).compile();
+
         service = module.get<QuizZoneService>(QuizZoneService);
         repository = module.get<IQuizZoneRepository>('QuizZoneRepository');
     });
+
     describe('create', () => {
         it('새로운 퀴즈존을 생성한다', async () => {
             // given
             const quizZoneId = 'testQuizZone';
             const adminId = 'adminId';
+
             // when
             await service.create(quizZoneId, adminId);
+
             // then
             expect(repository.set).toHaveBeenCalledWith(
                 quizZoneId,
@@ -141,7 +149,6 @@ describe('QuizZoneService', () => {
     });
     describe('getWaitingInfo', () => {
         const quizZoneId = 'testQuizZone';
-        const sessionId = 'testSession';
 
         it('퀴즈존의 정적 정보를 성공적으로 반환한다', async () => {
             // given
@@ -319,7 +326,7 @@ describe('QuizZoneService', () => {
             mockQuizZoneRepository.get.mockResolvedValue(mockQuizZone);
 
             // when
-            const result = await service.setPlayerInfo(quizZoneId, sessionId);
+            await service.setPlayerInfo(quizZoneId, sessionId);
 
             // 플레이어가 제대로 추가되었는지 확인
             const addedPlayer = mockQuizZone.players.get(sessionId);
@@ -339,21 +346,23 @@ describe('QuizZoneService', () => {
             // given
             const quizZoneId = 'testQuizZone';
             const sessionId = 'player1';
+            const players = new Map<string, Player>([
+                [
+                    'player1',
+                    { id: 'player1', nickname: 'nick1', score: 0, submits: [], state: 'WAIT' },
+                ],
+                [
+                    'player2',
+                    { id: 'player2', nickname: 'nick2', score: 0, submits: [], state: 'WAIT' },
+                ],
+                [
+                    'player3',
+                    { id: 'player3', nickname: 'nick3', score: 0, submits: [], state: 'WAIT' },
+                ],
+            ]);
+
             const mockQuizZone: QuizZone = {
-                players: new Map([
-                    [
-                        'player1',
-                        { id: 'player1', nickname: 'nick1', score: 0, submits: [], state: 'WAIT' },
-                    ],
-                    [
-                        'player2',
-                        { id: 'player2', nickname: 'nick2', score: 0, submits: [], state: 'WAIT' },
-                    ],
-                    [
-                        'player3',
-                        { id: 'player3', nickname: 'nick3', score: 0, submits: [], state: 'WAIT' },
-                    ],
-                ]),
+                players,
                 maxPlayers: 10,
                 hostId: 'adminId',
                 title: '테스트 퀴즈',
@@ -366,27 +375,48 @@ describe('QuizZoneService', () => {
                 intervalTime: 5000,
                 submitCount: 0,
             };
+
             mockQuizZoneRepository.get.mockResolvedValue(mockQuizZone);
+
             // when
             const result = await service.findOthersInfo(quizZoneId, sessionId);
+
             // then
             expect(result).toEqual([
                 { nickname: 'nick2', id: 'player2' },
                 { nickname: 'nick3', id: 'player3' },
             ]);
+
             expect(result).not.toContain('nick1');
         });
     });
+
     describe('clearQuizZone', () => {
         it('퀴즈존을 삭제한다', async () => {
             // given
             const quizZoneId = 'testQuizZone';
+
+            mockQuizZoneRepository.has.mockResolvedValue(true);
+
             // when
             await service.clearQuizZone(quizZoneId);
+
             // then
             expect(repository.delete).toHaveBeenCalledWith(quizZoneId);
         });
+
+        it('존재하지 않는 퀴즈존을 삭제하려 시도하면 에러가 발생한다.', async () => {
+            // given
+            const quizZoneId = 'testQuizZone';
+
+            // when
+            mockQuizZoneRepository.has.mockResolvedValue(false);
+
+            // then
+            expect(service.clearQuizZone(quizZoneId)).rejects.toThrow(BadRequestException);
+        });
     });
+
     afterEach(() => {
         jest.clearAllMocks();
     });
