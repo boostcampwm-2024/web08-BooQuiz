@@ -35,9 +35,7 @@ export class PlayService {
 
         const nextQuiz = await this.nextQuiz(quizZoneId);
 
-        quizZone.players.forEach((player) => {
-            player.state = PLAYER_STATE.WAIT;
-        });
+        await this.changeAllPlayersState(quizZoneId, PLAYER_STATE.WAIT);
 
         return {
             intervalTime,
@@ -85,7 +83,7 @@ export class PlayService {
         const quizZone = await this.quizZoneService.findOne(quizZoneId);
         const { players } = quizZone;
         players.forEach((player) => {
-            if (player.state === 'PLAY') {
+            if (player.state === PLAYER_STATE.PLAY) {
                 this.submitQuiz(quizZone, player.id);
             }
         });
@@ -103,7 +101,7 @@ export class PlayService {
         const quiz = quizzes.at(currentQuizIndex);
         const player = players.get(clientId);
 
-        if (player.state !== 'PLAY') {
+        if (player.state !== PLAYER_STATE.PLAY) {
             throw new BadRequestException('정답을 제출할 수 없습니다.');
         }
 
@@ -136,12 +134,13 @@ export class PlayService {
      * @returns 퀴즈 결과 요약 DTO를 포함한 Promise
      */
     async summary(quizZoneId: string, clientId: string): Promise<QuizResultSummaryDto> {
-        const { players, quizzes } = await this.quizZoneService.findOne(quizZoneId);
-        const player = players.get(clientId);
+        const quizZone = await this.quizZoneService.findOne(quizZoneId);
+        quizZone.stage = QUIZ_ZONE_STAGE.RESULT;
+        const player = quizZone.players.get(clientId);
         return {
             score: player.score,
             submits: player.submits,
-            quizzes,
+            quizzes: quizZone.quizzes,
         };
     }
 
@@ -199,8 +198,10 @@ export class PlayService {
         const quizZone = await this.quizZoneService.findOne(quizZoneId);
         quizZone.stage = stage;
     }
-    async changePlayerState(quizZoneId: string, stage: QUIZ_ZONE_STAGE) {
-        const quizZone = await this.quizZoneService.findOne(quizZoneId);
-        quizZone.stage = stage;
+    async changeAllPlayersState(quizZoneId: string, stage: PLAYER_STATE) {
+        const { players } = await this.quizZoneService.findOne(quizZoneId);
+        players.forEach((player) => {
+            player.state = stage;
+        });
     }
 }

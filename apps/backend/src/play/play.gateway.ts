@@ -14,7 +14,7 @@ import { parse } from 'cookie';
 import { QuizSubmitDto } from './dto/quiz-submit.dto';
 import { QuizJoinDto } from './dto/quiz-join.dto';
 import { BadRequestException, Inject, NotFoundException } from '@nestjs/common';
-import { QUIZ_ZONE_STAGE } from '../common/constants';
+import { PLAYER_STATE, QUIZ_ZONE_STAGE } from '../common/constants';
 
 //TODO 여러명일때 service 수정해야함.
 
@@ -158,9 +158,11 @@ export class PlayGateway implements OnGatewayConnection, OnGatewayInit {
         }
 
         await this.playService.checkQuizZoneStage(quizZoneId, QUIZ_ZONE_STAGE.LOBBY);
+
         this.broadcast(quizZoneId, 'start', 'OK');
 
         await this.playService.changeQuizZoneStage(quizZoneId, QUIZ_ZONE_STAGE.IN_PROGRESS);
+
         this.server.emit('nextQuiz', quizZoneId);
     }
 
@@ -175,9 +177,10 @@ export class PlayGateway implements OnGatewayConnection, OnGatewayInit {
             const { intervalTime, nextQuiz } = await this.playService.playNextQuiz(quizZoneId);
 
             this.broadcast(quizZoneId, 'nextQuiz', nextQuiz);
-            // setTimeout(() => {
-            //     this.playService.changePlayerState(quizZoneId, 'PLAY');
-            // }, intervalTime);
+
+            setTimeout(() => {
+                this.playService.changeAllPlayersState(quizZoneId, PLAYER_STATE.PLAY);
+            }, intervalTime);
 
             playInfo.submitHandle = setTimeout(() => {
                 this.quizTimeOut(quizZoneId);
