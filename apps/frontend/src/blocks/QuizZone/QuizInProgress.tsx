@@ -3,7 +3,6 @@ import ContentBox from '@/components/common/ContentBox';
 import Input from '@/components/common/Input';
 import ProgressBar from '@/components/common/ProgressBar';
 import Typography from '@/components/common/Typogrpahy';
-import { QuizZone } from '@/types/quizZone.types';
 import { useState } from 'react';
 
 interface QuizInProgressProps {
@@ -31,7 +30,7 @@ const QuizInProgress = ({ currentQuiz, submitAnswer }: QuizInProgressProps) => {
                     color="black"
                     bold={true}
                 />
-                {currentQuiz.type == 'SHORT_ANSWER' ? (
+                {currentQuiz.type == 'SHORT' ? (
                     <>
                         <Input
                             onChange={(e) => setAnswer(e.target.value)}
@@ -50,7 +49,6 @@ const QuizInProgress = ({ currentQuiz, submitAnswer }: QuizInProgressProps) => {
                                 submitAnswer(answer);
                             }}
                         />
-                        {/* <CommonButton text={'나가기'} clickEvent={() => {}} /> */}
                     </>
                 ) : (
                     <div className="space-y-2">
