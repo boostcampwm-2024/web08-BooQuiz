@@ -1,6 +1,5 @@
-import { useEffect, useReducer, useState } from 'react';
+import { useReducer } from 'react';
 import useWebSocket from '@/hook/useWebSocket.tsx';
-import { useNavigate } from 'react-router-dom';
 import {
     CurrentQuiz,
     Player,
@@ -64,6 +63,7 @@ const quizZoneReducer: Reducer<QuizZone, QuizZoneAction> = (state, action) => {
                     playTime: payload.playTime,
                     startTime: payload.startTime,
                     deadlineTime: payload.deadlineTime,
+                    type: 'SHORT',
                 },
             };
         case 'playQuiz':
@@ -127,11 +127,19 @@ const useQuizZone = () => {
         console.log('이벤트 실행:', quizZoneState);
     };
     const wsUrl = import.meta.env.VITE_WS_URL;
+
     const { sendMessage, closeConnection } = useWebSocket(`${wsUrl}/play`, messageHandler);
 
     //initialize QuizZOne
     const initQuizZoneData = (initialData): any => {
-        dispatch({ type: 'init', payload: initialData });
+        if (initialData.stage === 'WAITING') {
+            dispatch({
+                type: 'init',
+                payload: { ...initialData, stage: 'IN_PROGRESS', playerState: 'WAIT' },
+            });
+        } else {
+            dispatch({ type: 'init', payload: initialData });
+        }
     };
 
     //퀴즈 시작 함수
@@ -142,7 +150,14 @@ const useQuizZone = () => {
 
     // 퀴즈 제출 함수
     const submitQuiz = (answer: string) => {
-        const message = JSON.stringify({ type: 'submit-answer', answer });
+        const message = JSON.stringify({
+            event: 'submit',
+            data: {
+                answer,
+                index: quizZoneState.currentQuiz?.currentIndex,
+                submittedAt: Date.now(),
+            },
+        });
         sendMessage(message);
     };
 
