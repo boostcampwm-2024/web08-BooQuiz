@@ -33,7 +33,6 @@ const NewQuizZonePage = () => {
             console.log('quizZoneData', quizZoneInitialData);
             initQuizZoneData(quizZoneInitialData);
             setIsLoading(false);
-            setShowError(true);
         } catch (e) {
             //alertDialog >> 퀴즈존을 찾을 수 없습니다. >> 확인 누르면 navigate(-1)
             setShowError(true);
