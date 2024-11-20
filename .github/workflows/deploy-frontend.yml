@@ -1,10 +1,8 @@
 name: Deploy Frontend
 
 on:
-    pull_request:
-        branches: [develop]
-        paths:
-          - apps/frontend/**
+    workflow_call: {}
+
     push:
         branches: [main]
         paths:

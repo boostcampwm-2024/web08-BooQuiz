@@ -35,3 +35,31 @@ jobs:
             - name: Run tests for ${{ matrix.app }}
               working-directory: apps/${{ matrix.app }}
               run: pnpm test
+
+    deploy-trigger:
+        needs: test
+        runs-on: ubuntu-latest
+
+        strategy:
+          matrix:
+              app: [frontend, backend]
+
+        if: github.ref == 'refs/heads/develop'
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Check for changes
+              id: check-changes
+              run: |
+                  git diff --name-only ${{ github.event.before }} ${{ github.sha }} > changed_files.txt
+                  if grep -q "^apps/${{ matrix.app }}" changed_files.txt; then
+                      echo "changed=true" >> $GITHUB_ENV
+                  else
+                      echo "changed=false" >> $GITHUB_ENV
+
+            - name: Trigger deploy-${{ matrix.app }}
+              if: env.changed == 'true' # 경로에 변경이 있을 때만 실행
+              uses: ./.github/workflows/deploy-${{ matrix.app }}.yml
+

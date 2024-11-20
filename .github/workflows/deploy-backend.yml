@@ -1,10 +1,8 @@
 name: Deploy Backend
 
 on:
-    pull_request:
-        branches: [develop]
-        paths:
-            - apps/backend/**
+    workflow_call: {}
+
     push:
         branches: [main]
         paths:
