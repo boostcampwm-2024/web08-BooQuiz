@@ -11,7 +11,7 @@ const MainPage = () => {
     const navigate = useNavigate();
 
     const handleMoveToQuizZone = () => {
-        navigate('/newQuizZone/1');
+        navigate(`/newQuizZone/${input}`);
     };
 
     //입장하기 버튼을 클릭하면 서버에 퀴즈존 세션 생성 요청을 날린다.
@@ -20,8 +20,10 @@ const MainPage = () => {
     const handleCreateQuizZone = () => {
         fetch('/api/quiz-zone/', {
             method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
             body: JSON.stringify({ quizZoneId: input }),
-            credentials: 'include',
         })
             .then((response) => {
                 console.log(typeof response);
