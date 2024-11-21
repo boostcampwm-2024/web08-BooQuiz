@@ -21,6 +21,15 @@ export type QuizZoneAction =
 
 type Reducer<S, A> = (state: S, action: A) => S;
 
+function atob(encodedString: string): string {
+    try {
+        // 브라우저 native atob 사용
+        return decodeURIComponent(escape(window.atob(encodedString)));
+    } catch (error) {
+        console.error('Base64 디코딩 실패:', error);
+        return encodedString; // 실패 시 원본 문자열 반환
+    }
+}
 const quizZoneReducer: Reducer<QuizZone, QuizZoneAction> = (state, action) => {
     const { type, payload } = action;
 
@@ -47,7 +56,10 @@ const quizZoneReducer: Reducer<QuizZone, QuizZoneAction> = (state, action) => {
             return {
                 ...state,
                 state: 'IN_PROGRESS',
-                playerState: 'SUBMIT',
+                currentPlayer: {
+                    ...state.currentPlayer,
+                    state: 'SUBMIT',
+                },
             };
         case 'nextQuiz':
             return {
@@ -80,7 +92,10 @@ const quizZoneReducer: Reducer<QuizZone, QuizZoneAction> = (state, action) => {
             return {
                 ...state,
                 state: 'IN_PROGRESS',
-                playerState: 'WAIT',
+                currentPlayer: {
+                    ...state.currentPlayer,
+                    state: 'WAIT',
+                },
             };
         case 'finish':
             return {
@@ -153,12 +168,10 @@ const useQuizZone = () => {
 
     const messageHandler = (event: MessageEvent) => {
         const { event: QuizZoneEvent, data } = JSON.parse(event.data);
-
         dispatch({
             type: QuizZoneEvent,
             payload: data,
         });
-        console.log('이벤트 실행:', quizZoneState);
     };
     const wsUrl = import.meta.env.VITE_WS_URL;
 
