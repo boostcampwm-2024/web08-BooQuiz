@@ -9,10 +9,10 @@ interface Participant {
 
 interface ParticipantGridProps {
     participants: Participant[];
-    isHost: boolean;
+    hostId: number;
 }
 
-const ParticipantGrid = ({ participants, hostId }: any) => {
+const ParticipantGrid = ({ participants, hostId }: ParticipantGridProps) => {
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
             {participants.map((participant: any, index: any) => (
