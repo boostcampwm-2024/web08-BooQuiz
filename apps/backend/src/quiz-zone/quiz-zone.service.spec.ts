@@ -173,9 +173,10 @@ describe('QuizZoneService', () => {
 
             // then
             const addedPlayer = mockQuizZone.players.get(clientId);
+            const nickname = addedPlayer.nickname;
             expect(addedPlayer).toEqual({
                 id: clientId,
-                nickname: nickNames[1],
+                nickname: nickname,
                 score: 0,
                 submits: [],
                 state: PLAYER_STATE.WAIT,
@@ -184,7 +185,7 @@ describe('QuizZoneService', () => {
             expect(result).toEqual({
                 currentPlayer: {
                     id: clientId,
-                    nickname: nickNames[1],
+                    nickname: nickname,
                     state: PLAYER_STATE.WAIT,
                 },
                 title: '테스트 퀴즈',

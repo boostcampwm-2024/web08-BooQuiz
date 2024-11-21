@@ -1,15 +1,9 @@
 import { useReducer } from 'react';
 import useWebSocket from '@/hook/useWebSocket.tsx';
-import {
-    CurrentQuiz,
-    Player,
-    QuizZone,
-    QuizZoneLobbyState,
-    QuizZoneResultState,
-} from '@/types/quizZone.types.ts';
+import { CurrentQuiz, Player, QuizZone, QuizZoneResultState } from '@/types/quizZone.types.ts';
 
 export type QuizZoneAction =
-    | { type: 'init'; payload: QuizZoneLobbyState }
+    | { type: 'init'; payload: QuizZone }
     | { type: 'join'; payload: { players: Player[] } }
     | { type: 'start'; payload: undefined }
     | { type: 'submit'; payload: undefined }
@@ -21,6 +15,15 @@ export type QuizZoneAction =
 
 type Reducer<S, A> = (state: S, action: A) => S;
 
+function atob(encodedString: string): string {
+    try {
+        // 브라우저 native atob 사용
+        return decodeURIComponent(escape(window.atob(encodedString)));
+    } catch (error) {
+        console.error('Base64 디코딩 실패:', error);
+        return encodedString; // 실패 시 원본 문자열 반환
+    }
+}
 const quizZoneReducer: Reducer<QuizZone, QuizZoneAction> = (state, action) => {
     const { type, payload } = action;
 
@@ -33,6 +36,8 @@ const quizZoneReducer: Reducer<QuizZone, QuizZoneAction> = (state, action) => {
                 description: payload.description,
                 quizCount: payload.quizCount,
                 hostId: payload.hostId,
+                currentPlayer: payload.currentPlayer,
+                currentQuiz: payload.currentQuiz,
                 players: [],
             };
         case 'join':
@@ -46,7 +51,10 @@ const quizZoneReducer: Reducer<QuizZone, QuizZoneAction> = (state, action) => {
             return {
                 ...state,
                 state: 'IN_PROGRESS',
-                playerState: 'SUBMIT',
+                currentPlayer: {
+                    ...state.currentPlayer,
+                    state: 'SUBMIT',
+                },
             };
         case 'nextQuiz':
             return {
@@ -79,12 +87,16 @@ const quizZoneReducer: Reducer<QuizZone, QuizZoneAction> = (state, action) => {
             return {
                 ...state,
                 state: 'IN_PROGRESS',
-                playerState: 'WAIT',
+                currentPlayer: {
+                    ...state.currentPlayer,
+                    state: 'WAIT',
+                },
             };
         case 'finish':
             return {
                 ...state,
                 stage: 'RESULT',
+                isLastQuiz: true,
             };
         case 'summary':
             return {
@@ -152,12 +164,10 @@ const useQuizZone = () => {
 
     const messageHandler = (event: MessageEvent) => {
         const { event: QuizZoneEvent, data } = JSON.parse(event.data);
-
         dispatch({
             type: QuizZoneEvent,
             payload: data,
         });
-        console.log('이벤트 실행:', quizZoneState);
     };
     const wsUrl = import.meta.env.VITE_WS_URL;
 
@@ -165,19 +175,18 @@ const useQuizZone = () => {
 
     //initialize QuizZOne
     const initQuizZoneData = (initialData: any) => {
-        if (initialData.stage === 'WAITING') {
-            dispatch({
-                type: 'init',
-                payload: { ...initialData, stage: 'IN_PROGRESS', playerState: 'WAIT' },
-            });
-        } else {
-            dispatch({ type: 'init', payload: initialData });
-        }
+        dispatch({ type: 'init', payload: initialData });
     };
 
     //퀴즈 시작 함수
     const startQuiz = () => {
         const message = JSON.stringify({ event: 'start' });
+        sendMessage(message);
+    };
+
+    //퀴즈존 나가기 함수
+    const exitQuiz = () => {
+        const message = JSON.stringify({ event: 'leave' });
         sendMessage(message);
     };
 
@@ -198,6 +207,11 @@ const useQuizZone = () => {
         dispatch({ type: 'playQuiz', payload: undefined });
     };
 
+    const joinQuizZone = ({ quizZoneId }: any) => {
+        const message = JSON.stringify({ event: 'join', data: { quizZoneId } });
+        sendMessage(message);
+    };
+
     return {
         quizZoneState,
         initQuizZoneData,
@@ -205,6 +219,8 @@ const useQuizZone = () => {
         startQuiz,
         playQuiz,
         closeConnection,
+        exitQuiz,
+        joinQuizZone,
     };
 };
 

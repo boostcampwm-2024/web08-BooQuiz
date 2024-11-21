@@ -48,7 +48,20 @@ describe('PlayService', () => {
         };
 
         const module: TestingModule = await Test.createTestingModule({
-            providers: [PlayService, { provide: QuizZoneService, useValue: mockQuizZoneService }],
+            providers: [
+                PlayService,
+                { provide: QuizZoneService, useValue: mockQuizZoneService },
+                {
+                    provide: 'winston',
+                    useValue: {
+                        log: jest.fn(),
+                        info: jest.fn(),
+                        error: jest.fn(),
+                        warn: jest.fn(),
+                        debug: jest.fn(),
+                    },
+                },
+            ],
         }).compile();
 
         service = module.get<PlayService>(PlayService);

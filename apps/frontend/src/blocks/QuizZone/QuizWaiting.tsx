@@ -15,7 +15,6 @@ const QuizWaiting = ({ playQuiz, startTime }: QuizWaitingProps) => {
     const { start, time } = useTimer({
         initialTime: remainingPrepTime,
         onComplete: () => {
-            console.log('complete');
             playQuiz();
         },
     });

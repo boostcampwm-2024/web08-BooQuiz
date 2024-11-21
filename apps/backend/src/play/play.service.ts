@@ -1,14 +1,18 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { QuizZoneService } from '../quiz-zone/quiz-zone.service';
 import { SubmittedQuiz } from '../quiz-zone/entities/submitted-quiz.entity';
 import { QuizZone } from '../quiz-zone/entities/quiz-zone.entity';
 import { QuizResultSummaryDto } from './dto/quiz-result-summary.dto';
 import { CurrentQuizDto } from './dto/current-quiz.dto';
 import { PLAYER_STATE, QUIZ_ZONE_STAGE } from '../common/constants';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 
 @Injectable()
 export class PlayService {
-    constructor(private readonly quizZoneService: QuizZoneService) {}
+    constructor(
+        @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+        private readonly quizZoneService: QuizZoneService,
+    ) {}
 
     /**
      * 특정 퀴즈 존에서 현재 퀴즈에 대한 답변을 제출합니다.
@@ -18,9 +22,21 @@ export class PlayService {
      * @throws {BadRequestException} 답변을 제출할 수 없는 경우 예외가 발생합니다.
      */
     async submit(quizZoneId: string, clientId: string, submitQuiz: SubmittedQuiz) {
+        this.logger.log({
+            level: 'info',
+            message: `[SUBMIT ANSWER START] quizZoneId: ${quizZoneId}, clientId: ${clientId}`,
+            context: 'HTTP',
+        });
+
         const quizZone = await this.quizZoneService.findOne(quizZoneId);
         quizZone.submitCount++;
         this.submitQuiz(quizZone, clientId, submitQuiz);
+
+        this.logger.log({
+            level: 'info',
+            message: `[SUBMIT ANSWER END] quizZoneId: ${quizZoneId}, clientId: ${clientId}`,
+            context: 'HTTP',
+        });
     }
 
     /**
@@ -32,6 +48,7 @@ export class PlayService {
     async playNextQuiz(quizZoneId: string) {
         const quizZone = await this.quizZoneService.findOne(quizZoneId);
         const { intervalTime } = quizZone;
+        quizZone.submitCount = 0;
 
         const nextQuiz = await this.nextQuiz(quizZoneId);
 
@@ -51,7 +68,6 @@ export class PlayService {
      */
     private async nextQuiz(quizZoneId: string): Promise<CurrentQuizDto> {
         const quizZone = await this.quizZoneService.findOne(quizZoneId);
-
         quizZone.currentQuizIndex++;
 
         const { quizzes, currentQuizIndex, intervalTime } = quizZone;
@@ -166,8 +182,8 @@ export class PlayService {
     }
 
     async checkAllSubmitted(quizZoneId: string) {
-        const quizZone = await this.quizZoneService.findOne(quizZoneId);
-        return quizZone.submitCount === quizZone.players.size;
+        const { players } = await this.quizZoneService.findOne(quizZoneId);
+        return [...players.values()].every((player) => player.state === PLAYER_STATE.SUBMIT);
     }
 
     async isHostPlayer(quizZoneId: string, clientId: string) {

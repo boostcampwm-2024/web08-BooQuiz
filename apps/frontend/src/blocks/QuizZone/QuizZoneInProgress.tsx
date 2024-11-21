@@ -10,10 +10,10 @@ interface QuizZoneInProgressProps {
 }
 
 const QuizZoneInProgress = ({ quizZoneState, submitAnswer, playQuiz }: QuizZoneInProgressProps) => {
-    const { currentPlayer, currentQuiz, stage } = quizZoneState;
+    const { currentPlayer, currentQuiz } = quizZoneState;
     const { state } = currentPlayer;
     const { playTime, startTime } = currentQuiz ?? {};
-    console.log(startTime, state);
+
     switch (state) {
         case 'WAIT':
             return <QuizWaiting startTime={startTime!} playQuiz={playQuiz} />;
@@ -26,10 +26,12 @@ const QuizZoneInProgress = ({ quizZoneState, submitAnswer, playQuiz }: QuizZoneI
                 />
             );
         case 'SUBMIT':
-            const isLastQuiz =
-                quizZoneState.quizCount === quizZoneState.currentQuiz?.currentIndex ||
-                stage == 'RESULT';
-            return <QuizCompleted isLastQuiz={isLastQuiz} />;
+            return (
+                <QuizCompleted
+                    isLastQuiz={quizZoneState.isLastQuiz ?? false}
+                    deadlineTime={quizZoneState.currentQuiz?.deadlineTime ?? 0}
+                />
+            );
         default:
             return null;
     }

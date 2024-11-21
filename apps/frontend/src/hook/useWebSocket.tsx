@@ -1,33 +1,40 @@
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 
 const useWebSocket = (url: string, messageHandler: (event: MessageEvent) => void) => {
     const ws = useRef<WebSocket | null>(null);
+    const messageQueue = useRef<string[]>([]);
 
-    useEffect(() => {
-        if (!ws.current) {
-            ws.current = new WebSocket(url);
-        }
+    if (ws.current === null) {
+        ws.current = new WebSocket(url);
 
         ws.current.onopen = () => {
-            console.log('WebSocket connected');
+            while (messageQueue.current.length > 0) {
+                const message = messageQueue.current.shift()!;
+                sendMessage(message);
+            }
         };
 
-        ws.current.onmessage = messageHandler;
+        ws.current.onclose = (ev: CloseEvent) => {
+            const { wasClean } = ev;
 
-        ws.current.onclose = () => {
-            console.log('WebSocket disconnected');
+            if (!wasClean) {
+                location.reload();
+            }
         };
 
         ws.current.onerror = (error) => {
             console.error('WebSocket error:', error);
         };
-    }, []);
+
+        ws.current.onmessage = messageHandler;
+    }
 
     const sendMessage = (message: string) => {
         if (ws.current?.readyState === WebSocket.OPEN) {
             ws.current.send(message);
         } else {
             console.warn('WebSocket is not connected. Message not sent:', message);
+            messageQueue.current.push(message);
         }
     };
 
