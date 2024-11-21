@@ -16,8 +16,14 @@ const useWebSocket = (url: string, messageHandler: (event: MessageEvent) => void
             }
         };
 
-        ws.current.onclose = () => {
-            console.log('WebSocket disconnected');
+        ws.current.onclose = (ev: CloseEvent) => {
+            const { reason, wasClean } = ev;
+
+            console.log(`WebSocket disconnected: ${reason}`);
+
+            if (!wasClean) {
+                location.reload();
+            }
         };
 
         ws.current.onerror = (error) => {
@@ -31,8 +37,8 @@ const useWebSocket = (url: string, messageHandler: (event: MessageEvent) => void
         if (ws.current?.readyState === WebSocket.OPEN) {
             ws.current.send(message);
         } else {
-            messageQueue.current.push(message);
             console.warn('WebSocket is not connected. Message not sent:', message);
+            messageQueue.current.push(message);
         }
     };
 
