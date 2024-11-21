@@ -10,7 +10,7 @@ interface QuizZoneInProgressProps {
 }
 
 const QuizZoneInProgress = ({ quizZoneState, submitAnswer, playQuiz }: QuizZoneInProgressProps) => {
-    const { currentPlayer, currentQuiz, stage } = quizZoneState;
+    const { currentPlayer, currentQuiz } = quizZoneState;
     const { state } = currentPlayer;
     const { playTime, startTime } = currentQuiz ?? {};
     console.log(startTime, state);
