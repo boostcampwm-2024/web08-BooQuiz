@@ -43,7 +43,10 @@ export class QuizZoneController {
         description: '대기실 정보가 성공적으로 반환되었습니다.',
     })
     @ApiResponse({ status: 400, description: '세션 정보가 없습니다.' })
-    async findQuizZoneInfo(@Session() session: Record<string, any>, @Param() quizZoneId: string) {
+    async findQuizZoneInfo(
+        @Session() session: Record<string, any>,
+        @Param('quizZoneId') quizZoneId: string,
+    ) {
         return this.quizZoneService.getQuizZoneInfo(session.id, quizZoneId);
     }
 }
