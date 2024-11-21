@@ -45,6 +45,7 @@ jobs:
            path: apps/frontend/dist
 
   deploy-frontend:
+    needs: test
     runs-on: ubuntu-latest
     name: Deploy Frontend
     environment: ${{ github.ref == 'refs/heads/main' && 'prod' || 'staging' }}

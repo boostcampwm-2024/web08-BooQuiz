@@ -35,6 +35,7 @@ jobs:
         run: pnpm test
 
   push-docker:
+    needs: test
     runs-on: ubuntu-latest
     name: push-docker
     environment: ${{ github.ref == 'refs/heads/main' && 'prod' || 'staging' }}
