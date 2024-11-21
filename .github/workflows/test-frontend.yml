@@ -34,5 +34,5 @@ jobs:
         run: pnpm test
 
   deploy-frontend:
-    if: needs.check-frontend-changes.outputs.frontend_changed == 'true'
+    needs: test
     uses: ./.github/workflows/deploy-frontend.yml

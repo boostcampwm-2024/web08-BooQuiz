@@ -35,4 +35,5 @@ jobs:
         run: pnpm test
 
   deploy-backend:
+    needs: test
     uses: ./.github/workflows/deploy-backend.yml
