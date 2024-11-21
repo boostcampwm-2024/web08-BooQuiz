@@ -32,6 +32,7 @@ export class PlayService {
     async playNextQuiz(quizZoneId: string) {
         const quizZone = await this.quizZoneService.findOne(quizZoneId);
         const { intervalTime } = quizZone;
+        quizZone.submitCount = 0;
 
         const nextQuiz = await this.nextQuiz(quizZoneId);
 
@@ -51,7 +52,6 @@ export class PlayService {
      */
     private async nextQuiz(quizZoneId: string): Promise<CurrentQuizDto> {
         const quizZone = await this.quizZoneService.findOne(quizZoneId);
-        quizZone.submitCount = 0;
         quizZone.currentQuizIndex++;
 
         const { quizzes, currentQuizIndex, intervalTime } = quizZone;
