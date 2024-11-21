@@ -16,8 +16,6 @@ import { QuizJoinDto } from './dto/quiz-join.dto';
 import { BadRequestException, Inject, NotFoundException } from '@nestjs/common';
 import { PLAYER_STATE, QUIZ_ZONE_STAGE } from '../common/constants';
 
-//TODO 여러명일때 service 수정해야함.
-
 /**
  * PlayInfo 인터페이스는 클라이언트의 퀴즈 진행 상태를 나타냅니다.
  */
@@ -86,10 +84,6 @@ export class PlayGateway implements OnGatewayConnection, OnGatewayInit {
         const cookies = parse(request.headers.cookie);
         client['sessionId'] = cookies['connect.sid'].split('.').at(0).slice(2);
     }
-
-    // async handleDisconnect(client: WebSocket) {
-    //     client.terminate();
-    // }
 
     // 방장 유무에 따라 PlayInfo를 반환합니다.
     private getJoinPlayInfo(client: WebSocket, quizZoneId: string): PlayInfo {

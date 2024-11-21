@@ -3,10 +3,6 @@ name: Deploy Backend
 on:
     workflow_call:
 
-    push:
-        branches: [main]
-        paths:
-            - apps/backend/**
 jobs:
     build-backend:
         runs-on: ubuntu-latest

@@ -192,12 +192,7 @@ export class PlayService {
         const quizZone = await this.quizZoneService.findOne(quizZoneId);
         return quizZone.stage === QUIZ_ZONE_STAGE.LOBBY;
     }
-    async checkPlayerState(quizZoneId: string, clientId: string, state: string) {
-        const { players } = await this.quizZoneService.findOne(quizZoneId);
-        if (players.get(clientId).state !== state) {
-            throw new BadRequestException(`사용자의 상태가 ${state}가 아닙니다.`);
-        }
-    }
+
     async changeQuizZoneStage(quizZoneId: string, stage: QUIZ_ZONE_STAGE) {
         const quizZone = await this.quizZoneService.findOne(quizZoneId);
         quizZone.stage = stage;

@@ -1,0 +1,38 @@
+name: frontend test
+
+on:
+  pull_request:
+    branches: [develop, main]
+    paths:
+      - apps/frontend/**
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    name: Set up Node environment
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'node'
+
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Install root dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Build frontend
+        working-directory: apps/frontend
+        run: pnpm run build
+
+      - name: Run tests for frontend
+        working-directory: apps/frontend
+        run: pnpm test
+
+  deploy-frontend:
+    if: needs.check-frontend-changes.outputs.frontend_changed == 'true'
+    uses: ./.github/workflows/deploy-frontend.yml

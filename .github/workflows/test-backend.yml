@@ -1,0 +1,38 @@
+name: backend test
+
+on:
+  pull_request:
+    branches: [develop, main]
+    paths:
+        - apps/backend/**
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    name: Set up Node environment
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'node'
+
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Install root dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Build backend
+        working-directory: apps/backend
+        run: pnpm run build
+
+      - name: Run tests for backend
+        working-directory: apps/backend
+        run: pnpm test
+
+  deploy-backend:
+    uses: ./.github/workflows/deploy-backend.yml
