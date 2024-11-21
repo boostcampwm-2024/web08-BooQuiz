@@ -13,7 +13,7 @@ const QuizZoneInProgress = ({ quizZoneState, submitAnswer, playQuiz }: QuizZoneI
     const { currentPlayer, currentQuiz } = quizZoneState;
     const { state } = currentPlayer;
     const { playTime, startTime } = currentQuiz ?? {};
-    console.log(startTime, state);
+
     switch (state) {
         case 'WAIT':
             return <QuizWaiting startTime={startTime!} playQuiz={playQuiz} />;

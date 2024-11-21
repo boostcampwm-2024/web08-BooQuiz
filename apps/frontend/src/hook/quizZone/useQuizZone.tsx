@@ -175,7 +175,6 @@ const useQuizZone = () => {
 
     //initialize QuizZOne
     const initQuizZoneData = (initialData: any) => {
-        console.log('initialData', initialData);
         dispatch({ type: 'init', payload: initialData });
     };
 
@@ -209,7 +208,6 @@ const useQuizZone = () => {
     };
 
     const joinQuizZone = ({ quizZoneId }: any) => {
-        console.log('joinQuizZone', quizZoneId);
         const message = JSON.stringify({ event: 'join', data: { quizZoneId } });
         sendMessage(message);
     };

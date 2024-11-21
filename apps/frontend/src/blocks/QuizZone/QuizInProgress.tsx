@@ -18,7 +18,6 @@ const QuizInProgress = ({ currentQuiz, submitAnswer }: QuizInProgressProps) => {
     const MIN_TEXT_LENGTH = 1;
 
     const handleSubmitAnswer = () => {
-        console.log(answer.length, answer);
         if (answer.length >= MIN_TEXT_LENGTH && answer.length <= MAX_TEXT_LENGTH) {
             submitAnswer(answer);
         }
@@ -27,12 +26,7 @@ const QuizInProgress = ({ currentQuiz, submitAnswer }: QuizInProgressProps) => {
     return (
         <div className="w-full h-screen flex flex-col items-center justify-center gap-4">
             <img width="200px" src="/BooQuizLogo.png" alt="BooQuiz Logo" />
-            <ProgressBar
-                deadlineTime={currentQuiz.deadlineTime}
-                onTimeEnd={() => {
-                    console.log('풀이 시간 종료');
-                }}
-            />
+            <ProgressBar deadlineTime={currentQuiz.deadlineTime} onTimeEnd={() => {}} />
             <ContentBox className="md:min-w-[48rem] w-4/5">
                 <Typography
                     text={`Q. ${currentQuiz.question}`}

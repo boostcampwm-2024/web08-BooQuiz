@@ -38,7 +38,6 @@ const QuizZonePage = () => {
     const initQuizZone = async () => {
         try {
             const quizZoneInitialData = await fetchQuizZoneData(quizZoneId ?? '');
-            console.log('quizZoneData', quizZoneInitialData);
             initQuizZoneData(quizZoneInitialData);
             joinQuizZone({ quizZoneId });
             setIsLoading(false);

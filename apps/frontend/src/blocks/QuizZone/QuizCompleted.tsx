@@ -14,9 +14,7 @@ const QuizCompleted = ({ isLastQuiz, deadlineTime }: QuizCompletedProps) => {
 
     const { start, time } = useTimer({
         initialTime: remainingPrepTime,
-        onComplete: () => {
-            console.log('complete');
-        },
+        onComplete: () => {},
     });
 
     useEffect(() => {

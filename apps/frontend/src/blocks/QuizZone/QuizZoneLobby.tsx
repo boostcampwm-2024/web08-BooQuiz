@@ -6,6 +6,7 @@ import Typography from '@/components/common/Typogrpahy';
 import { useNavigate } from 'react-router-dom';
 
 import { QuizZone } from '@/types/quizZone.types';
+
 interface QuizZoneLobbyProps {
     quizZoneState: QuizZone;
     quizZoneId: string;
@@ -15,13 +16,12 @@ interface QuizZoneLobbyProps {
 
 // Usage
 const QuizZoneLobby = ({ quizZoneState, quizZoneId, startQuiz, exitQuiz }: QuizZoneLobbyProps) => {
-    console.log('로비 데이터', quizZoneState);
     const navigate = useNavigate();
     const handleLeave = () => {
         exitQuiz();
         navigate('/');
     };
-    // isHost
+
     const isHost = quizZoneState.hostId === quizZoneState.currentPlayer.id;
 
     return (
@@ -92,7 +92,6 @@ const QuizZoneLobby = ({ quizZoneState, quizZoneId, startQuiz, exitQuiz }: QuizZ
                                 <CommonButton
                                     text="퀴즈 시작하기"
                                     clickEvent={() => {
-                                        console.log('시작');
                                         startQuiz();
                                     }}
                                 />

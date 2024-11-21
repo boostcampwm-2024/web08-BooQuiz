@@ -8,8 +8,6 @@ const useWebSocket = (url: string, messageHandler: (event: MessageEvent) => void
         ws.current = new WebSocket(url);
 
         ws.current.onopen = () => {
-            console.log('WebSocket connected');
-
             while (messageQueue.current.length > 0) {
                 const message = messageQueue.current.shift()!;
                 sendMessage(message);
@@ -17,9 +15,7 @@ const useWebSocket = (url: string, messageHandler: (event: MessageEvent) => void
         };
 
         ws.current.onclose = (ev: CloseEvent) => {
-            const { reason, wasClean } = ev;
-
-            console.log(`WebSocket disconnected: ${reason}`);
+            const { wasClean } = ev;
 
             if (!wasClean) {
                 location.reload();
