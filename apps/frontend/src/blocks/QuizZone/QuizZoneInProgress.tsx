@@ -29,7 +29,12 @@ const QuizZoneInProgress = ({ quizZoneState, submitAnswer, playQuiz }: QuizZoneI
             const isLastQuiz =
                 quizZoneState.quizCount === quizZoneState.currentQuiz?.currentIndex ||
                 stage == 'RESULT';
-            return <QuizCompleted isLastQuiz={isLastQuiz} />;
+            return (
+                <QuizCompleted
+                    isLastQuiz={isLastQuiz}
+                    deadlineTime={quizZoneState.currentQuiz?.deadlineTime ?? 0}
+                />
+            );
         default:
             return null;
     }

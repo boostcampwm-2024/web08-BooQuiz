@@ -1,11 +1,27 @@
 import ContentBox from '@/components/common/ContentBox';
 import Typography from '@/components/common/Typogrpahy';
+import { useTimer } from '@/hook/useTimer';
+import { useEffect } from 'react';
 
 interface QuizCompletedProps {
     isLastQuiz: boolean;
+    deadlineTime: number;
 }
 
-const QuizCompleted = ({ isLastQuiz }: QuizCompletedProps) => {
+const QuizCompleted = ({ isLastQuiz, deadlineTime }: QuizCompletedProps) => {
+    const currentTime = new Date().getTime();
+    const remainingPrepTime = Math.max(0, deadlineTime - currentTime) / 1000;
+
+    const { start, time } = useTimer({
+        initialTime: remainingPrepTime,
+        onComplete: () => {
+            console.log('complete');
+        },
+    });
+
+    useEffect(() => {
+        start();
+    }, []);
     return (
         <div className="w-full h-screen flex flex-col items-center justify-center gap-4">
             <img width="200px" src="/BooQuizLogo.png" alt="BooQuiz Logo" />
@@ -18,6 +34,22 @@ const QuizCompleted = ({ isLastQuiz }: QuizCompletedProps) => {
                         bold={true}
                     />
                     <Typography size="3xl" color="blue" text="잠시만 기다려주세요" bold={true} />
+                    {time !== null && (
+                        <div className="w-full flex flex-row justify-center items-end">
+                            <Typography
+                                size="3xl"
+                                color="blue"
+                                text={`${time.toFixed(1)}`}
+                                bold={true}
+                            />
+                            <Typography
+                                size="base"
+                                color="blue"
+                                text={` 초 뒤에 다음문제로 넘어갑니다`}
+                                bold={true}
+                            />
+                        </div>
+                    )}{' '}
                 </div>
             </ContentBox>
         </div>
