@@ -5,46 +5,12 @@ import TextCopy from '@/components/common/TextCopy';
 import Typography from '@/components/common/Typogrpahy';
 import { useNavigate } from 'react-router-dom';
 
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Crown } from 'lucide-react';
 import { QuizZone } from '@/types/quizZone.types';
 interface QuizZoneLobbyProps {
     quizZoneState: QuizZone;
     quizZoneId: string;
     startQuiz: () => void;
 }
-
-interface Participant {
-    avatarUrl?: string;
-    name: string;
-}
-
-interface ParticipantGridProps {
-    participants: Participant[];
-    isHost: boolean;
-}
-
-const ParticipantGrid = ({ participants, hostId }: any) => {
-    return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
-            {participants.map((participant: any, index: any) => (
-                <div key={index} className="flex items-center gap-2">
-                    <Avatar className="border border-gray-300">
-                        <AvatarImage
-                            src={participant.avatarUrl || '/BooQuizFavicon.png'}
-                            alt={participant.name}
-                        />
-                        <AvatarFallback>{participant.name.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    <div className="flex items-center gap-2">
-                        <Typography text={participant.name} size="base" color="black" />
-                        {participant.id == hostId && <Crown className="text-yellow-500" />}
-                    </div>
-                </div>
-            ))}
-        </div>
-    );
-};
 
 // Usage
 const QuizZoneLobby = ({ quizZoneState, quizZoneId, startQuiz }: QuizZoneLobbyProps) => {
