@@ -1,7 +1,6 @@
 import { renderHook, act } from '@testing-library/react';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import useQuizZone from './useQuizZone';
-import useWebSocket from '@/hook/useWebSocket';
 
 // 모킹 설정
 const mockSendMessage = vi.fn();
@@ -10,7 +9,7 @@ let mockWebSocketHandler: ((event: MessageEvent) => void) | null = null;
 
 // WebSocket 모킹
 vi.mock('@/hook/useWebSocket', () => ({
-    default: (url: string, handler: (event: MessageEvent) => void) => {
+    default: (handler: (event: MessageEvent) => void) => {
         mockWebSocketHandler = handler;
         return {
             sendMessage: mockSendMessage,
