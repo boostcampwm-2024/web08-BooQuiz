@@ -1,27 +1,21 @@
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 
 const useWebSocket = (url: string, messageHandler: (event: MessageEvent) => void) => {
-    const ws = useRef<WebSocket | null>(null);
+    const ws = useRef<WebSocket>(new WebSocket(url));
 
-    useEffect(() => {
-        if (!ws.current) {
-            ws.current = new WebSocket(url);
-        }
+    ws.current.onopen = () => {
+        console.log('WebSocket connected');
+    };
 
-        ws.current.onopen = () => {
-            console.log('WebSocket connected');
-        };
+    ws.current.onmessage = messageHandler;
 
-        ws.current.onmessage = messageHandler;
+    ws.current.onclose = () => {
+        console.log('WebSocket disconnected');
+    };
 
-        ws.current.onclose = () => {
-            console.log('WebSocket disconnected');
-        };
-
-        ws.current.onerror = (error) => {
-            console.error('WebSocket error:', error);
-        };
-    }, []);
+    ws.current.onerror = (error) => {
+        console.error('WebSocket error:', error);
+    };
 
     const sendMessage = (message: string) => {
         if (ws.current?.readyState === WebSocket.OPEN) {
