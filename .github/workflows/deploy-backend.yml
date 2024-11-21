@@ -103,7 +103,7 @@ jobs:
               ssh-keyscan -H $PRIVATE_SERVER_IP >> ~/.ssh/known_hosts
           
               # 프라이빗 서버에서 Docker Hub 로그인 및 이미지 배포
-              ssh $DEPLOY_USER@$PRIVATE_SERVER_IP "sudo docker pull --no-cache $DOCKER_USERNAME/booquiz-backend:${{secrets.DOCKER_TAG}} && \
+              ssh $DEPLOY_USER@$PRIVATE_SERVER_IP "sudo docker pull $DOCKER_USERNAME/booquiz-backend:${{secrets.DOCKER_TAG}} && \
                   sudo docker stop booquiz-backend || true && \
                   sudo docker rm booquiz-backend || true && \
                   sudo docker run -d --name booquiz-backend -p 3000:3000 $DOCKER_USERNAME/booquiz-backend:${{secrets.DOCKER_TAG}} && \
