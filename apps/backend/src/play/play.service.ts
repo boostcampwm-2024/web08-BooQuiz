@@ -22,11 +22,21 @@ export class PlayService {
      * @throws {BadRequestException} 답변을 제출할 수 없는 경우 예외가 발생합니다.
      */
     async submit(quizZoneId: string, clientId: string, submitQuiz: SubmittedQuiz) {
-        this.logger.log(`[SUBMIT ANSWER START] quizZoneId: ${quizZoneId}, clientId: ${clientId}`);
+        this.logger.log({
+            level: 'info',
+            message: `[SUBMIT ANSWER START] quizZoneId: ${quizZoneId}, clientId: ${clientId}`,
+            context: 'HTTP',
+        });
+
         const quizZone = await this.quizZoneService.findOne(quizZoneId);
         quizZone.submitCount++;
         this.submitQuiz(quizZone, clientId, submitQuiz);
-        this.logger.log(`[SUBMIT ANSWER END] quizZoneId: ${quizZoneId}, clientId: ${clientId}`);
+
+        this.logger.log({
+            level: 'info',
+            message: `[SUBMIT ANSWER END] quizZoneId: ${quizZoneId}, clientId: ${clientId}`,
+            context: 'HTTP',
+        });
     }
 
     /**
@@ -172,8 +182,8 @@ export class PlayService {
     }
 
     async checkAllSubmitted(quizZoneId: string) {
-        const quizZone = await this.quizZoneService.findOne(quizZoneId);
-        return quizZone.submitCount === quizZone.players.size;
+        const { players } = await this.quizZoneService.findOne(quizZoneId);
+        return [...players.values()].every((player) => player.state === PLAYER_STATE.SUBMIT);
     }
 
     async isHostPlayer(quizZoneId: string, clientId: string) {
