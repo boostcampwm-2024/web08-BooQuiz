@@ -10,7 +10,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     name: test frontend
-    environment: ${{ github.ref == 'refs/heads/main' && 'prod' || 'staging' }}
+    environment: ${{ github.base_ref == 'main' && 'prod' || 'staging' }}
 
     steps:
       - name: Checkout repository
@@ -48,7 +48,7 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     name: Deploy Frontend
-    environment: ${{ github.ref == 'refs/heads/main' && 'prod' || 'staging' }}
+    environment: ${{ github.base_ref == 'main' && 'prod' || 'staging' }}
     steps:
       - name: Download artifacts
         uses: actions/download-artifact@v4
