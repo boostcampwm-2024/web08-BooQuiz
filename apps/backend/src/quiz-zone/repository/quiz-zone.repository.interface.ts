@@ -11,9 +11,8 @@ export interface IQuizZoneRepository {
      *
      * @param key - 조회할 퀴즈 존의 키
      * @returns 퀴즈 존 객체
-     * @throws {NotFoundException} 해당 키로 저장된 퀴즈 존이 없을 경우 예외 발생
      */
-    get(key: string): Promise<QuizZone>;
+    get(key: string): Promise<QuizZone | null>;
 
     /**
      * 주어진 키에 퀴즈 존을 저장합니다.
@@ -21,7 +20,6 @@ export interface IQuizZoneRepository {
      * @param key - 퀴즈 존을 저장할 키
      * @param value - 저장할 퀴즈 존 객체
      * @returns 저장 작업 완료
-     * @throws {ConflictException} 해당 키로 이미 데이터가 존재할 경우 예외 발생
      */
     set(key: string, value: QuizZone): Promise<void>;
 
@@ -30,7 +28,14 @@ export interface IQuizZoneRepository {
      *
      * @param key - 삭제할 퀴즈 존의 키
      * @returns 삭제 작업 완료
-     * @throws {NotFoundException} 해당 키로 저장된 퀴즈 존이 없을 경우 예외 발생
      */
     delete(key: string): Promise<void>;
+
+    /**
+     * 주어진 키에 해당하는 퀴즈존이 존재하는지 확인합니다.
+     *
+     * @param key - 존재 여부를 확인할 퀴즈존의 키
+     * @returns 존재 여부
+     */
+    has(key: string): Promise<boolean>;
 }

@@ -1,13 +1,14 @@
 import ContentBox from '@/components/common/ContentBox';
 import CustomAlert from '@/components/common/CustomAlert';
 import Typography from '@/components/common/Typogrpahy';
+import { QuizZone } from '@/types/quizZone.types';
 import { useNavigate } from 'react-router-dom';
 
 interface QuizZoneResultProps {
-    quizZoneData: any;
+    quizZoneState: QuizZone;
 }
 
-const QuizZoneResult = ({ quizZoneData }: QuizZoneResultProps) => {
+const QuizZoneResult = ({ quizZoneState }: QuizZoneResultProps) => {
     const navigate = useNavigate();
     const handleMoveToMain = () => {
         navigate('/');
@@ -37,7 +38,7 @@ const QuizZoneResult = ({ quizZoneData }: QuizZoneResultProps) => {
                             <Typography
                                 size="4xl"
                                 color="blue"
-                                text={`${quizZoneData.result.score}`}
+                                text={`${quizZoneState.score}`}
                                 bold={true}
                             />
                             <Typography size="2xl" color="blue" text={`점`} bold={true} />
@@ -45,7 +46,7 @@ const QuizZoneResult = ({ quizZoneData }: QuizZoneResultProps) => {
                         <Typography
                             size="sm"
                             color="gray"
-                            text={`만점 ${quizZoneData.Lobby.totalQuizCount}점`}
+                            text={`만점 ${quizZoneState.quizCount}점`}
                             bold={true}
                         />
                     </div>
@@ -65,7 +66,7 @@ const QuizZoneResult = ({ quizZoneData }: QuizZoneResultProps) => {
                             <Typography
                                 size="4xl"
                                 color="blue"
-                                text={`${((quizZoneData.result.score / quizZoneData.Lobby.totalQuizCount) * 100).toFixed(2)}`}
+                                text={`${(((quizZoneState.score ?? 0) / quizZoneState.quizCount) * 100).toFixed(2)}`}
                                 bold={true}
                             />
                             <Typography size="2xl" color="blue" text={`%`} bold={true} />
@@ -73,7 +74,7 @@ const QuizZoneResult = ({ quizZoneData }: QuizZoneResultProps) => {
                         <Typography
                             size="sm"
                             color="gray"
-                            text={`${quizZoneData.result.score}/${quizZoneData.Lobby.totalQuizCount}문제`}
+                            text={`${quizZoneState.score}/${quizZoneState.quizCount}문제`}
                             bold={true}
                         />
                     </div>

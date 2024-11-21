@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { QuizZoneRepositoryMemory } from './quiz-zone.memory.repository';
 import { QuizZone } from '../entities/quiz-zone.entity';
-import { ConflictException } from '@nestjs/common';
+import { QUIZ_ZONE_STAGE } from '../../common/constants';
 
 describe('QuizZoneRepositoryMemory', () => {
     let storage: Map<string, QuizZone>;
@@ -25,38 +25,26 @@ describe('QuizZoneRepositoryMemory', () => {
 
     describe('set', () => {
         it('세션 id와 퀴즈존 정보를 통해 새로운 퀴즈존 정보를 저장한다.', async () => {
-            const id = 'some-id';
+            const quizZoneId = 'some-id';
+
             const quizZone: QuizZone = {
-                currentQuizDeadlineTime: 0,
+                players: new Map(),
+                hostId: 'adminId',
+                maxPlayers: 4,
+                quizzes: [],
+                stage: QUIZ_ZONE_STAGE.LOBBY,
+                title: 'title',
+                description: 'description',
                 currentQuizIndex: 0,
                 currentQuizStartTime: 0,
-                player: undefined,
-                quizzes: [],
-                stage: undefined,
-                intervalTime: 30_000,
-            };
-
-            await repository.set(id, quizZone);
-
-            expect(storage.get(id)).toEqual(quizZone); // 생성된 객체와 동일한지 확인
-        });
-
-        //1인 사용자일 때는 접속 할 때마다 퀴즈존 초기화
-        it.skip('중복된 key 값이 입력으로 들어오면 에러가 발생한다.', async () => {
-            const id = 'some-id';
-            const quizZone: QuizZone = {
                 currentQuizDeadlineTime: 0,
-                currentQuizIndex: 0,
-                currentQuizStartTime: 0,
-                player: undefined,
-                quizzes: [],
-                stage: undefined,
                 intervalTime: 30_000,
+                submitCount: 0,
             };
 
-            await repository.set(id, quizZone);
+            await repository.set(quizZoneId, quizZone);
 
-            expect(repository.set(id, quizZone)).rejects.toThrow(ConflictException);
+            expect(storage.get(quizZoneId)).toEqual(quizZone); // 생성된 객체와 동일한지 확인
         });
     });
 });
