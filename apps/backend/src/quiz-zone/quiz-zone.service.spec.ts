@@ -4,7 +4,6 @@ import { BadRequestException, ConflictException, NotFoundException } from '@nest
 import { QuizZone } from './entities/quiz-zone.entity';
 import { IQuizZoneRepository } from './repository/quiz-zone.repository.interface';
 import { Quiz } from './entities/quiz.entity';
-import { Player } from './entities/player.entity';
 import { PLAYER_STATE, QUIZ_ZONE_STAGE } from '../common/constants';
 
 const nickNames: string[] = [
@@ -93,15 +92,20 @@ describe('QuizZoneService', () => {
     });
 
     describe('findOne', () => {
+        const quizZoneId = 'testQuizZone';
+
         it('퀴즈존을 ID로 조회한다', async () => {
-            const quizZoneId = 'testQuizZone';
+            // given
             const mockQuizZone: QuizZone = {
                 players: new Map(),
                 hostId: 'adminId',
                 maxPlayers: 10,
                 title: '테스트 퀴즈',
                 description: '테스트 퀴즈입니다',
-                quizzes: [],
+                quizzes: quizzes.map((quiz) => ({
+                    ...quiz,
+                    question: Buffer.from(quiz.question).toString('base64'),
+                })),
                 stage: QUIZ_ZONE_STAGE.LOBBY,
                 currentQuizIndex: -1,
                 currentQuizStartTime: 0,
@@ -112,32 +116,37 @@ describe('QuizZoneService', () => {
 
             mockQuizZoneRepository.get.mockResolvedValue(mockQuizZone);
 
-            const result = await service.findOne(quizZoneId);
+            // when
+            const result = await (service as any).findOne(quizZoneId);
 
+            // then
             expect(repository.get).toHaveBeenCalledWith(quizZoneId);
             expect(result).toEqual(mockQuizZone);
         });
 
-        it('존재하지 않는 퀴즈존 ID로 조회 시 NotFoundException을 던진다', async () => {
-            const quizZoneId = 'testQuizZone';
-
+        it('존재하지 않는 퀴즈존 조회 시 NotFoundException을 던진다', async () => {
+            // given
             mockQuizZoneRepository.get.mockResolvedValue(null);
 
-            await expect(service.findOne(quizZoneId)).rejects.toThrow(NotFoundException);
+            // when & then
+            await expect((service as any).findOne(quizZoneId)).rejects.toThrow(NotFoundException);
+            expect(repository.get).toHaveBeenCalledWith(quizZoneId);
         });
     });
 
-    describe('getLobbyInfo', () => {
-        it('대기실 정보를 반환한다', async () => {
-            const quizZoneId = 'testQuizZone';
-            const clientId = 'clientId';
+    describe('getQuizZoneInfo', () => {
+        const quizZoneId = 'testQuizZone';
+        const clientId = 'clientId';
+
+        it('LOBBY 단계에서 새로운 플레이어가 접속하면 플레이어를 추가하고 정보를 반환한다', async () => {
+            // given
             const mockQuizZone: QuizZone = {
                 players: new Map([
                     [
-                        clientId,
+                        'player1',
                         {
-                            id: clientId,
-                            nickname: '닉네임',
+                            id: 'player1',
+                            nickname: nickNames[0],
                             state: PLAYER_STATE.WAIT,
                             score: 0,
                             submits: [],
@@ -159,140 +168,44 @@ describe('QuizZoneService', () => {
 
             mockQuizZoneRepository.get.mockResolvedValue(mockQuizZone);
 
-            const result = await service.getLobbyInfo(clientId, quizZoneId);
+            // when
+            const result = await service.getQuizZoneInfo(clientId, quizZoneId);
 
-            expect(result).toEqual({
-                currentPlayer: { id: clientId, nickname: '닉네임', state: PLAYER_STATE.WAIT },
-                title: '테스트 퀴즈',
-                description: '테스트 퀴즈입니다',
-                quizCount: quizzes.length,
-                stage: QUIZ_ZONE_STAGE.LOBBY,
-                hostId: 'adminId',
+            // then
+            const addedPlayer = mockQuizZone.players.get(clientId);
+            expect(addedPlayer).toEqual({
+                id: clientId,
+                nickname: nickNames[1],
+                score: 0,
+                submits: [],
+                state: PLAYER_STATE.WAIT,
             });
-        });
-    });
-
-    describe('getProgressInfo', () => {
-        it('진행 중인 퀴즈 정보를 반환한다', async () => {
-            const quizZoneId = 'testQuizZone';
-            const clientId = 'clientId';
-            const mockQuizZone: QuizZone = {
-                players: new Map([
-                    [
-                        clientId,
-                        {
-                            id: clientId,
-                            nickname: '닉네임',
-                            state: PLAYER_STATE.WAIT,
-                            score: 0,
-                            submits: [],
-                        },
-                    ],
-                ]),
-                hostId: 'adminId',
-                maxPlayers: 10,
-                title: '테스트 퀴즈',
-                description: '테스트 퀴즈입니다',
-                quizzes: quizzes,
-                stage: QUIZ_ZONE_STAGE.IN_PROGRESS,
-                currentQuizIndex: 1,
-                currentQuizStartTime: Date.now(),
-                currentQuizDeadlineTime: Date.now() + playTime,
-                intervalTime: 5000,
-                submitCount: 0,
-            };
-
-            mockQuizZoneRepository.get.mockResolvedValue(mockQuizZone);
-
-            const result = await service.getProgressInfo(clientId, quizZoneId);
-
-            expect(result).toEqual({
-                currentPlayer: { id: clientId, nickname: '닉네임', state: PLAYER_STATE.WAIT },
-                title: '테스트 퀴즈',
-                description: '테스트 퀴즈입니다',
-                quizCount: quizzes.length,
-                stage: QUIZ_ZONE_STAGE.IN_PROGRESS,
-                hostId: 'adminId',
-                currentQuiz: {
-                    currentIndex: 1,
-                    startTime: mockQuizZone.currentQuizStartTime,
-                    deadlineTime: mockQuizZone.currentQuizDeadlineTime,
-                    playTime: quizzes[1].playTime,
-                    question: quizzes[1].question,
-                    stage: QUIZ_ZONE_STAGE.IN_PROGRESS,
-                },
-            });
-        });
-    });
-
-    describe('getResultInfo', () => {
-        it('결과 정보를 반환한다', async () => {
-            const quizZoneId = 'testQuizZone';
-            const clientId = 'clientId';
-            const mockQuizZone: QuizZone = {
-                players: new Map([
-                    [
-                        clientId,
-                        {
-                            id: clientId,
-                            nickname: '닉네임',
-                            state: PLAYER_STATE.WAIT,
-                            score: 100,
-                            submits: [],
-                        },
-                    ],
-                ]),
-                hostId: 'adminId',
-                maxPlayers: 10,
-                title: '테스트 퀴즈',
-                description: '테스트 퀴즈입니다',
-                quizzes: quizzes,
-                stage: QUIZ_ZONE_STAGE.RESULT,
-                currentQuizIndex: -1,
-                currentQuizStartTime: Date.now(),
-                currentQuizDeadlineTime: Date.now() + playTime,
-                intervalTime: 5000,
-                submitCount: 0,
-            };
-
-            mockQuizZoneRepository.get.mockResolvedValue(mockQuizZone);
-
-            const result = await service.getResultInfo(clientId, quizZoneId);
 
             expect(result).toEqual({
                 currentPlayer: {
                     id: clientId,
-                    nickname: '닉네임',
+                    nickname: nickNames[1],
                     state: PLAYER_STATE.WAIT,
-                    score: 100,
-                    submits: [],
                 },
                 title: '테스트 퀴즈',
                 description: '테스트 퀴즈입니다',
                 quizCount: quizzes.length,
-                stage: QUIZ_ZONE_STAGE.RESULT,
+                stage: QUIZ_ZONE_STAGE.LOBBY,
                 hostId: 'adminId',
             });
         });
-    });
 
-    describe('setPlayerInfo', () => {
-        it('이미 등록된 플레이어는 추가하지 않는다', async () => {
-            const quizZoneId = 'testQuizZone';
-            const clientId = 'clientId';
+        it('LOBBY 단계에서 이미 참가한 플레이어가 접속하면 기존 정보를 반환한다', async () => {
+            // given
+            const existingPlayer = {
+                id: clientId,
+                nickname: '닉네임',
+                state: PLAYER_STATE.WAIT,
+                score: 0,
+                submits: [],
+            };
             const mockQuizZone: QuizZone = {
-                players: new Map([
-                    [
-                        clientId,
-                        {
-                            id: clientId,
-                            nickname: '닉네임',
-                            state: PLAYER_STATE.WAIT,
-                            score: 0,
-                            submits: [],
-                        },
-                    ],
-                ]),
+                players: new Map([[clientId, existingPlayer]]),
                 hostId: 'adminId',
                 maxPlayers: 10,
                 title: '테스트 퀴즈',
@@ -308,14 +221,20 @@ describe('QuizZoneService', () => {
 
             mockQuizZoneRepository.get.mockResolvedValue(mockQuizZone);
 
-            await service.setPlayerInfo(clientId, quizZoneId);
+            // when
+            const result = await service.getQuizZoneInfo(clientId, quizZoneId);
 
+            // then
             expect(mockQuizZone.players.size).toBe(1);
+            expect(result.currentPlayer).toEqual({
+                id: clientId,
+                nickname: '닉네임',
+                state: PLAYER_STATE.WAIT,
+            });
         });
 
-        it('정원을 초과하면 예외를 던진다', async () => {
-            const quizZoneId = 'testQuizZone';
-            const clientId = 'clientId';
+        it('LOBBY 단계에서 정원이 초과된 경우 BadRequestException을 던진다', async () => {
+            // given
             const mockQuizZone: QuizZone = {
                 players: new Map([
                     [
@@ -354,59 +273,14 @@ describe('QuizZoneService', () => {
 
             mockQuizZoneRepository.get.mockResolvedValue(mockQuizZone);
 
-            await expect(service.setPlayerInfo(clientId, quizZoneId)).rejects.toThrow(
+            // when & then
+            await expect(service.getQuizZoneInfo(clientId, quizZoneId)).rejects.toThrow(
                 BadRequestException,
             );
         });
 
-        it('플레이어가 추가될 때 닉네임이 순서대로 할당된다', async () => {
-            const quizZoneId = 'testQuizZone';
-            const clientId = 'clientId';
-            const mockQuizZone: QuizZone = {
-                players: new Map([
-                    [
-                        'player1',
-                        {
-                            id: 'player1',
-                            nickname: nickNames[0],
-                            state: PLAYER_STATE.WAIT,
-                            score: 0,
-                            submits: [],
-                        },
-                    ],
-                ]),
-                hostId: 'adminId',
-                maxPlayers: 10,
-                title: '테스트 퀴즈',
-                description: '테스트 퀴즈입니다',
-                quizzes: quizzes,
-                stage: QUIZ_ZONE_STAGE.LOBBY,
-                currentQuizIndex: -1,
-                currentQuizStartTime: 0,
-                currentQuizDeadlineTime: 0,
-                intervalTime: 5000,
-                submitCount: 0,
-            };
-
-            mockQuizZoneRepository.get.mockResolvedValue(mockQuizZone);
-
-            await service.setPlayerInfo(clientId, quizZoneId);
-
-            const expectedPlayer = {
-                id: clientId,
-                nickname: nickNames[1], // 두 번째 닉네임이 할당되어야 함
-                score: 0,
-                submits: [],
-                state: PLAYER_STATE.WAIT,
-            };
-            expect(mockQuizZone.players.get(clientId)).toEqual(expectedPlayer);
-        });
-    });
-
-    describe('checkValidPlayer', () => {
-        it('유효한 플레이어인지 확인한다', async () => {
-            const quizZoneId = 'testQuizZone';
-            const clientId = 'clientId';
+        it('IN_PROGRESS 단계일 때 진행 정보를 반환한다', async () => {
+            // given
             const mockQuizZone: QuizZone = {
                 players: new Map([
                     [
@@ -425,22 +299,100 @@ describe('QuizZoneService', () => {
                 title: '테스트 퀴즈',
                 description: '테스트 퀴즈입니다',
                 quizzes: quizzes,
-                stage: QUIZ_ZONE_STAGE.LOBBY,
-                currentQuizIndex: -1,
-                currentQuizStartTime: 0,
-                currentQuizDeadlineTime: 0,
+                stage: QUIZ_ZONE_STAGE.IN_PROGRESS,
+                currentQuizIndex: 1,
+                currentQuizStartTime: Date.now(),
+                currentQuizDeadlineTime: Date.now() + playTime,
                 intervalTime: 5000,
                 submitCount: 0,
             };
 
             mockQuizZoneRepository.get.mockResolvedValue(mockQuizZone);
 
-            await expect(service.checkValidPlayer(clientId, quizZoneId)).resolves.not.toThrow();
+            // when
+            const result = await service.getQuizZoneInfo(clientId, quizZoneId);
+
+            // then
+            expect(result).toEqual({
+                currentPlayer: { id: clientId, nickname: '닉네임', state: PLAYER_STATE.WAIT },
+                title: '테스트 퀴즈',
+                description: '테스트 퀴즈입니다',
+                quizCount: quizzes.length,
+                stage: QUIZ_ZONE_STAGE.IN_PROGRESS,
+                hostId: 'adminId',
+                currentQuiz: {
+                    currentIndex: 1,
+                    startTime: mockQuizZone.currentQuizStartTime,
+                    deadlineTime: mockQuizZone.currentQuizDeadlineTime,
+                    playTime: quizzes[1].playTime,
+                    question: quizzes[1].question,
+                    stage: QUIZ_ZONE_STAGE.IN_PROGRESS,
+                },
+            });
         });
 
-        it('유효하지 않은 플레이어인 경우 예외를 던진다', async () => {
-            const quizZoneId = 'testQuizZone';
-            const clientId = 'clientId';
+        it('RESULT 단계일 때 결과 정보를 반환한다', async () => {
+            // given
+            const mockQuizZone: QuizZone = {
+                players: new Map([
+                    [
+                        clientId,
+                        {
+                            id: clientId,
+                            nickname: '닉네임',
+                            state: PLAYER_STATE.WAIT,
+                            score: 100,
+                            submits: [],
+                        },
+                    ],
+                ]),
+                hostId: 'adminId',
+                maxPlayers: 10,
+                title: '테스트 퀴즈',
+                description: '테스트 퀴즈입니다',
+                quizzes: quizzes,
+                stage: QUIZ_ZONE_STAGE.RESULT,
+                currentQuizIndex: -1,
+                currentQuizStartTime: Date.now(),
+                currentQuizDeadlineTime: Date.now() + playTime,
+                intervalTime: 5000,
+                submitCount: 0,
+            };
+
+            mockQuizZoneRepository.get.mockResolvedValue(mockQuizZone);
+
+            // when
+            const result = await service.getQuizZoneInfo(clientId, quizZoneId);
+
+            // then
+            expect(result).toEqual({
+                currentPlayer: {
+                    id: clientId,
+                    nickname: '닉네임',
+                    state: PLAYER_STATE.WAIT,
+                    score: 100,
+                    submits: [],
+                },
+                title: '테스트 퀴즈',
+                description: '테스트 퀴즈입니다',
+                quizCount: quizzes.length,
+                stage: QUIZ_ZONE_STAGE.RESULT,
+                hostId: 'adminId',
+            });
+        });
+
+        it('존재하지 않는 퀴즈존을 조회하면 NotFoundException을 던진다', async () => {
+            // given
+            mockQuizZoneRepository.get.mockResolvedValue(null);
+
+            // when & then
+            await expect(service.getQuizZoneInfo(clientId, quizZoneId)).rejects.toThrow(
+                NotFoundException,
+            );
+        });
+
+        it('참가하지 않은 플레이어가 IN_PROGRESS 단계의 퀴즈존을 조회하면 BadRequestException을 던진다', async () => {
+            // given
             const mockQuizZone: QuizZone = {
                 players: new Map(),
                 hostId: 'adminId',
@@ -448,7 +400,7 @@ describe('QuizZoneService', () => {
                 title: '테스트 퀴즈',
                 description: '테스트 퀴즈입니다',
                 quizzes: quizzes,
-                stage: QUIZ_ZONE_STAGE.LOBBY,
+                stage: QUIZ_ZONE_STAGE.IN_PROGRESS,
                 currentQuizIndex: -1,
                 currentQuizStartTime: 0,
                 currentQuizDeadlineTime: 0,
@@ -458,7 +410,8 @@ describe('QuizZoneService', () => {
 
             mockQuizZoneRepository.get.mockResolvedValue(mockQuizZone);
 
-            await expect(service.checkValidPlayer(clientId, quizZoneId)).rejects.toThrow(
+            // when & then
+            await expect(service.getQuizZoneInfo(clientId, quizZoneId)).rejects.toThrow(
                 BadRequestException,
             );
         });
@@ -483,7 +436,6 @@ describe('QuizZoneService', () => {
             await expect(service.clearQuizZone(quizZoneId)).rejects.toThrow(BadRequestException);
         });
     });
-
     describe('findOthersInfo', () => {
         it('다른 플레이어들의 닉네임 목록을 반환한다', async () => {
             const quizZoneId = 'testQuizZone';
@@ -543,6 +495,42 @@ describe('QuizZoneService', () => {
                 { nickname: 'nick3', id: 'player3' },
             ]);
         });
+
+        it('다른 플레이어가 없으면 빈 배열을 반환한다', async () => {
+            const quizZoneId = 'testQuizZone';
+            const clientId = 'clientId';
+            const mockQuizZone: QuizZone = {
+                players: new Map([
+                    [
+                        clientId,
+                        {
+                            id: clientId,
+                            nickname: 'nick1',
+                            state: PLAYER_STATE.WAIT,
+                            score: 0,
+                            submits: [],
+                        },
+                    ],
+                ]),
+                hostId: 'adminId',
+                maxPlayers: 10,
+                title: '테스트 퀴즈',
+                description: '테스트 퀴즈입니다',
+                quizzes: quizzes,
+                stage: QUIZ_ZONE_STAGE.LOBBY,
+                currentQuizIndex: -1,
+                currentQuizStartTime: 0,
+                currentQuizDeadlineTime: 0,
+                intervalTime: 5000,
+                submitCount: 0,
+            };
+
+            mockQuizZoneRepository.get.mockResolvedValue(mockQuizZone);
+
+            const result = await service.findOthersInfo(quizZoneId, clientId);
+
+            expect(result).toEqual([]);
+        });
     });
 
     describe('getQuizZoneStage', () => {
@@ -568,6 +556,51 @@ describe('QuizZoneService', () => {
             const result = await service.getQuizZoneStage(quizZoneId);
 
             expect(result).toEqual(QUIZ_ZONE_STAGE.LOBBY);
+        });
+
+        it('존재하지 않는 퀴즈존을 조회하면 NotFoundException을 던진다', async () => {
+            const quizZoneId = 'testQuizZone';
+            mockQuizZoneRepository.get.mockResolvedValue(null);
+
+            await expect(service.getQuizZoneStage(quizZoneId)).rejects.toThrow(NotFoundException);
+        });
+    });
+
+    describe('leave', () => {
+        it('퀴즈존에서 플레이어를 제거한다', async () => {
+            const quizZoneId = 'testQuizZone';
+            const clientId = 'clientId';
+            const mockQuizZone: QuizZone = {
+                players: new Map([
+                    [
+                        clientId,
+                        {
+                            id: clientId,
+                            nickname: 'nick1',
+                            state: PLAYER_STATE.WAIT,
+                            score: 0,
+                            submits: [],
+                        },
+                    ],
+                ]),
+                hostId: 'adminId',
+                maxPlayers: 10,
+                title: '테스트 퀴즈',
+                description: '테스트 퀴즈입니다',
+                quizzes: quizzes,
+                stage: QUIZ_ZONE_STAGE.LOBBY,
+                currentQuizIndex: -1,
+                currentQuizStartTime: 0,
+                currentQuizDeadlineTime: 0,
+                intervalTime: 5000,
+                submitCount: 0,
+            };
+
+            mockQuizZoneRepository.get.mockResolvedValue(mockQuizZone);
+
+            await service.leave(quizZoneId, clientId);
+
+            expect(mockQuizZone.players.has(clientId)).toBeFalsy();
         });
     });
 });
