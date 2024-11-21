@@ -1,7 +1,7 @@
 import QuizZoneInProgress from '@/blocks/QuizZone/QuizZoneInProgress';
 import QuizZoneLobby from '@/blocks/QuizZone/QuizZoneLobby';
 import QuizZoneResult from '@/blocks/QuizZone/QuizZoneResult';
-import useQuizZone from '@/hook/quiz-zone/useQuizZone';
+import useQuizZone from '@/hook/quizZone/useQuizZone';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import CustomAlertDialog from '@/components/common/CustomAlertDialog';

@@ -204,6 +204,7 @@ const useQuizZone = () => {
         submitQuiz,
         startQuiz,
         playQuiz,
+        closeConnection,
     };
 };
 
