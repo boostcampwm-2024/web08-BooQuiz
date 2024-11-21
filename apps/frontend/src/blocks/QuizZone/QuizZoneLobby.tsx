@@ -5,48 +5,16 @@ import TextCopy from '@/components/common/TextCopy';
 import Typography from '@/components/common/Typogrpahy';
 import { useNavigate } from 'react-router-dom';
 
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Crown } from 'lucide-react';
+import { QuizZone } from '@/types/quizZone.types';
 interface QuizZoneLobbyProps {
-    quizZoneData: any;
-    pinNumber: string;
+    quizZoneState: QuizZone;
+    quizZoneId: string;
     startQuiz: () => void;
 }
 
-interface Participant {
-    avatarUrl?: string;
-    name: string;
-}
-
-interface ParticipantGridProps {
-    participants: Participant[];
-    isHost: boolean;
-}
-
-const ParticipantGrid = ({ participants, isHost }: ParticipantGridProps) => {
-    return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
-            {participants.map((participant, index) => (
-                <div key={index} className="flex items-center gap-2">
-                    <Avatar className="border border-gray-300">
-                        <AvatarImage
-                            src={participant.avatarUrl || '/BooQuizFavicon.png'}
-                            alt={participant.name}
-                        />
-                        <AvatarFallback>{participant.name.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    <div className="flex items-center gap-2">
-                        <Typography text={participant.name} size="base" color="black" />
-                        {isHost && <Crown className="text-yellow-500" />}
-                    </div>
-                </div>
-            ))}
-        </div>
-    );
-};
-
 // Usage
-const QuizZoneLobby = ({ quizZoneData, pinNumber, startQuiz }: QuizZoneLobbyProps) => {
+const QuizZoneLobby = ({ quizZoneState, quizZoneId, startQuiz }: QuizZoneLobbyProps) => {
+    console.log('로비 데이터', quizZoneState);
     const navigate = useNavigate();
     const handleLeave = () => {
         navigate('/');
@@ -72,18 +40,16 @@ const QuizZoneLobby = ({ quizZoneData, pinNumber, startQuiz }: QuizZoneLobbyProp
                                     color="gray"
                                 />
                             </div>
-                            <Typography
-                                text={`${quizZoneData.Lobby.participants ?? 0}/1`}
+                            {/* <Typography
+                                text={`${quizZoneState.players?.length ?? 0} 명`}
                                 size="sm"
                                 color="black"
-                            />
+                            /> */}
                         </div>
-                        <ParticipantGrid
-                            participants={
-                                quizZoneData.Lobby.participantsList ?? [{ name: '참가자1' }]
-                            }
-                            isHost={quizZoneData.Lobby.isHost}
-                        />
+                        {/* <ParticipantGrid
+                            participants={quizZoneState.players ?? [{ name: '참가자1' }]}
+                            hostId={quizZoneState.hostId}
+                        /> */}
                     </ContentBox>
                     <ContentBox className="flex-[3] h-full flex justify-around">
                         <div className="flex flex-col gap-1">
@@ -97,12 +63,12 @@ const QuizZoneLobby = ({ quizZoneData, pinNumber, startQuiz }: QuizZoneLobbyProp
                         </div>
                         <div className="flex flex-col gap-1">
                             <Typography text={`임시 PIN 번호`} size="base" color="black" />
-                            <TextCopy size="2xl" bold={true} text={pinNumber} />
+                            <TextCopy size="2xl" bold={true} text={quizZoneId} />
                         </div>
                         <div className="flex flex-col gap-1">
                             <Typography text={`퀴즈 개수`} size="base" color="black" />
                             <Typography
-                                text={`${quizZoneData.Lobby.totalQuizCount ?? '?'}문제`}
+                                text={`${quizZoneState.quizCount ?? '?'}문제`}
                                 size="2xl"
                                 color="black"
                                 bold={true}
@@ -110,16 +76,22 @@ const QuizZoneLobby = ({ quizZoneData, pinNumber, startQuiz }: QuizZoneLobbyProp
                         </div>
                         <div className="flex flex-col gap-1">
                             <Typography text={`퀴즈존 참가자수`} size="base" color="black" />
-                            <Typography
-                                text={` ${quizZoneData.Lobby.participants ?? '?'} 명`}
+                            {/* <Typography
+                                text={` ${quizZoneState.players?.length ?? '?'} 명`}
                                 size="2xl"
                                 color="black"
                                 bold={true}
-                            />
+                            /> */}
                         </div>
                         <div className="flex flex-col gap-2">
-                            {quizZoneData.Lobby.isHost && (
-                                <CommonButton text="퀴즈 시작하기" clickEvent={startQuiz} />
+                            {true && (
+                                <CommonButton
+                                    text="퀴즈 시작하기"
+                                    clickEvent={() => {
+                                        console.log('시작');
+                                        startQuiz();
+                                    }}
+                                />
                             )}
                             <CustomAlert
                                 trigger={{

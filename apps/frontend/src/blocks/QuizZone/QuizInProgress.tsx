@@ -6,13 +6,12 @@ import Typography from '@/components/common/Typogrpahy';
 import { useState } from 'react';
 
 interface QuizInProgressProps {
-    solutionTime: number | null;
+    playTime: number | null;
     currentQuiz: any;
     submitAnswer: (e: any) => void;
-    timeOutHandler: () => void;
 }
 
-const QuizInProgress = ({ currentQuiz, submitAnswer, timeOutHandler }: QuizInProgressProps) => {
+const QuizInProgress = ({ currentQuiz, submitAnswer }: QuizInProgressProps) => {
     const [answer, setAnswer] = useState('');
 
     return (
@@ -21,7 +20,7 @@ const QuizInProgress = ({ currentQuiz, submitAnswer, timeOutHandler }: QuizInPro
             <ProgressBar
                 deadlineTime={currentQuiz.deadlineTime}
                 onTimeEnd={() => {
-                    timeOutHandler();
+                    console.log('풀이 시간 종료');
                 }}
             />
             <ContentBox className="md:min-w-[48rem] w-4/5">
@@ -31,7 +30,7 @@ const QuizInProgress = ({ currentQuiz, submitAnswer, timeOutHandler }: QuizInPro
                     color="black"
                     bold={true}
                 />
-                {currentQuiz.type == 'SHORT_ANSWER' ? (
+                {currentQuiz.type == 'SHORT' ? (
                     <>
                         <Input
                             onChange={(e) => setAnswer(e.target.value)}
@@ -50,7 +49,6 @@ const QuizInProgress = ({ currentQuiz, submitAnswer, timeOutHandler }: QuizInPro
                                 submitAnswer(answer);
                             }}
                         />
-                        {/* <CommonButton text={'나가기'} clickEvent={() => {}} /> */}
                     </>
                 ) : (
                     <div className="space-y-2">

@@ -1,11 +1,29 @@
 import ContentBox from '@/components/common/ContentBox';
 import Typography from '@/components/common/Typogrpahy';
+import { useTimer } from '@/hook/useTimer';
+import { useEffect } from 'react';
 
 interface QuizWaitingProps {
-    prepareTime: number | null;
+    startTime: number;
+    playQuiz: () => void;
 }
 
-const QuizWaiting = ({ prepareTime }: QuizWaitingProps) => {
+const QuizWaiting = ({ playQuiz, startTime }: QuizWaitingProps) => {
+    const currentTime = new Date().getTime();
+    const remainingPrepTime = Math.max(0, startTime - currentTime) / 1000;
+
+    const { start, time } = useTimer({
+        initialTime: remainingPrepTime,
+        onComplete: () => {
+            console.log('complete');
+            playQuiz();
+        },
+    });
+
+    useEffect(() => {
+        start();
+    }, []);
+
     return (
         <div className="w-full h-screen flex flex-col items-center justify-center gap-4">
             <img width="200px" src="/BooQuizLogo.png" alt="BooQuiz Logo" />
@@ -20,12 +38,12 @@ const QuizWaiting = ({ prepareTime }: QuizWaitingProps) => {
                     <Typography size="2xl" color="gray" text="잠시만 기다려주세요" bold={true} />
                 </div>
 
-                {prepareTime !== null && (
+                {time !== null && (
                     <div className="w-full flex flex-row justify-center items-end">
                         <Typography
                             size="3xl"
                             color="blue"
-                            text={`${prepareTime.toFixed(1)}`}
+                            text={`${time.toFixed(1)}`}
                             bold={true}
                         />
                         <Typography size="base" color="blue" text={` 초 뒤에 시작`} bold={true} />

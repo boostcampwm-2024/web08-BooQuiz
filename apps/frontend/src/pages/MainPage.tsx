@@ -7,7 +7,7 @@ const MainPage = () => {
     const navigate = useNavigate();
 
     const handleMoveToQuizZone = () => {
-        navigate('/quizZone');
+        navigate('/newQuizZone/1');
     };
 
     //입장하기 버튼을 클릭하면 서버에 퀴즈존 세션 생성 요청을 날린다.
