@@ -58,7 +58,7 @@ const quizZoneReducer: Reducer<QuizZone, QuizZoneAction> = (state, action) => {
                 },
                 currentQuiz: {
                     ...state.currentQuiz,
-                    question: payload.question,
+                    question: atob(payload.question),
                     currentIndex: payload.currentIndex,
                     playTime: payload.playTime,
                     startTime: payload.startTime,
