@@ -29,6 +29,7 @@ export interface QuizZoneLobbyState {
     quizCount: number;
     hostId: string;
     players: Player[];
+    currentPlayer: Player;
 }
 
 export interface CurrentQuiz {
