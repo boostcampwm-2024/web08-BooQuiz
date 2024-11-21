@@ -164,7 +164,7 @@ const useQuizZone = () => {
     const { sendMessage, closeConnection } = useWebSocket(`${wsUrl}/play`, messageHandler);
 
     //initialize QuizZOne
-    const initQuizZoneData = (initialData): any => {
+    const initQuizZoneData = (initialData: any) => {
         if (initialData.stage === 'WAITING') {
             dispatch({
                 type: 'init',
