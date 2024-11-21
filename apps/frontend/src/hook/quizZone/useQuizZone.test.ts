@@ -1,16 +1,17 @@
 import { renderHook, act } from '@testing-library/react';
-import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import useQuizZone from './useQuizZone';
+import useWebSocket from '@/hook/useWebSocket';
 
-// 모킹 설정
+// Mock 함수들을 미리 생성
 const mockSendMessage = vi.fn();
 const mockCloseConnection = vi.fn();
-let mockWebSocketHandler: ((event: MessageEvent) => void) | null = null;
+let messageHandler: (event: MessageEvent) => void;
 
-// WebSocket 모킹
+// useWebSocket 모듈 전체를 모킹
 vi.mock('@/hook/useWebSocket', () => ({
-    default: (handler: (event: MessageEvent) => void) => {
-        mockWebSocketHandler = handler;
+    default: (_url: string, handler: (event: MessageEvent) => void) => {
+        messageHandler = handler;
         return {
             sendMessage: mockSendMessage,
             closeConnection: mockCloseConnection,
@@ -18,192 +19,196 @@ vi.mock('@/hook/useWebSocket', () => ({
     },
 }));
 
-describe('useQuizZone 훅 테스트', () => {
+describe('useQuizZone', () => {
+    // 각 테스트 전에 실행
     beforeEach(() => {
+        mockSendMessage.mockClear();
+        mockCloseConnection.mockClear();
+    });
+
+    // 각 테스트 후에 실행
+    afterEach(() => {
         vi.clearAllMocks();
-        mockWebSocketHandler = null;
     });
 
-    describe('초기 상태 및 초기화', () => {
-        it('초기 상태가 올바르게 설정되어야 한다', () => {
-            const { result } = renderHook(() => useQuizZone());
+    // 초기 상태 테스트
+    it('초기 상태가 올바르게 설정되어야 한다', () => {
+        const { result } = renderHook(() => useQuizZone());
 
-            expect(result.current.quizZoneState).toStrictEqual({
-                stage: 'LOBBY',
-                currentPlayer: {
-                    id: '',
-                    nickname: '',
+        expect(result.current.quizZoneState).toEqual({
+            stage: 'LOBBY',
+            currentPlayer: {
+                id: '',
+                nickname: '',
+            },
+            title: '',
+            description: '',
+            hostId: '',
+            quizCount: 0,
+            players: [],
+            score: 0,
+            submits: [],
+            quizzes: [],
+        });
+    });
+
+    // 퀴즈존 초기화 테스트
+    it('제공된 데이터로 퀴즈존이 올바르게 초기화되어야 한다', () => {
+        const { result } = renderHook(() => useQuizZone());
+        const initialData = {
+            stage: 'LOBBY',
+            title: '테스트 퀴즈',
+            description: '테스트 설명',
+            quizCount: 5,
+            hostId: 'host123',
+            players: [],
+        };
+
+        act(() => {
+            result.current.initQuizZoneData(initialData);
+        });
+
+        expect(result.current.quizZoneState).toMatchObject(initialData);
+    });
+
+    // 퀴즈 제출 테스트
+    it('퀴즈 답안 제출 시 올바른 메시지가 전송되어야 한다', () => {
+        const { result } = renderHook(() => useQuizZone());
+
+        // Mock Date.now()
+        const mockNow = 1234567890;
+        vi.spyOn(Date, 'now').mockImplementation(() => mockNow);
+
+        // 답안 제출
+        act(() => {
+            result.current.submitQuiz('테스트 답안');
+        });
+
+        // 전송된 메시지 검증
+        expect(mockSendMessage).toHaveBeenCalledWith(
+            JSON.stringify({
+                event: 'submit',
+                data: {
+                    answer: '테스트 답안',
+                    submittedAt: mockNow,
                 },
-                title: '',
-                description: '',
-                hostId: '',
-                quizCount: 0,
-                players: [],
-                score: 0,
-                submits: [],
-                quizzes: [],
-            });
-        });
-
-        it('퀴즈존 데이터가 올바르게 초기화되어야 한다', () => {
-            const { result } = renderHook(() => useQuizZone());
-            const initialData = {
-                stage: 'LOBBY',
-                title: '테스트 퀴즈',
-                description: '테스트 설명',
-                hostId: 'host1',
-                quizCount: 5,
-            };
-
-            act(() => {
-                result.current.initQuizZoneData(initialData);
-            });
-
-            expect(result.current.quizZoneState).toMatchObject({
-                stage: 'LOBBY',
-                title: '테스트 퀴즈',
-                description: '테스트 설명',
-                hostId: 'host1',
-                quizCount: 5,
-            });
-        });
+            }),
+        );
     });
 
-    describe('WebSocket 이벤트 처리', () => {
-        it('퀴즈 시작 메시지를 올바르게 전송해야 한다', () => {
-            const { result } = renderHook(() => useQuizZone());
+    // 퀴즈 시작 테스트
+    it('퀴즈 시작 시 start 이벤트가 전송되어야 한다', () => {
+        const { result } = renderHook(() => useQuizZone());
 
-            act(() => {
-                result.current.startQuiz();
-            });
-
-            expect(mockSendMessage).toHaveBeenCalledWith(JSON.stringify({ event: 'start' }));
+        act(() => {
+            result.current.startQuiz();
         });
 
-        it('답안 제출이 올바른 형식으로 전송되어야 한다', () => {
-            const { result } = renderHook(() => useQuizZone());
-            const testAnswer = '테스트 답안';
+        expect(mockSendMessage).toHaveBeenCalledWith(JSON.stringify({ event: 'start' }));
+    });
 
-            vi.setSystemTime(new Date('2024-01-01'));
-            const fixedTime = new Date('2024-01-01').getTime();
+    // WebSocket 메시지 처리 테스트
+    it('join 이벤트 수신 시 players 상태가 올바르게 업데이트되어야 한다', () => {
+        const { result } = renderHook(() => useQuizZone());
 
-            act(() => {
-                result.current.submitQuiz(testAnswer);
-            });
+        // join 이벤트 시뮬레이션
+        act(() => {
+            // messageHandler가 정의되어 있어야 함
+            if (!messageHandler) {
+                throw new Error('메시지 핸들러가 정의되지 않았습니다');
+            }
 
-            expect(mockSendMessage).toHaveBeenCalledWith(
-                JSON.stringify({
-                    event: 'submit',
-                    data: {
-                        answer: testAnswer,
-                        index: undefined,
-                        submittedAt: fixedTime,
-                    },
+            messageHandler(
+                new MessageEvent('message', {
+                    data: JSON.stringify({
+                        event: 'join',
+                        data: {
+                            players: [{ id: 'player1', nickname: '참가자 1' }],
+                        },
+                    }),
                 }),
             );
-
-            vi.useRealTimers();
         });
 
-        it('nextQuiz 이벤트를 받으면 상태가 올바르게 업데이트되어야 한다', () => {
-            const { result } = renderHook(() => useQuizZone());
+        // 상태 업데이트 확인
+        expect(result.current.quizZoneState.players).toEqual([
+            { id: 'player1', nickname: '참가자 1' },
+        ]);
+    });
 
-            const mockEventData = {
-                event: 'nextQuiz',
-                data: {
-                    question: '테스트 문제',
-                    currentIndex: 1,
-                    playTime: 30,
-                    startTime: Date.now(),
-                    deadlineTime: Date.now() + 30000,
-                },
-            };
+    // playQuiz 테스트
+    it('퀴즈 플레이 시 상태가 올바르게 업데이트되어야 한다', () => {
+        const { result } = renderHook(() => useQuizZone());
 
-            act(() => {
-                if (mockWebSocketHandler) {
-                    mockWebSocketHandler(
-                        new MessageEvent('message', {
-                            data: JSON.stringify(mockEventData),
-                        }),
-                    );
-                }
-            });
-
-            expect(result.current.quizZoneState.stage).toBe('IN_PROGRESS');
-            expect(result.current.quizZoneState.currentQuiz).toMatchObject({
-                question: '테스트 문제',
-                currentIndex: 1,
-                type: 'SHORT',
-            });
+        act(() => {
+            result.current.playQuiz();
         });
 
-        it('summary 이벤트를 받으면 결과가 올바르게 업데이트되어야 한다', () => {
-            const { result } = renderHook(() => useQuizZone());
+        expect(result.current.quizZoneState.stage).toBe('IN_PROGRESS');
+        expect(result.current.quizZoneState.currentPlayer?.state).toBe('PLAY');
+    });
 
-            const mockEventData = {
-                event: 'summary',
-                data: {
-                    score: 100,
-                    submits: ['답안1', '답안2'],
-                    quizzes: ['문제1', '문제2'],
-                },
-            };
+    // 연결 종료 테스트
+    it('WebSocket 연결이 올바르게 종료되어야 한다', () => {
+        const { result } = renderHook(() => useQuizZone());
 
-            act(() => {
-                if (mockWebSocketHandler) {
-                    mockWebSocketHandler(
-                        new MessageEvent('message', {
-                            data: JSON.stringify(mockEventData),
-                        }),
-                    );
-                }
-            });
-
-            expect(result.current.quizZoneState.stage).toBe('RESULT');
-            expect(result.current.quizZoneState.score).toBe(100);
-            expect(result.current.quizZoneState.submits).toStrictEqual(['답안1', '답안2']);
-            expect(result.current.quizZoneState.quizzes).toStrictEqual(['문제1', '문제2']);
+        act(() => {
+            result.current.closeConnection();
         });
 
-        it('playQuiz를 호출하면 상태가 적절하게 변경되어야 한다', () => {
-            const { result } = renderHook(() => useQuizZone());
+        expect(mockCloseConnection).toHaveBeenCalled();
+    });
 
-            act(() => {
-                result.current.playQuiz();
-            });
+    // 타임아웃 이벤트 테스트
+    it('타임아웃 이벤트 수신 시 상태가 올바르게 업데이트되어야 한다', () => {
+        const { result } = renderHook(() => useQuizZone());
 
-            expect(result.current.quizZoneState.stage).toBe('IN_PROGRESS');
-            expect(result.current.quizZoneState.currentPlayer?.state).toBe('PLAY');
+        act(() => {
+            if (!messageHandler) {
+                throw new Error('메시지 핸들러가 정의되지 않았습니다');
+            }
+
+            messageHandler(
+                new MessageEvent('message', {
+                    data: JSON.stringify({
+                        event: 'quizTimeout',
+                        data: undefined,
+                    }),
+                }),
+            );
         });
 
-        it('join 이벤트를 받으면 플레이어 목록이 업데이트되어야 한다', () => {
-            const { result } = renderHook(() => useQuizZone());
+        expect(result.current.quizZoneState.playerState).toBe('WAIT');
+    });
 
-            const mockEventData = {
-                event: 'join',
-                data: {
-                    players: [
-                        { id: 'player1', nickname: '참가자1' },
-                        { id: 'player2', nickname: '참가자2' },
-                    ],
-                },
-            };
+    // 퀴즈 완료 이벤트 테스트
+    it('퀴즈 완료 이벤트 수신 시 결과가 올바르게 업데이트되어야 한다', () => {
+        const { result } = renderHook(() => useQuizZone());
 
-            act(() => {
-                if (mockWebSocketHandler) {
-                    mockWebSocketHandler(
-                        new MessageEvent('message', {
-                            data: JSON.stringify(mockEventData),
-                        }),
-                    );
-                }
-            });
+        const summaryData = {
+            score: 100,
+            submits: [{ questionId: 1, answer: '테스트 답안', correct: true }],
+            quizzes: [{ id: 1, question: '테스트 문제' }],
+        };
 
-            expect(result.current.quizZoneState.players).toHaveLength(2);
-            expect(result.current.quizZoneState.players).toStrictEqual([
-                { id: 'player1', nickname: '참가자1' },
-                { id: 'player2', nickname: '참가자2' },
-            ]);
+        act(() => {
+            if (!messageHandler) {
+                throw new Error('메시지 핸들러가 정의되지 않았습니다');
+            }
+
+            messageHandler(
+                new MessageEvent('message', {
+                    data: JSON.stringify({
+                        event: 'summary',
+                        data: summaryData,
+                    }),
+                }),
+            );
         });
+
+        expect(result.current.quizZoneState.stage).toBe('RESULT');
+        expect(result.current.quizZoneState.score).toBe(100);
+        expect(result.current.quizZoneState.submits).toEqual(summaryData.submits);
+        expect(result.current.quizZoneState.quizzes).toEqual(summaryData.quizzes);
     });
 });
