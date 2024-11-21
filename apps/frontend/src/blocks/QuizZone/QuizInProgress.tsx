@@ -14,6 +14,16 @@ interface QuizInProgressProps {
 const QuizInProgress = ({ currentQuiz, submitAnswer }: QuizInProgressProps) => {
     const [answer, setAnswer] = useState('');
 
+    const MAX_TEXT_LENGTH = 100;
+    const MIN_TEXT_LENGTH = 1;
+
+    const handleSubmitAnswer = () => {
+        console.log(answer.length, answer);
+        if (answer.length >= MIN_TEXT_LENGTH && answer.length <= MAX_TEXT_LENGTH) {
+            submitAnswer(answer);
+        }
+    };
+
     return (
         <div className="w-full h-screen flex flex-col items-center justify-center gap-4">
             <img width="200px" src="/BooQuizLogo.png" alt="BooQuiz Logo" />
@@ -39,14 +49,14 @@ const QuizInProgress = ({ currentQuiz, submitAnswer }: QuizInProgressProps) => {
                             placeholder={'정답을 입력해주세요'}
                             onKeyDown={(e) => {
                                 if (e.key === 'Enter') {
-                                    submitAnswer(answer);
+                                    handleSubmitAnswer();
                                 }
                             }}
                         />
                         <CommonButton
                             text={'제출하기'}
                             clickEvent={() => {
-                                submitAnswer(answer);
+                                handleSubmitAnswer();
                             }}
                         />
                     </>
@@ -54,7 +64,7 @@ const QuizInProgress = ({ currentQuiz, submitAnswer }: QuizInProgressProps) => {
                     <div className="space-y-2">
                         {currentQuiz.options?.map((option: string, index: number) => (
                             <button
-                                key={index}
+                                key={index + 'a'}
                                 onClick={() => submitAnswer(option)}
                                 className="block w-full p-2 text-left border rounded hover:bg-gray-100"
                             >
