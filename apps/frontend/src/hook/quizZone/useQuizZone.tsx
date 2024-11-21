@@ -1,15 +1,9 @@
 import { useReducer } from 'react';
 import useWebSocket from '@/hook/useWebSocket.tsx';
-import {
-    CurrentQuiz,
-    Player,
-    QuizZone,
-    QuizZoneLobbyState,
-    QuizZoneResultState,
-} from '@/types/quizZone.types.ts';
+import { CurrentQuiz, Player, QuizZone, QuizZoneResultState } from '@/types/quizZone.types.ts';
 
 export type QuizZoneAction =
-    | { type: 'init'; payload: QuizZoneLobbyState }
+    | { type: 'init'; payload: QuizZone }
     | { type: 'join'; payload: { players: Player[] } }
     | { type: 'start'; payload: undefined }
     | { type: 'submit'; payload: undefined }
@@ -43,6 +37,7 @@ const quizZoneReducer: Reducer<QuizZone, QuizZoneAction> = (state, action) => {
                 quizCount: payload.quizCount,
                 hostId: payload.hostId,
                 currentPlayer: payload.currentPlayer,
+                currentQuiz: payload.currentQuiz,
                 players: [],
             };
         case 'join':
