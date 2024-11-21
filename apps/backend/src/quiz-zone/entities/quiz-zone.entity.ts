@@ -1,5 +1,6 @@
 import { Quiz } from './quiz.entity';
 import { Player } from './player.entity';
+import { QUIZ_ZONE_STAGE } from '../../common/constants';
 /**
  * 퀴즈 게임을 진행하는 공간을 나타내는 퀴즈존 인터페이스
  *
@@ -20,11 +21,12 @@ export interface QuizZone {
     hostId: string;
     maxPlayers: number;
     quizzes: Quiz[];
-    stage: 'LOBBY' | 'WAITING' | 'IN_PROGRESS' | 'COMPLETED' | 'RESULT';
+    stage: QUIZ_ZONE_STAGE;
     title: string;
     description: string;
     currentQuizIndex: number;
     currentQuizStartTime: number;
     currentQuizDeadlineTime: number;
     intervalTime: number;
+    submitCount: number;
 }

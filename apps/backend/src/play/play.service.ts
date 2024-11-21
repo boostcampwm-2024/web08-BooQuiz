@@ -4,6 +4,7 @@ import { SubmittedQuiz } from '../quiz-zone/entities/submitted-quiz.entity';
 import { QuizZone } from '../quiz-zone/entities/quiz-zone.entity';
 import { QuizResultSummaryDto } from './dto/quiz-result-summary.dto';
 import { CurrentQuizDto } from './dto/current-quiz.dto';
+import { PLAYER_STATE, QUIZ_ZONE_STAGE } from '../common/constants';
 
 @Injectable()
 export class PlayService {
@@ -18,6 +19,7 @@ export class PlayService {
      */
     async submit(quizZoneId: string, clientId: string, submitQuiz: SubmittedQuiz) {
         const quizZone = await this.quizZoneService.findOne(quizZoneId);
+        quizZone.submitCount++;
         this.submitQuiz(quizZone, clientId, submitQuiz);
     }
 
@@ -33,9 +35,7 @@ export class PlayService {
 
         const nextQuiz = await this.nextQuiz(quizZoneId);
 
-        quizZone.players.forEach((player) => {
-            player.state = 'WAIT';
-        });
+        await this.changeAllPlayersState(quizZoneId, PLAYER_STATE.WAIT);
 
         return {
             intervalTime,
@@ -62,7 +62,6 @@ export class PlayService {
 
         const nextQuiz = quizzes.at(currentQuizIndex);
 
-        quizZone.stage = 'WAITING';
         quizZone.currentQuizStartTime = Date.now() + intervalTime;
         quizZone.currentQuizDeadlineTime = quizZone.currentQuizStartTime + nextQuiz.playTime;
 
@@ -84,7 +83,7 @@ export class PlayService {
         const quizZone = await this.quizZoneService.findOne(quizZoneId);
         const { players } = quizZone;
         players.forEach((player) => {
-            if (player.state === 'PLAY') {
+            if (player.state === PLAYER_STATE.PLAY) {
                 this.submitQuiz(quizZone, player.id);
             }
         });
@@ -102,7 +101,7 @@ export class PlayService {
         const quiz = quizzes.at(currentQuizIndex);
         const player = players.get(clientId);
 
-        if (player.state !== 'PLAY') {
+        if (player.state !== PLAYER_STATE.PLAY) {
             throw new BadRequestException('정답을 제출할 수 없습니다.');
         }
 
@@ -125,7 +124,7 @@ export class PlayService {
             player.score++;
         }
 
-        player.state = 'SUBMIT';
+        player.state = PLAYER_STATE.SUBMIT;
     }
 
     /**
@@ -135,12 +134,13 @@ export class PlayService {
      * @returns 퀴즈 결과 요약 DTO를 포함한 Promise
      */
     async summary(quizZoneId: string, clientId: string): Promise<QuizResultSummaryDto> {
-        const { players, quizzes } = await this.quizZoneService.findOne(quizZoneId);
-        const player = players.get(clientId);
+        const quizZone = await this.quizZoneService.findOne(quizZoneId);
+        quizZone.stage = QUIZ_ZONE_STAGE.RESULT;
+        const player = quizZone.players.get(clientId);
         return {
             score: player.score,
             submits: player.submits,
-            quizzes,
+            quizzes: quizZone.quizzes,
         };
     }
 
@@ -149,7 +149,7 @@ export class PlayService {
      * @param quizZoneId - 퀴즈 존 ID
      */
     async clearQuizZone(quizZoneId: string) {
-        this.quizZoneService.clearQuizZone(quizZoneId);
+        await this.quizZoneService.clearQuizZone(quizZoneId);
     }
 
     async findOthersInfo(quizZoneId: string, clientId: string) {
@@ -163,5 +163,48 @@ export class PlayService {
             throw new NotFoundException();
         }
         return player;
+    }
+
+    async checkAllSubmitted(quizZoneId: string) {
+        const quizZone = await this.quizZoneService.findOne(quizZoneId);
+        return quizZone.submitCount === quizZone.players.size;
+    }
+
+    async isHostPlayer(quizZoneId: string, clientId: string) {
+        const { hostId } = await this.quizZoneService.findOne(quizZoneId);
+        return hostId === clientId;
+    }
+
+    async validatePlayer(quizZoneId: string, clientId: string) {
+        const quizZone = await this.quizZoneService.findOne(quizZoneId);
+        if (!quizZone.players.has(clientId)) {
+            throw new BadRequestException('플레이어 정보를 찾을 수 없습니다.');
+        }
+    }
+
+    async checkQuizZoneStage(quizZoneId: string, stage: string) {
+        const quizZone = await this.quizZoneService.findOne(quizZoneId);
+        if (quizZone.stage !== stage) {
+            throw new BadRequestException(`퀴즈 존의 상태가 ${stage}가 아닙니다.`);
+        }
+    }
+    async isLobbyStage(quizZoneId: string) {
+        const quizZone = await this.quizZoneService.findOne(quizZoneId);
+        return quizZone.stage === QUIZ_ZONE_STAGE.LOBBY;
+    }
+
+    async changeQuizZoneStage(quizZoneId: string, stage: QUIZ_ZONE_STAGE) {
+        const quizZone = await this.quizZoneService.findOne(quizZoneId);
+        quizZone.stage = stage;
+    }
+    async changeAllPlayersState(quizZoneId: string, stage: PLAYER_STATE) {
+        const { players } = await this.quizZoneService.findOne(quizZoneId);
+        players.forEach((player) => {
+            player.state = stage;
+        });
+    }
+
+    async leave(quizZoneId: string, clientId: any) {
+        await this.quizZoneService.leave(quizZoneId, clientId);
     }
 }

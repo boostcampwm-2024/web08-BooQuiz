@@ -2,7 +2,6 @@ import {
     ConnectedSocket,
     MessageBody,
     OnGatewayConnection,
-    OnGatewayDisconnect,
     OnGatewayInit,
     SubscribeMessage,
     WebSocketGateway,
@@ -15,15 +14,14 @@ import { parse } from 'cookie';
 import { QuizSubmitDto } from './dto/quiz-submit.dto';
 import { QuizJoinDto } from './dto/quiz-join.dto';
 import { BadRequestException, Inject, NotFoundException } from '@nestjs/common';
-
-//TODO 여러명일때 service 수정해야함.
+import { PLAYER_STATE, QUIZ_ZONE_STAGE } from '../common/constants';
 
 /**
  * PlayInfo 인터페이스는 클라이언트의 퀴즈 진행 상태를 나타냅니다.
  */
 export interface PlayInfo {
     quizZoneClients: Map<string, WebSocket>;
-    adminClient: WebSocket;
+    hostClient: WebSocket;
     submitHandle?: NodeJS.Timeout;
 }
 
@@ -45,6 +43,8 @@ interface SendEventMessage<T> {
     event: string;
     data: T;
 }
+
+const CLOSE_NORMAL = 1000;
 
 /**
  * 퀴즈 게임에 대한 WebSocket 연결을 관리하는 Gateway입니다.
@@ -85,16 +85,12 @@ export class PlayGateway implements OnGatewayConnection, OnGatewayInit {
         client['sessionId'] = cookies['connect.sid'].split('.').at(0).slice(2);
     }
 
-    async handleDisconnect(client: WebSocket) {
-        client.terminate();
-    }
-
     // 방장 유무에 따라 PlayInfo를 반환합니다.
     private getJoinPlayInfo(client: WebSocket, quizZoneId: string): PlayInfo {
         if (!this.plays.has(quizZoneId)) {
             return {
                 quizZoneClients: new Map(),
-                adminClient: client,
+                hostClient: client,
             };
         } else {
             return this.plays.get(quizZoneId);
@@ -107,6 +103,7 @@ export class PlayGateway implements OnGatewayConnection, OnGatewayInit {
 
     private broadcast(quizZoneId: string, event: string, data?: any) {
         const { quizZoneClients } = this.getPlayInfo(quizZoneId);
+
         quizZoneClients.forEach((client) => {
             this.sendToClient(client, event, data);
         });
@@ -116,22 +113,27 @@ export class PlayGateway implements OnGatewayConnection, OnGatewayInit {
     async join(
         @ConnectedSocket() client: WebSocket,
         @MessageBody() quizJoinDto: QuizJoinDto,
-    ): Promise<SendEventMessage<String[]>> {
+    ): Promise<SendEventMessage<Object[]>> {
         const sessionId = client['sessionId'];
         const { quizZoneId } = quizJoinDto;
+
+        await this.playService.validatePlayer(quizZoneId, sessionId);
+
         this.clients.set(sessionId, { quizZoneId, socket: client });
+
         const playInfo = this.getJoinPlayInfo(client, quizZoneId);
         // 참여자들에게 사용자가 들어왔다고 알림
         const { id, nickname } = await this.playService.findClientInfo(quizZoneId, sessionId);
+
         this.broadcast(quizZoneId, 'someone_join', { id, nickname });
 
-        const nicknames = await this.playService.findOthersInfo(quizZoneId, sessionId);
+        const usersInfo = await this.playService.findOthersInfo(quizZoneId, sessionId);
 
         playInfo.quizZoneClients.set(sessionId, client);
 
         return {
             event: 'join',
-            data: nicknames,
+            data: usersInfo,
         };
     }
 
@@ -139,14 +141,58 @@ export class PlayGateway implements OnGatewayConnection, OnGatewayInit {
      * 퀴즈 게임을 시작하는 메시지를 클라이언트로 전송합니다.
      *
      * @param client - WebSocket 클라이언트
-     * @returns {Promise<SendEventMessage<string>>} 퀴즈 시작 메시지
      */
     @SubscribeMessage('start')
     async start(@ConnectedSocket() client: WebSocket) {
-        const { quizZoneId } = this.getClientInfo(client['sessionId']);
-        this.server.emit('nextQuiz', quizZoneId);
+        const clientId = client['sessionId'];
+        const { quizZoneId } = this.getClientInfo(clientId);
+
+        const isHost = await this.playService.isHostPlayer(quizZoneId, clientId);
+
+        if (!isHost) {
+            return;
+        }
+
+        await this.playService.checkQuizZoneStage(quizZoneId, QUIZ_ZONE_STAGE.LOBBY);
 
         this.broadcast(quizZoneId, 'start', 'OK');
+
+        await this.playService.changeQuizZoneStage(quizZoneId, QUIZ_ZONE_STAGE.IN_PROGRESS);
+
+        this.server.emit('nextQuiz', quizZoneId);
+    }
+
+    //대기실에서 나가기
+    @SubscribeMessage('leave')
+    async leave(@ConnectedSocket() client: WebSocket) {
+        const clientId = client['sessionId'];
+        const { quizZoneId } = this.getClientInfo(clientId);
+        const playInfo = this.getPlayInfo(quizZoneId);
+        const isLobby = await this.playService.isLobbyStage(quizZoneId);
+
+        if (!isLobby) {
+            throw new BadRequestException('게임이 진행중입니다.');
+        }
+
+        const isHost = await this.playService.isHostPlayer(quizZoneId, clientId);
+
+        if (isHost) {
+            //방전체폭파
+            await Promise.all(
+                Array.from(playInfo.quizZoneClients).map(async ([clientId, websocket]) => {
+                    this.clients.delete(clientId);
+                    websocket.close(CLOSE_NORMAL, '방장이 나가 퀴즈가 종료되었습니다.');
+                }),
+            );
+            this.plays.delete(quizZoneId);
+            await this.playService.clearQuizZone(quizZoneId);
+            return { event: 'leave', data: 'OK' };
+        }
+        //대기실에서 일반 사용자 나가는 경우
+        await this.playService.leave(quizZoneId, clientId);
+        this.clients.delete(clientId);
+        client.close(CLOSE_NORMAL, '퀴즈존을 나갔습니다.');
+        this.broadcast(quizZoneId, 'someone_leave', clientId);
     }
 
     /**
@@ -157,11 +203,13 @@ export class PlayGateway implements OnGatewayConnection, OnGatewayInit {
     private async playNextQuiz(quizZoneId: string) {
         try {
             const playInfo = this.getPlayInfo(quizZoneId);
-            const { quizZoneClients } = playInfo;
-
             const { intervalTime, nextQuiz } = await this.playService.playNextQuiz(quizZoneId);
 
             this.broadcast(quizZoneId, 'nextQuiz', nextQuiz);
+
+            setTimeout(() => {
+                this.playService.changeAllPlayersState(quizZoneId, PLAYER_STATE.PLAY);
+            }, intervalTime);
 
             playInfo.submitHandle = setTimeout(() => {
                 this.quizTimeOut(quizZoneId);
@@ -189,17 +237,20 @@ export class PlayGateway implements OnGatewayConnection, OnGatewayInit {
         const clientId = client['sessionId'];
         const { quizZoneId } = this.getClientInfo(clientId);
         const playInfo = this.getPlayInfo(quizZoneId);
-
-        // TODO: 제출 인원 체크하고 다 제출시 이거 처리
-        clearTimeout(playInfo.submitHandle);
-        playInfo.submitHandle = undefined;
-
+        await this.playService.checkQuizZoneStage(quizZoneId, QUIZ_ZONE_STAGE.IN_PROGRESS);
+        // 개인이 제출하는 경우
         await this.playService.submit(quizZoneId, clientId, {
             ...quizSubmit,
             receivedAt: Date.now(),
         });
 
-        this.server.emit('nextQuiz', client);
+        const isAllSubmitted = await this.playService.checkAllSubmitted(quizZoneId);
+
+        if (isAllSubmitted) {
+            clearTimeout(playInfo.submitHandle);
+            playInfo.submitHandle = undefined;
+            this.server.emit('nextQuiz', quizZoneId);
+        }
 
         return {
             event: 'submit',
@@ -233,9 +284,13 @@ export class PlayGateway implements OnGatewayConnection, OnGatewayInit {
      */
     private async quizTimeOut(quizZoneId: string) {
         const playInfo = this.getPlayInfo(quizZoneId);
+
         playInfo.submitHandle = undefined;
+
         await this.playService.quizTimeOut(quizZoneId); //TODO: 퀴즈 타임아웃시 못 제출한 사람 제출 처리하는 부분
+
         this.broadcast(quizZoneId, 'quizTimeOut');
+
         this.server.emit('nextQuiz', quizZoneId);
     }
 
@@ -246,13 +301,18 @@ export class PlayGateway implements OnGatewayConnection, OnGatewayInit {
      */
     private async summary(quizZoneId: string) {
         const playInfo = this.getPlayInfo(quizZoneId);
+
         await Promise.all(
             Array.from(playInfo.quizZoneClients).map(async ([clientId, websocket]) => {
                 const summaryResult = await this.playService.summary(quizZoneId, clientId);
                 this.sendToClient(websocket, 'summary', summaryResult);
+                this.clients.delete(clientId);
+                websocket.close(CLOSE_NORMAL, '퀴즈가 종료되었습니다.');
             }),
         );
+
         this.plays.delete(quizZoneId);
+
         await this.playService.clearQuizZone(quizZoneId);
     }
 }

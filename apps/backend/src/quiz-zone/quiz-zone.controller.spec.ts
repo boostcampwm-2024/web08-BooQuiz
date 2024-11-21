@@ -1,8 +1,8 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { QuizZoneController } from './quiz-zone.controller';
 import { QuizZoneService } from './quiz-zone.service';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { CreateQuizZoneDto } from './dto/create-quiz-zone.dto';
+import { Test, TestingModule } from '@nestjs/testing';
 
 describe('QuizZoneController', () => {
     let controller: QuizZoneController;
@@ -10,8 +10,7 @@ describe('QuizZoneController', () => {
 
     const mockQuizZoneService = {
         create: jest.fn(),
-        setPlayerInfo: jest.fn(),
-        getWaitingInfo: jest.fn(),
+        getQuizZoneInfo: jest.fn(), // 변경된 메서드
     };
 
     beforeEach(async () => {
@@ -30,46 +29,40 @@ describe('QuizZoneController', () => {
     });
 
     describe('create', () => {
+        // create 관련 테스트는 변경사항이 없으므로 그대로 유지
         const createQuizZoneDto: CreateQuizZoneDto = {
             quizZoneId: 'test123',
         };
 
         it('세션 정보가 없으면 BadRequestException을 던진다', async () => {
-            // given
-
-            // when & then
             await expect(controller.create(createQuizZoneDto, {})).rejects.toThrow(
                 BadRequestException,
             );
         });
 
         it('퀴즈존을 성공적으로 생성한다', async () => {
-            // given
             const session = { id: 'sessionId' };
             const { quizZoneId } = createQuizZoneDto;
 
-            // when
             await controller.create(createQuizZoneDto, session);
 
-            // then
             expect(service.create).toHaveBeenCalledWith(quizZoneId, session.id);
         });
 
         it('퀴즈존의 세션 아이디가 중복되면 예외가 발생한다.', async () => {
-            // given
             const session = { id: 'sessionId' };
             mockQuizZoneService.create.mockRejectedValue(new BadRequestException());
 
-            // when & then
             await expect(controller.create(createQuizZoneDto, session)).rejects.toThrow(
                 BadRequestException,
             );
         });
     });
 
-    describe('findOne', () => {
+    describe('findQuizZoneInfo', () => {
+        // findOne에서 findQuizZoneInfo로 변경
         const quizZoneId = 'test123';
-        const mockWaitingRoom = {
+        const mockQuizZoneInfo = {
             title: 'Test Quiz',
             description: 'Test Description',
             quizCount: 5,
@@ -78,26 +71,26 @@ describe('QuizZoneController', () => {
             maxPlayers: 8,
         };
 
-        it('퀴즈존 대기실 정보를 성공적으로 조회한다', async () => {
+        it('퀴즈존 정보를 성공적으로 조회한다', async () => {
             // given
             const session = { id: 'sessionId' };
-            mockQuizZoneService.getWaitingInfo.mockResolvedValue(mockWaitingRoom);
+            mockQuizZoneService.getQuizZoneInfo.mockResolvedValue(mockQuizZoneInfo);
 
             // when
-            const result = await controller.findOne(session, quizZoneId);
+            const result = await controller.findQuizZoneInfo(session, quizZoneId);
 
             // then
-            expect(service.getWaitingInfo).toHaveBeenCalledWith(quizZoneId);
-            expect(result).toEqual(mockWaitingRoom);
+            expect(service.getQuizZoneInfo).toHaveBeenCalledWith(session.id, quizZoneId);
+            expect(result).toEqual(mockQuizZoneInfo);
         });
 
         it('퀴즈존 정보가 없으면 NotFoundException 던진다', async () => {
             // given
-            const session = {};
-            mockQuizZoneService.setPlayerInfo.mockRejectedValue(new NotFoundException());
+            const session = { id: 'sessionId' };
+            mockQuizZoneService.getQuizZoneInfo.mockRejectedValue(new NotFoundException());
 
             // when & then
-            await expect(controller.findOne(session, quizZoneId)).rejects.toThrow(
+            await expect(controller.findQuizZoneInfo(session, quizZoneId)).rejects.toThrow(
                 NotFoundException,
             );
         });
