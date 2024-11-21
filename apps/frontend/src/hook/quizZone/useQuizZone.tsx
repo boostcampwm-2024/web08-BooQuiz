@@ -33,6 +33,7 @@ const quizZoneReducer: Reducer<QuizZone, QuizZoneAction> = (state, action) => {
                 description: payload.description,
                 quizCount: payload.quizCount,
                 hostId: payload.hostId,
+                currentPlayer: payload.currentPlayer,
                 players: [],
             };
         case 'join':
@@ -165,14 +166,8 @@ const useQuizZone = () => {
 
     //initialize QuizZOne
     const initQuizZoneData = (initialData: any) => {
-        if (initialData.stage === 'WAITING') {
-            dispatch({
-                type: 'init',
-                payload: { ...initialData, stage: 'IN_PROGRESS', playerState: 'WAIT' },
-            });
-        } else {
-            dispatch({ type: 'init', payload: initialData });
-        }
+        console.log('initialData', initialData);
+        dispatch({ type: 'init', payload: initialData });
     };
 
     //퀴즈 시작 함수
@@ -204,6 +199,12 @@ const useQuizZone = () => {
         dispatch({ type: 'playQuiz', payload: undefined });
     };
 
+    const joinQuizZone = ({ quizZoneId }: any) => {
+        console.log('joinQuizZone', quizZoneId);
+        const message = JSON.stringify({ event: 'join', data: { quizZoneId } });
+        sendMessage(message);
+    };
+
     return {
         quizZoneState,
         initQuizZoneData,
@@ -212,6 +213,7 @@ const useQuizZone = () => {
         playQuiz,
         closeConnection,
         exitQuiz,
+        joinQuizZone,
     };
 };
 
