@@ -22,12 +22,12 @@ const nickNames: string[] = [
 const playTime = 30_000;
 
 const quizzes: Quiz[] = [
-    { question: '신이 화나면?', answer: '신발끈', playTime },
-    { question: '도둑이 훔친 돈을 뭐라고 하는가?', answer: '슬그머니', playTime },
-    { question: '털이 있는 동물들이 가장 좋아하는 장소는?', answer: '모텔', playTime },
-    { question: '아몬드가 죽으면?', answer: '다이아몬드', playTime },
-    { question: '왕이 넘어지면?', answer: '킹콩', playTime },
-    { question: '바나나가 웃으면?', answer: '바나나킥', playTime },
+    { question: '포도가 자기소개하면?', answer: '포도당', playTime },
+    { question: '고양이를 싫어하는 동물은?', answer: '미어캣', playTime },
+    { question: '게를 냉동실에 넣으면?', answer: '게으름', playTime },
+    { question: '오리를 생으로 먹으면?', answer: '회오리', playTime },
+    { question: '네 사람이 동시에 오줌을 누면?', answer: '포뇨', playTime },
+    { question: '지브리가 뭘로 돈 벌게요?', answer: '토토로', playTime },
 ];
 
 describe('QuizZoneService', () => {
