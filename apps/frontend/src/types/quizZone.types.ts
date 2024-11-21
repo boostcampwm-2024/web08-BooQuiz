@@ -20,6 +20,7 @@ export interface QuizZone {
     score?: number;
     quizzes?: Quiz[];
     submits?: SubmittedQuiz[];
+    isLastQuiz?: boolean;
 }
 
 export interface QuizZoneLobbyState {

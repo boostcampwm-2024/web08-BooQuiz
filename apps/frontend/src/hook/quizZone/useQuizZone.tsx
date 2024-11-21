@@ -96,6 +96,7 @@ const quizZoneReducer: Reducer<QuizZone, QuizZoneAction> = (state, action) => {
             return {
                 ...state,
                 stage: 'RESULT',
+                isLastQuiz: true,
             };
         case 'summary':
             return {

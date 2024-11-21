@@ -26,12 +26,9 @@ const QuizZoneInProgress = ({ quizZoneState, submitAnswer, playQuiz }: QuizZoneI
                 />
             );
         case 'SUBMIT':
-            const isLastQuiz =
-                quizZoneState.quizCount === quizZoneState.currentQuiz?.currentIndex ||
-                stage == 'RESULT';
             return (
                 <QuizCompleted
-                    isLastQuiz={isLastQuiz}
+                    isLastQuiz={quizZoneState.isLastQuiz ?? false}
                     deadlineTime={quizZoneState.currentQuiz?.deadlineTime ?? 0}
                 />
             );

@@ -34,7 +34,7 @@ const QuizCompleted = ({ isLastQuiz, deadlineTime }: QuizCompletedProps) => {
                         bold={true}
                     />
                     <Typography size="3xl" color="blue" text="잠시만 기다려주세요" bold={true} />
-                    {time !== null && (
+                    {isLastQuiz && time !== null && (
                         <div className="w-full flex flex-row justify-center items-end">
                             <Typography
                                 size="3xl"
@@ -49,7 +49,7 @@ const QuizCompleted = ({ isLastQuiz, deadlineTime }: QuizCompletedProps) => {
                                 bold={true}
                             />
                         </div>
-                    )}{' '}
+                    )}
                 </div>
             </ContentBox>
         </div>
