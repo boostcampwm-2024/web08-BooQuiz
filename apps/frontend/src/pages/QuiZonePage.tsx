@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import CustomAlertDialog from '@/components/common/CustomAlertDialog';
 
-const NewQuizZonePage = () => {
+const QuizZonePage = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [showError, setShowError] = useState(false);
 
@@ -96,4 +96,4 @@ const NewQuizZonePage = () => {
     );
 };
 
-export default NewQuizZonePage;
+export default QuizZonePage;
