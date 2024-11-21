@@ -5,6 +5,7 @@ on:
     branches: [develop, main]
     paths:
       - apps/frontend/**
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -36,3 +37,12 @@ jobs:
   deploy-frontend:
     needs: test
     uses: ./.github/workflows/deploy-frontend.yml
+    environment: ${{ github.ref == 'refs/heads/main' && 'prod' || 'staging' }}
+    with:
+      github_ref: ${{ github.ref }}
+      vite_api_url: ${{ secrets.VITE_API_URL }}
+      vite_ws_url: ${{ secrets.VITE_WS_URL }}
+      public_ssh_key: ${{ secrets.PUBLIC_SSH_PRIVATE_KEY }}
+      public_server_ip: ${{ secrets.PUBLIC_SERVER_IP }}
+      deploy_user: ${{ secrets.DEPLOY_USER }}
+      deploy_path: ${{secrets.DEPLOY_PATH}}

@@ -33,7 +33,35 @@ jobs:
       - name: Run tests for backend
         working-directory: apps/backend
         run: pnpm test
+  set-environment:
+    runs-on: ubuntu-latest
+    outputs:
+      environment: ${{ steps.set-env.outputs.environment }}
+    steps:
+      - name: Set environment dynamically
+        id: set-env
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "environment=production" >> $GITHUB_ENV
+            echo "::set-output name=environment::production"
+          else
+            echo "environment=staging" >> $GITHUB_ENV
+            echo "::set-output name=environment::staging"
+          fi
 
   deploy-backend:
     needs: test
     uses: ./.github/workflows/deploy-backend.yml
+    environment: ${{ github.ref == 'refs/heads/main' && 'prod' || 'staging' }}
+    with:
+      github_ref: ${{ github.ref }}
+      docker_username: ${{ secrets.DOCKER_USERNAME }}
+      docker_password: ${{ secrets.DOCKER_PASSWORD }}
+      docker_tag: ${{ secrets.DOCKER_TAG }}
+      node_env: ${{ secrets.NODE_ENV }}
+      session_secret: ${{ secrets.SESSION_SECRET }}
+      public_ssh_key: ${{ secrets.PUBLIC_SSH_PRIVATE_KEY }}
+      private_ssh_key: ${{ secrets.PRIVATE_SSH_PRIVATE_KEY }}
+      deploy_user: ${{ secrets.DEPLOY_USER }}
+      public_server_ip: ${{ secrets.PUBLIC_SERVER_IP }}
+      private_server_ip: ${{ secrets.PRIVATE_SERVER_IP }}
