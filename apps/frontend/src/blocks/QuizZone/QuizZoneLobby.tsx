@@ -21,6 +21,8 @@ const QuizZoneLobby = ({ quizZoneState, quizZoneId, startQuiz, exitQuiz }: QuizZ
         exitQuiz();
         navigate('/');
     };
+    // isHost
+    const isHost = quizZoneState.hostId === quizZoneState.currentPlayer.id;
 
     return (
         <div className="w-full h-screen flex flex-col items-center justify-center gap-4">
@@ -86,13 +88,19 @@ const QuizZoneLobby = ({ quizZoneState, quizZoneId, startQuiz, exitQuiz }: QuizZ
                             /> */}
                         </div>
                         <div className="flex flex-col gap-2">
-                            {true && (
+                            {isHost ? (
                                 <CommonButton
                                     text="퀴즈 시작하기"
                                     clickEvent={() => {
                                         console.log('시작');
                                         startQuiz();
                                     }}
+                                />
+                            ) : (
+                                <CommonButton
+                                    text="대기 중입니다..."
+                                    disabled={true}
+                                    clickEvent={() => {}}
                                 />
                             )}
                             <CustomAlert
