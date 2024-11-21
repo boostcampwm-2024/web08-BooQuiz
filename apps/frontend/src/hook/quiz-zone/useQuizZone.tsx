@@ -99,6 +99,39 @@ const quizZoneReducer: Reducer<QuizZone, QuizZoneAction> = (state, action) => {
     }
 };
 
+/**
+ * @description 다중 사용자 퀴즈 게임 환경에서 퀴즈존 상태와 상호작용을 관리하는 커스텀 훅입니다.
+ *
+ * @example
+ * ```tsx
+ * const QuizComponent = () => {
+ *   const {
+ *     quizZoneState,
+ *     initQuizZoneData,
+ *     submitQuiz,
+ *     startQuiz,
+ *     playQuiz
+ *   } = useQuizZone();
+ *
+ *   // 퀴즈 초기화
+ *   useEffect(() => {
+ *     initQuizZoneData(initialData);
+ *   }, []);
+ *
+ *   // 답안 제출
+ *   const handleSubmit = (answer: string) => {
+ *     submitQuiz(answer);
+ *   };
+ * ```
+ *
+ * @returns {Object} 퀴즈존 상태와 제어 함수들을 포함하는 객체
+ * @returns {QuizZone} .quizZoneState - 현재 퀴즈존의 상태
+ * @returns {Function} .initQuizZoneData - 초기 데이터로 퀴즈존을 초기화하는 함수
+ * @returns {Function} .submitQuiz - 현재 퀴즈에 대한 답안을 제출하는 함수
+ * @returns {Function} .startQuiz - 퀴즈 세션을 시작하는 함수
+ * @returns {Function} .playQuiz - 퀴즈 상태를 플레이 모드로 변경하는 함수
+ */
+
 const useQuizZone = () => {
     const initialQuizZoneState: QuizZone = {
         stage: 'LOBBY',
