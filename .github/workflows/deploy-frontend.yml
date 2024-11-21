@@ -1,7 +1,7 @@
 name: Deploy Frontend
 
 on:
-    workflow_call: {}
+    workflow_call:
 
     push:
         branches: [main]
