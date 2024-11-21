@@ -25,14 +25,22 @@ const QuizZonePage = () => {
         return response.json();
     };
 
-    const { initQuizZoneData, quizZoneState, submitQuiz, startQuiz, playQuiz, exitQuiz } =
-        useQuizZone();
+    const {
+        initQuizZoneData,
+        quizZoneState,
+        submitQuiz,
+        startQuiz,
+        playQuiz,
+        exitQuiz,
+        joinQuizZone,
+    } = useQuizZone();
 
     const initQuizZone = async () => {
         try {
             const quizZoneInitialData = await fetchQuizZoneData(quizZoneId ?? '');
             console.log('quizZoneData', quizZoneInitialData);
             initQuizZoneData(quizZoneInitialData);
+            joinQuizZone({ quizZoneId });
             setIsLoading(false);
         } catch (e) {
             //alertDialog >> 퀴즈존을 찾을 수 없습니다. >> 확인 누르면 navigate(-1)
