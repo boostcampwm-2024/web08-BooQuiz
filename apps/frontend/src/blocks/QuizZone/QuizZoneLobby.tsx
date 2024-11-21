@@ -10,13 +10,15 @@ interface QuizZoneLobbyProps {
     quizZoneState: QuizZone;
     quizZoneId: string;
     startQuiz: () => void;
+    exitQuiz: () => void;
 }
 
 // Usage
-const QuizZoneLobby = ({ quizZoneState, quizZoneId, startQuiz }: QuizZoneLobbyProps) => {
+const QuizZoneLobby = ({ quizZoneState, quizZoneId, startQuiz, exitQuiz }: QuizZoneLobbyProps) => {
     console.log('로비 데이터', quizZoneState);
     const navigate = useNavigate();
     const handleLeave = () => {
+        exitQuiz();
         navigate('/');
     };
 

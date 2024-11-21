@@ -181,6 +181,12 @@ const useQuizZone = () => {
         sendMessage(message);
     };
 
+    //퀴즈존 나가기 함수
+    const exitQuiz = () => {
+        const message = JSON.stringify({ event: 'leave' });
+        sendMessage(message);
+    };
+
     // 퀴즈 제출 함수
     const submitQuiz = (answer: string) => {
         const message = JSON.stringify({
@@ -205,6 +211,7 @@ const useQuizZone = () => {
         startQuiz,
         playQuiz,
         closeConnection,
+        exitQuiz,
     };
 };
 

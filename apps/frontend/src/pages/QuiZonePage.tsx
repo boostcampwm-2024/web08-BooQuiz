@@ -25,7 +25,8 @@ const QuizZonePage = () => {
         return response.json();
     };
 
-    const { initQuizZoneData, quizZoneState, submitQuiz, startQuiz, playQuiz } = useQuizZone();
+    const { initQuizZoneData, quizZoneState, submitQuiz, startQuiz, playQuiz, exitQuiz } =
+        useQuizZone();
 
     const initQuizZone = async () => {
         try {
@@ -62,6 +63,7 @@ const QuizZonePage = () => {
                         quizZoneState={quizZoneState}
                         quizZoneId={quizZoneId ?? ''}
                         startQuiz={startQuiz}
+                        exitQuiz={exitQuiz}
                     />
                 );
             case 'IN_PROGRESS':
