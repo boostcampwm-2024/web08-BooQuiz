@@ -1,21 +1,25 @@
 import { useRef } from 'react';
 
 const useWebSocket = (url: string, messageHandler: (event: MessageEvent) => void) => {
-    const ws = useRef<WebSocket>(new WebSocket(url));
+    const ws = useRef<WebSocket | null>(null);
 
-    ws.current.onopen = () => {
-        console.log('WebSocket connected');
-    };
+    if (ws.current === null) {
+        ws.current = new WebSocket(url);
 
-    ws.current.onmessage = messageHandler;
+        ws.current.onopen = () => {
+            console.log('WebSocket connected');
+        };
 
-    ws.current.onclose = () => {
-        console.log('WebSocket disconnected');
-    };
+        ws.current.onclose = () => {
+            console.log('WebSocket disconnected');
+        };
 
-    ws.current.onerror = (error) => {
-        console.error('WebSocket error:', error);
-    };
+        ws.current.onerror = (error) => {
+            console.error('WebSocket error:', error);
+        };
+
+        ws.current.onmessage = messageHandler;
+    }
 
     const sendMessage = (message: string) => {
         if (ws.current?.readyState === WebSocket.OPEN) {
