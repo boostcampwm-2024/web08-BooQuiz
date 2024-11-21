@@ -40,39 +40,24 @@ const QuizInProgress = ({ currentQuiz, submitAnswer }: QuizInProgressProps) => {
                     color="black"
                     bold={true}
                 />
-                {currentQuiz.type == 'SHORT' ? (
-                    <>
-                        <Input
-                            onChange={(e) => setAnswer(e.target.value)}
-                            name="quizAnswer"
-                            value={answer}
-                            placeholder={'정답을 입력해주세요'}
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter') {
-                                    handleSubmitAnswer();
-                                }
-                            }}
-                        />
-                        <CommonButton
-                            text={'제출하기'}
-                            clickEvent={() => {
-                                handleSubmitAnswer();
-                            }}
-                        />
-                    </>
-                ) : (
-                    <div className="space-y-2">
-                        {currentQuiz.options?.map((option: string, index: number) => (
-                            <button
-                                key={index + 'a'}
-                                onClick={() => submitAnswer(option)}
-                                className="block w-full p-2 text-left border rounded hover:bg-gray-100"
-                            >
-                                {option}
-                            </button>
-                        ))}
-                    </div>
-                )}
+
+                <Input
+                    onChange={(e) => setAnswer(e.target.value)}
+                    name="quizAnswer"
+                    value={answer}
+                    placeholder={'정답을 입력해주세요'}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                            handleSubmitAnswer();
+                        }
+                    }}
+                />
+                <CommonButton
+                    text={'제출하기'}
+                    clickEvent={() => {
+                        handleSubmitAnswer();
+                    }}
+                />
             </ContentBox>
         </div>
     );
