@@ -67,13 +67,18 @@ export class QuizZoneService {
             state: PLAYER_STATE.WAIT,
         };
 
+        const encodedQuizzes = quizzes.map((quiz) => ({
+            ...quiz,
+            question: Buffer.from(quiz.question).toString('base64'),
+        }));
+
         const quizZone: QuizZone = {
             players: new Map<string, Player>([[hostId, player]]),
             title: '넌센스 퀴즈',
             description: '넌센스 퀴즈 입니다',
             hostId: hostId,
             maxPlayers: MAX_PLAYERS,
-            quizzes: [...quizzes],
+            quizzes: encodedQuizzes,
             stage: QUIZ_ZONE_STAGE.LOBBY,
             currentQuizIndex: -1,
             currentQuizStartTime: 0,
@@ -83,6 +88,24 @@ export class QuizZoneService {
         };
 
         await this.repository.set(quizZoneId, quizZone);
+    }
+
+    async getQuizZoneInfo(clientId: string, quizZoneId: string) {
+        const quizZoneStage = await this.getQuizZoneStage(quizZoneId);
+
+        if (quizZoneStage === QUIZ_ZONE_STAGE.LOBBY) {
+            await this.setPlayerInfo(clientId, quizZoneId);
+            return this.getLobbyInfo(clientId, quizZoneId);
+        }
+
+        if (quizZoneStage === QUIZ_ZONE_STAGE.IN_PROGRESS) {
+            await this.checkValidPlayer(clientId, quizZoneId);
+            return this.getProgressInfo(clientId, quizZoneId);
+        }
+        if (quizZoneStage === QUIZ_ZONE_STAGE.RESULT) {
+            await this.checkValidPlayer(clientId, quizZoneId);
+            return this.getResultInfo(clientId, quizZoneId);
+        }
     }
 
     /**
@@ -102,7 +125,7 @@ export class QuizZoneService {
         return quizZone;
     }
 
-    async getLobbyInfo(clinetId: string, quizZoneId: string): Promise<FindQuizZoneDto> {
+    private async getLobbyInfo(clinetId: string, quizZoneId: string): Promise<FindQuizZoneDto> {
         const { players, title, description, quizzes, stage, hostId } =
             await this.findOne(quizZoneId);
         const { id, nickname, state } = players.get(clinetId);
@@ -117,7 +140,7 @@ export class QuizZoneService {
         };
     }
 
-    async getProgressInfo(clientId: string, quizZoneId: string): Promise<FindQuizZoneDto> {
+    private async getProgressInfo(clientId: string, quizZoneId: string): Promise<FindQuizZoneDto> {
         const {
             players,
             stage,
@@ -149,7 +172,7 @@ export class QuizZoneService {
         };
     }
 
-    async getResultInfo(clientId: string, quizZoneId: string): Promise<FindQuizZoneDto> {
+    private async getResultInfo(clientId: string, quizZoneId: string): Promise<FindQuizZoneDto> {
         const { players, stage, title, description, hostId } = await this.findOne(quizZoneId);
         const { id, nickname, state, submits, score } = players.get(clientId);
 
@@ -163,7 +186,7 @@ export class QuizZoneService {
         };
     }
 
-    async setPlayerInfo(clientId: string, quizZoneId: string) {
+    private async setPlayerInfo(clientId: string, quizZoneId: string) {
         const { players, maxPlayers } = await this.findOne(quizZoneId);
         const playerCount = players.size;
 
@@ -186,7 +209,7 @@ export class QuizZoneService {
         });
     }
 
-    async checkValidPlayer(clientId: string, quizZoneId: string) {
+    private async checkValidPlayer(clientId: string, quizZoneId: string) {
         const { players } = await this.findOne(quizZoneId);
 
         if (!players.has(clientId)) {

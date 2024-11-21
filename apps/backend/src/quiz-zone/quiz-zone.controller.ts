@@ -43,28 +43,9 @@ export class QuizZoneController {
     @ApiResponse({
         status: 200,
         description: '대기실 정보가 성공적으로 반환되었습니다.',
-        type: WaitingQuizZoneDto,
     })
     @ApiResponse({ status: 400, description: '세션 정보가 없습니다.' })
-    async findQuizZoneInfo(
-        @Session() session: Record<string, any>,
-        quizZoneId: string,
-    ) {
-        const quizZoneStage = await this.quizZoneService.getQuizZoneStage(quizZoneId);
-        const clinetId = session.id;
-
-        if(quizZoneStage === QUIZ_ZONE_STAGE.LOBBY) {
-            await this.quizZoneService.setPlayerInfo(clinetId, quizZoneId);
-            return this.quizZoneService.getLobbyInfo(clinetId, quizZoneId);
-        }
-
-        if(quizZoneStage === QUIZ_ZONE_STAGE.IN_PROGRESS) {
-            await this.quizZoneService.checkValidPlayer(clinetId, quizZoneId);
-            return this.quizZoneService.getProgressInfo(clinetId, quizZoneId);
-        }
-        if(quizZoneStage === QUIZ_ZONE_STAGE.RESULT) {
-            await this.quizZoneService.checkValidPlayer(clinetId, quizZoneId);
-            return await this.quizZoneService.getResultInfo(clinetId, quizZoneId);
-        }
+    async findQuizZoneInfo(@Session() session: Record<string, any>, quizZoneId: string) {
+        return this.quizZoneService.getQuizZoneInfo(session.id, quizZoneId);
     }
 }
