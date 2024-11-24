@@ -20,7 +20,6 @@ describe('PlayService', () => {
         description: '퀴즈 존입니다',
         currentQuizStartTime: Date.now(),
         currentQuizDeadlineTime: Date.now() + 10000,
-        submitCount: 0,
         quizzes: [
             { question: '1번 문제입니다', answer: '정답1', playTime: 30000 },
             { question: '2번 문제입니다', answer: '정답2', playTime: 30000 },
@@ -163,7 +162,6 @@ describe('PlayService', () => {
         it('모든 플레이어가 제출했을 때 true를 반환해야 합니다', async () => {
             const submittedQuizZone: QuizZone = {
                 ...mockQuizZone,
-                submitCount: 1,
                 players: new Map([
                     [
                         'player-1',
@@ -181,7 +179,6 @@ describe('PlayService', () => {
         it('일부 플레이어가 제출하지 않았을 때 false를 반환해야 합니다', async () => {
             const partialSubmitQuizZone: QuizZone = {
                 ...mockQuizZone,
-                submitCount: 0,
                 players: new Map([
                     [
                         'player-1',
