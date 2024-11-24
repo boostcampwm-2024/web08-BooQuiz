@@ -28,5 +28,4 @@ export interface QuizZone {
     currentQuizStartTime: number;
     currentQuizDeadlineTime: number;
     intervalTime: number;
-    submitCount: number;
 }

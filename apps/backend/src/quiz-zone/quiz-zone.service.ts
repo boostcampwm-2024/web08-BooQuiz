@@ -184,7 +184,6 @@ export class QuizZoneService {
             currentQuizStartTime: 0,
             currentQuizDeadlineTime: 0,
             intervalTime: 3000,
-            submitCount: 0,
         };
 
         await this.repository.set(quizZoneId, quizZone);
@@ -348,7 +347,7 @@ export class QuizZoneService {
     }
 
     async leave(quizZoneId: string, clientId: any) {
-        const quizZone = await this.repository.get(quizZoneId);
+        const quizZone = await this.findOne(quizZoneId);
         quizZone.players.delete(clientId);
     }
 }

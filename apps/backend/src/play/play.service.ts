@@ -22,21 +22,8 @@ export class PlayService {
      * @throws {BadRequestException} 답변을 제출할 수 없는 경우 예외가 발생합니다.
      */
     async submit(quizZoneId: string, clientId: string, submitQuiz: SubmittedQuiz) {
-        this.logger.log({
-            level: 'info',
-            message: `[SUBMIT ANSWER START] quizZoneId: ${quizZoneId}, clientId: ${clientId}`,
-            context: 'HTTP',
-        });
-
         const quizZone = await this.quizZoneService.findOne(quizZoneId);
-        quizZone.submitCount++;
         this.submitQuiz(quizZone, clientId, submitQuiz);
-
-        this.logger.log({
-            level: 'info',
-            message: `[SUBMIT ANSWER END] quizZoneId: ${quizZoneId}, clientId: ${clientId}`,
-            context: 'HTTP',
-        });
     }
 
     /**
@@ -48,7 +35,6 @@ export class PlayService {
     async playNextQuiz(quizZoneId: string) {
         const quizZone = await this.quizZoneService.findOne(quizZoneId);
         const { intervalTime } = quizZone;
-        quizZone.submitCount = 0;
 
         const nextQuiz = await this.nextQuiz(quizZoneId);
 
@@ -222,5 +208,10 @@ export class PlayService {
 
     async leave(quizZoneId: string, clientId: any) {
         await this.quizZoneService.leave(quizZoneId, clientId);
+    }
+
+    async getPlayerIdList(quizZoneId: string) {
+        const quizZone = await this.quizZoneService.findOne(quizZoneId);
+        return Array.from(quizZone.players.keys());
     }
 }
