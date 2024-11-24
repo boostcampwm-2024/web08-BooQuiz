@@ -34,9 +34,8 @@ async function bootstrap() {
     app.use(cookieParser());
     app.use(sessionMiddleware);
 
+    app.useGlobalPipes(new ValidationPipe({ transform: true }));
     app.useWebSocketAdapter(new SessionWsAdapter(app, sessionMiddleware));
-
-    app.useGlobalPipes(new ValidationPipe());
 
     await app.listen(port);
 }
