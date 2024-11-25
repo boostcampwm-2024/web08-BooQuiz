@@ -186,7 +186,7 @@ export class PlayService {
 
         const fastestPlayerIdList = this.getFastestPlayerIdList(
             submittedPlayers,
-            quizZone.currentQuizIndex - 1,
+            quizZone.currentQuizIndex,
         );
 
         const isLastSubmit = [...players.values()].every(
@@ -200,18 +200,22 @@ export class PlayService {
             fastestPlayerIdList,
             submittedCount: submittedPlayers.length,
             totalPlayersCount: players.size,
-            otherSubmittedPlayerIds: [...players.values()]
-                .filter((player) => player.id !== clientId && player.state === PLAYER_STATE.SUBMIT)
+            otherSubmittedPlayerIds: submittedPlayers
+                .filter((player) => player.id !== clientId)
                 .map(({ id }) => id),
         };
     }
 
-    private getFastestPlayerIdList(submittedPlayers: Player[], currentQuizIndex, count = 3) {
+    private getFastestPlayerIdList(
+        submittedPlayers: Player[],
+        currentQuizIndex: number,
+        count = 3,
+    ) {
         return submittedPlayers
             .sort(
                 (a, b) =>
-                    (a.submits[currentQuizIndex].submittedAt ?? Infinity) -
-                    (b.submits[currentQuizIndex].submittedAt ?? Infinity),
+                    a.submits[currentQuizIndex].submittedAt -
+                    b.submits[currentQuizIndex].submittedAt,
             )
             .slice(0, count)
             .map(({ id }) => id);
