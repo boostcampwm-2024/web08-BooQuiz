@@ -121,11 +121,16 @@ export class PlayService {
     async quizTimeOut(quizZoneId: string) {
         const quizZone = await this.quizZoneService.findOne(quizZoneId);
         const { players } = quizZone;
+
         players.forEach((player) => {
             if (player.state === PLAYER_STATE.PLAY) {
                 this.submitQuiz(quizZone, player.id);
             }
         });
+
+        return {
+            playerIds: [...players.values()].map(({ id }) => id),
+        };
     }
 
     /**

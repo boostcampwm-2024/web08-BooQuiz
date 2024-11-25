@@ -225,10 +225,10 @@ export class PlayGateway implements OnGatewayInit {
      * @param quizZoneId - WebSocket 클라이언트
      */
     private async quizTimeOut(quizZoneId: string) {
-        this.plays.set(quizZoneId, undefined);
+        const { playerIds } = await this.playService.quizTimeOut(quizZoneId);
 
-        await this.playService.quizTimeOut(quizZoneId);
-        await this.broadcast(quizZoneId, 'quizTimeOut');
+        this.plays.set(quizZoneId, undefined);
+        await this.broadcast(playerIds, 'quizTimeOut');
 
         this.server.emit('nextQuiz', quizZoneId);
     }
