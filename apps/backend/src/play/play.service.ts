@@ -69,11 +69,22 @@ export class PlayService {
         const quizZone = await this.quizZoneService.findOne(quizZoneId);
         const { players, intervalTime, currentQuizIndex } = quizZone;
 
-        const answer = quizZone.quizzes.at(currentQuizIndex).answer;
-        const totalPlayerCount = players.size;
-        const correctPlayerCount = [...players.values()].filter(
-            (player) => player.submits[currentQuizIndex].answer === answer,
-        ).length;
+        const currentQuizResult = {};
+
+        if (currentQuizIndex === -1) {
+            currentQuizResult['answer'] = undefined;
+            currentQuizResult['totalPlayerCount'] = 0;
+            currentQuizResult['correctPlayerCount'] = 0;
+        }
+
+        if (currentQuizIndex >= 0) {
+            const answer = quizZone.quizzes.at(currentQuizIndex).answer;
+            currentQuizIndex['answer'] = answer;
+            currentQuizIndex['totalPlayerCount'] = players.size;
+            currentQuizIndex['correctPlayerCount'] = [...players.values()].filter(
+                (player) => player.submits[currentQuizIndex].answer === answer,
+            ).length;
+        }
 
         const nextQuiz = await this.nextQuiz(quizZoneId);
 
@@ -108,11 +119,7 @@ export class PlayService {
         return {
             nextQuiz,
             playerIds: [...players.values()].map((player) => player.id),
-            currentQuizResult: {
-                answer,
-                totalPlayerCount,
-                correctPlayerCount,
-            },
+            currentQuizResult,
         };
     }
 
