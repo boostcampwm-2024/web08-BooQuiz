@@ -5,7 +5,8 @@ import { QuizSetRepository } from './repository/quiz-set.repository';
 import { QuizSet } from './entity/quiz-set.entity';
 import { QUIZ_TYPE } from '../common/constants';
 import { CreateQuizRequestDto } from './dto/create-quiz-request.dto';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { BadRequestException } from '@nestjs/common';
+import { UpdateQuizRequestDto } from './dto/update-quiz-request.dto';
 
 describe('QuizService', () => {
     let service: QuizService;
@@ -15,6 +16,8 @@ describe('QuizService', () => {
     const mockQuizRepository = {
         save: jest.fn(),
         findBy: jest.fn(),
+        findOneBy: jest.fn(),
+        delete: jest.fn(),
     };
 
     const mockQuizSetRepository = {
@@ -227,6 +230,92 @@ describe('QuizService', () => {
             // Mock 함수 호출 검증
             expect(mockQuizSetRepository.findOneBy).toHaveBeenCalledWith({ id: quizSetId });
             expect(mockQuizRepository.findBy).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('updateQuiz', () => {
+        it('퀴즈가 정상적으로 업데이트 된다', async () => {
+            //given
+            const quizId = 1;
+            const quiz = {
+                id: quizId,
+                question: '네명에서 오줌을 싸면?',
+                answer: '포뇨',
+                playTime: 30000,
+                quizType: 'SHORT_ANSWER',
+            };
+            const dto = {
+                question: '테스트 질문',
+                answer: '테스트 정답',
+                playTime: 1000,
+                quizType: QUIZ_TYPE.SHORT_ANSWER,
+            } as UpdateQuizRequestDto;
+
+            mockQuizRepository.findOneBy.mockResolvedValue(quiz);
+            mockQuizRepository.save.mockResolvedValue(undefined);
+
+            //when
+            await service.updateQuiz(quizId, dto);
+
+            //then
+            expect(mockQuizRepository.findOneBy).toHaveBeenCalledTimes(1);
+            expect(mockQuizRepository.save).toHaveBeenCalledWith({ ...quiz, ...dto });
+        });
+
+        it('존재하지 않는 quiz 업데이트 하려고 하면 오류가 발생한다', async () => {
+            //given
+            const quizId = 100;
+            const quiz = {
+                id: quizId,
+                question: '네명에서 오줌을 싸면?',
+                answer: '포뇨',
+                playTime: 30000,
+                quizType: 'SHORT_ANSWER',
+            };
+            const dto = {
+                question: '테스트 질문',
+                answer: '테스트 정답',
+                playTime: 1000,
+                quizType: QUIZ_TYPE.SHORT_ANSWER,
+            } as UpdateQuizRequestDto;
+
+            mockQuizRepository.findOneBy.mockResolvedValue(null);
+
+            //when
+            //then
+            await expect(service.updateQuiz(quizId, dto)).rejects.toThrow(BadRequestException);
+        });
+    });
+
+    describe('deleteQuiz', () => {
+        it('퀴즈를 정상적으로 삭제한다', async () => {
+            //given
+            const quizId = 1;
+            const quiz = {
+                id: quizId,
+                question: '네명에서 오줌을 싸면?',
+                answer: '포뇨',
+                playTime: 30000,
+                quizType: 'SHORT_ANSWER',
+            };
+            mockQuizRepository.delete.mockResolvedValue(undefined);
+            mockQuizRepository.findOneBy.mockResolvedValue(quiz);
+
+            //when
+            await service.deleteQuiz(quizId);
+
+            //then
+            expect(mockQuizRepository.delete).toHaveBeenCalledTimes(1);
+        });
+
+        it('존재하지 않는 퀴즈를 삭제한다', async () => {
+            //given
+            const quizId = 100;
+            mockQuizRepository.findOneBy.mockResolvedValue(null);
+
+            //when
+            //then
+            await expect(service.deleteQuiz(quizId)).rejects.toThrow(BadRequestException);
         });
     });
 });
