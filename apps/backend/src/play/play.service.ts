@@ -253,7 +253,7 @@ export class PlayService {
         const quizZone = await this.quizZoneService.findOne(quizZoneId);
         const { stage, hostId, players } = quizZone;
 
-        const isHost = hostId !== clientId;
+        const isHost = hostId === clientId;
 
         if (stage !== QUIZ_ZONE_STAGE.LOBBY) {
             throw new BadRequestException('게임이 진행중입니다.');
