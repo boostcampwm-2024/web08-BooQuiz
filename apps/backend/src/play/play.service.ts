@@ -13,6 +13,7 @@ import { QuizResultSummaryDto } from './dto/quiz-result-summary.dto';
 import { CurrentQuizDto } from './dto/current-quiz.dto';
 import { PLAYER_STATE, QUIZ_ZONE_STAGE } from '../common/constants';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { RuntimeException } from '@nestjs/core/errors/exceptions';
 
 @Injectable()
 export class PlayService {
@@ -37,19 +38,38 @@ export class PlayService {
      * 다음 퀴즈를 준비하고 타이밍과 퀴즈 데이터를 반환합니다.
      * @param quizZoneId - 퀴즈 존 ID
      * @returns 퀴즈 존에 설정된 인터벌 시간과 다음 퀴즈 데이터를 포함하는 객체
-     * @throws {NotFoundException} 더 이상 진행할 퀴즈가 없을 경우 예외가 발생합니다.
+     * @throws {RuntimeException} 더 이상 진행할 퀴즈가 없을 경우 예외가 발생합니다.
+     * @throws {NotFoundException} 퀴즈존 정보가 없을 경우 예외가 발생합니다..
      */
     async playNextQuiz(quizZoneId: string) {
         const quizZone = await this.quizZoneService.findOne(quizZoneId);
-        const { intervalTime } = quizZone;
+        const { players, intervalTime } = quizZone;
 
         const nextQuiz = await this.nextQuiz(quizZoneId);
 
-        await this.changeAllPlayersState(quizZoneId, PLAYER_STATE.WAIT);
+        await this.quizZoneService.updateQuizZone(quizZoneId, {
+            ...quizZone,
+            players: new Map(
+                [...players].map(([id, player]) => [id, { ...player, state: PLAYER_STATE.WAIT }]),
+            ),
+        });
+
+        setTimeout(() => {
+            this.quizZoneService.updateQuizZone(quizZoneId, {
+                ...quizZone,
+                players: new Map(
+                    [...players].map(([id, player]) => [
+                        id,
+                        { ...player, state: PLAYER_STATE.WAIT },
+                    ]),
+                ),
+            });
+        }, intervalTime);
 
         return {
             intervalTime,
             nextQuiz,
+            playerIds: [...players.values()].map((player) => player.id),
         };
     }
 
@@ -66,7 +86,7 @@ export class PlayService {
         const { quizzes, currentQuizIndex, intervalTime } = quizZone;
 
         if (currentQuizIndex >= quizzes.length) {
-            throw new NotFoundException('모든 퀴즈를 출제하였습니다.');
+            throw new RuntimeException('모든 퀴즈를 출제하였습니다.');
         }
 
         const nextQuiz = quizzes.at(currentQuizIndex);

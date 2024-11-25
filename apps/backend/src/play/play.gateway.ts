@@ -10,11 +10,12 @@ import { PlayService } from './play.service';
 import { Server, WebSocket } from 'ws';
 import { QuizSubmitDto } from './dto/quiz-submit.dto';
 import { QuizJoinDto } from './dto/quiz-join.dto';
-import { BadRequestException, Inject, NotFoundException } from '@nestjs/common';
-import { CLOSE_CODE, PLAYER_STATE, QUIZ_ZONE_STAGE } from '../common/constants';
+import { BadRequestException, Inject } from '@nestjs/common';
+import { CLOSE_CODE, QUIZ_ZONE_STAGE } from '../common/constants';
 import { SendEventMessage } from './entities/send-event.entity';
 import { ClientInfo } from './entities/client-info.entity';
 import { WebSocketWithSession } from '../core/SessionWsAdapter';
+import { RuntimeException } from '@nestjs/core/errors/exceptions';
 
 /**
  * 퀴즈 게임에 대한 WebSocket 연결을 관리하는 Gateway입니다.
@@ -157,14 +158,15 @@ export class PlayGateway implements OnGatewayInit {
      * @param quizZoneId - WebSocket 클라이언트
      */
     private async playNextQuiz(quizZoneId: string) {
+        let playerIds = [];
+
         try {
-            const { intervalTime, nextQuiz } = await this.playService.playNextQuiz(quizZoneId);
+            const nextQuizInfo = await this.playService.playNextQuiz(quizZoneId);
+            const { nextQuiz, intervalTime } = nextQuizInfo;
 
-            await this.broadcast(quizZoneId, 'nextQuiz', nextQuiz);
+            playerIds = nextQuizInfo.playerIds;
 
-            setTimeout(() => {
-                this.playService.changeAllPlayersState(quizZoneId, PLAYER_STATE.PLAY);
-            }, intervalTime);
+            await this.broadcast(playerIds, 'nextQuiz', nextQuiz);
 
             this.plays.set(
                 quizZoneId,
@@ -173,9 +175,11 @@ export class PlayGateway implements OnGatewayInit {
                 }, intervalTime + nextQuiz.playTime),
             );
         } catch (error) {
-            if (error instanceof NotFoundException) {
-                await this.broadcast(quizZoneId, 'finish');
+            if (error instanceof RuntimeException) {
+                await this.broadcast(playerIds, 'finish');
                 this.server.emit('summary', quizZoneId);
+            } else {
+                throw error;
             }
         }
     }
