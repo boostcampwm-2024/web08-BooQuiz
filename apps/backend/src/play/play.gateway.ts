@@ -112,28 +112,23 @@ export class PlayGateway implements OnGatewayInit {
      * @param client - WebSocket 클라이언트
      */
     @SubscribeMessage('start')
-    async start(@ConnectedSocket() client: WebSocket) {
-        const clientId = client['sessionId'];
+    async start(@ConnectedSocket() client: WebSocketWithSession) {
+        const clientId = client.session.id;
         const { quizZoneId } = this.getClientInfo(clientId);
 
-        const isHost = await this.playService.isHostPlayer(quizZoneId, clientId);
-
-        if (!isHost) {
-            return;
-        }
-
-        await this.playService.checkQuizZoneStage(quizZoneId, QUIZ_ZONE_STAGE.LOBBY);
-
-        await this.broadcast(quizZoneId, 'start', 'OK');
-
-        await this.playService.changeQuizZoneStage(quizZoneId, QUIZ_ZONE_STAGE.IN_PROGRESS);
+        const players = await this.playService.playQuizZone(quizZoneId, clientId);
+        await this.broadcast(
+            players.map((player) => player.id),
+            'start',
+            'OK',
+        );
 
         this.server.emit('nextQuiz', quizZoneId);
     }
 
     /**
      * 퀴즈 방을 나갔다는 메시지를 클라이언트로 전송합니다.
-     * 
+     *
      * - 방장이 나가면 퀴즈 존을 삭제하고 모든 플레이어에게 방장이 나갔다고 알립니다.
      * - 일반 플레이어가 나가면 퀴즈 존에서 나가고 다른 플레이어에게 나갔다고 알립니다.
      * @param client - WebSocket 클라이언트

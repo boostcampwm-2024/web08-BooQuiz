@@ -1,4 +1,11 @@
-import { BadRequestException, Inject, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import {
+    BadRequestException,
+    Inject,
+    Injectable,
+    Logger,
+    NotFoundException,
+    UnauthorizedException,
+} from '@nestjs/common';
 import { QuizZoneService } from '../quiz-zone/quiz-zone.service';
 import { SubmittedQuiz } from '../quiz-zone/entities/submitted-quiz.entity';
 import { QuizZone } from '../quiz-zone/entities/quiz-zone.entity';
@@ -226,5 +233,25 @@ export class PlayService {
             currentPlayer: players.get(sessionId),
             players: [...players.values()].filter((player) => player.id !== sessionId),
         };
+    }
+
+    async playQuizZone(quizZoneId: string, clientId: string) {
+        const quizZone = await this.quizZoneService.findOne(quizZoneId);
+        const { hostId, stage, players } = quizZone;
+
+        if (hostId !== clientId) {
+            throw new UnauthorizedException('방장만 퀴즈를 시작할 수 있습니다.');
+        }
+
+        if (stage !== QUIZ_ZONE_STAGE.LOBBY) {
+            throw new BadRequestException('이미 시작된 퀴즈존입니다.');
+        }
+
+        await this.quizZoneService.updateQuizZone(quizZoneId, {
+            ...quizZone,
+            stage: QUIZ_ZONE_STAGE.IN_PROGRESS,
+        });
+
+        return [...players.values()];
     }
 }

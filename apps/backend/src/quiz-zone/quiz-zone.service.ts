@@ -9,7 +9,7 @@ import { Quiz } from './entities/quiz.entity';
 import { Player } from './entities/player.entity';
 import { QuizZone } from './entities/quiz-zone.entity';
 import { IQuizZoneRepository } from './repository/quiz-zone.repository.interface';
-import { PLAYER_STATE, QUIZ_ZONE_STAGE, getRandomNickName } from '../common/constants';
+import { getRandomNickName, PLAYER_STATE, QUIZ_ZONE_STAGE } from '../common/constants';
 import { FindQuizZoneDto } from './dto/find-quiz-zone.dto';
 
 const playTime = 30_000;
@@ -218,10 +218,10 @@ export class QuizZoneService {
     }
 
     /**
-     * 
+     *
      * @param quizZoneId - 대상 퀴즈 존 ID
      * @param clientId - 제외시킬 클라이언트 ID
-     * @returns 
+     * @returns
      */
     async findOthersInfo(quizZoneId: string, clientId: string) {
         const { players } = await this.findOne(quizZoneId);
@@ -240,5 +240,11 @@ export class QuizZoneService {
     async leave(quizZoneId: string, clientId: any) {
         const quizZone = await this.findOne(quizZoneId);
         quizZone.players.delete(clientId);
+    }
+
+    async updateQuizZone(quizZoneId: string, quizZone: QuizZone) {
+        await this.repository.set(quizZoneId, {
+            ...quizZone,
+        });
     }
 }
