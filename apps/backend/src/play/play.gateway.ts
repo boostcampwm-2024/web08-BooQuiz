@@ -15,6 +15,7 @@ import { SendEventMessage } from './entities/send-event.entity';
 import { ClientInfo } from './entities/client-info.entity';
 import { WebSocketWithSession } from '../core/SessionWsAdapter';
 import { RuntimeException } from '@nestjs/core/errors/exceptions';
+import { CLOSE_CODE } from '../common/constants';
 
 /**
  * 퀴즈 게임에 대한 WebSocket 연결을 관리하는 Gateway입니다.
@@ -46,7 +47,7 @@ export class PlayGateway implements OnGatewayInit {
         socket.send(JSON.stringify({ event, data }));
     }
 
-    private async broadcast(clientIds: string[], event: string, data?: any) {
+    private broadcast(clientIds: string[], event: string, data?: any) {
         clientIds.forEach((clientId) => {
             this.sendToClient(clientId, event, data);
         });
@@ -65,6 +66,12 @@ export class PlayGateway implements OnGatewayInit {
         }
 
         return clientInfo;
+    }
+
+    private clearClient(clientId: string, reason?: string) {
+        const { socket } = this.getClientInfo(clientId);
+        this.clients.delete(clientId);
+        socket.close(CLOSE_CODE.NORMAL, reason);
     }
 
     /**
@@ -95,7 +102,7 @@ export class PlayGateway implements OnGatewayInit {
 
         this.clients.set(sessionId, { quizZoneId, socket: client });
 
-        await this.broadcast(playerIds, 'someone_join', { id, nickname });
+        this.broadcast(playerIds, 'someone_join', { id, nickname });
 
         return {
             event: 'join',
@@ -115,7 +122,7 @@ export class PlayGateway implements OnGatewayInit {
 
         const playerIds = await this.playService.startQuizZone(quizZoneId, clientId);
 
-        await this.broadcast(playerIds, 'start', 'OK');
+        this.broadcast(playerIds, 'start', 'OK');
 
         this.server.emit('nextQuiz', quizZoneId);
     }
@@ -134,7 +141,7 @@ export class PlayGateway implements OnGatewayInit {
 
             const { nextQuiz, playerIds } = nextQuizInfo;
 
-            await this.broadcast(playerIds, 'nextQuiz', nextQuiz);
+            this.broadcast(playerIds, 'nextQuiz', nextQuiz);
         } catch (error) {
             if (error instanceof RuntimeException) {
                 await this.finishQuizZone(quizZoneId);
@@ -147,7 +154,7 @@ export class PlayGateway implements OnGatewayInit {
     private async finishQuizZone(quizZoneId: string) {
         const playerIds = await this.playService.finishQuizZone(quizZoneId);
 
-        await this.broadcast(playerIds, 'finish');
+        this.broadcast(playerIds, 'finish');
 
         this.server.emit('summary', quizZoneId);
     }
@@ -193,7 +200,7 @@ export class PlayGateway implements OnGatewayInit {
         await Promise.all(
             summaries.map(async ({ id, score, submits, quizzes }) => {
                 this.sendToClient(id, 'summary', { score, submits, quizzes });
-                this.clients.delete(id);
+                this.clearClient(id, 'finish');
             }),
         );
     }
@@ -213,11 +220,11 @@ export class PlayGateway implements OnGatewayInit {
         const { isHost, playerIds } = await this.playService.leaveQuizZone(quizZoneId, clientId);
 
         if (isHost) {
-            await this.broadcast(playerIds, 'close');
-            playerIds.forEach((id) => this.clients.delete(id));
+            this.broadcast(playerIds, 'close');
+            playerIds.forEach((id) => this.clearClient(id, 'Host leave.'));
         } else {
-            this.clients.delete(clientId);
-            await this.broadcast(playerIds, 'someone_leave', clientId);
+            this.broadcast(playerIds, 'someone_leave', clientId);
+            this.clearClient(clientId, 'Client leave');
         }
 
         return { event: 'leave', data: 'OK' };

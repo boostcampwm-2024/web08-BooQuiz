@@ -83,7 +83,7 @@ export class PlayService {
                 players: new Map(
                     [...players].map(([id, player]) => [
                         id,
-                        { ...player, state: PLAYER_STATE.WAIT },
+                        { ...player, state: PLAYER_STATE.PLAY },
                     ]),
                 ),
             });
@@ -145,7 +145,7 @@ export class PlayService {
      * 퀴즈 시간이 초과될 경우 퀴즈에 대해 미제출 답변으로 제출합니다.
      * @param quizZoneId - 퀴즈 존 ID.
      */
-    async quizTimeOut(quizZoneId: string) {
+    private async quizTimeOut(quizZoneId: string) {
         const quizZone = await this.quizZoneService.findOne(quizZoneId);
         const { players } = quizZone;
 
