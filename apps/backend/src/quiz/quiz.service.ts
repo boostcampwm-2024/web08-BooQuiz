@@ -1,13 +1,9 @@
-import { Body, Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Quiz } from './quiz.entitiy';
-import { Repository } from 'typeorm';
-import { CreateQuizDto } from './dto/create-quiz.dto';
-import { CreateQuizSetDto } from './dto/create-quiz-set.dto';
-import { QuizSet } from './quiz-set.entity';
-import { QUIZ_TYPE } from '../common/constants';
-import { QuizRepository } from './quiz.repository';
-import { QuizSetRepository } from './quiz-set.repository';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { CreateQuizRequestDto } from './dto/create-quiz-request.dto';
+import { CreateQuizSetResponseDto } from './dto/create-quiz-set-response.dto';
+import { QuizRepository } from './repository/quiz.repository';
+import { QuizSetRepository } from './repository/quiz-set.repository';
+import { UpdateQuizRequestDto } from './dto/update-quiz-request.dto';
 
 @Injectable()
 export class QuizService {
@@ -22,13 +18,8 @@ export class QuizService {
     }
 
     async createQuizzes(quizSetId: number, createQuizDto: CreateQuizRequestDto[]) {
-        const quizSet = await this.quizSetRepository.findOneBy({ id: quizSetId });
-        if (!quizSet) {
-            throw new BadRequestException(`해당 퀴즈셋을 찾을 수 없습니다.`);
-        }
+        const quizSet = await this.findQuizSet(quizSetId);
 
-        const quiz = createQuizDto.toEntity(quizSet);
-        await this.quizRepository.save(quiz);
         const quizzes = createQuizDto.map((dto) => {
             return dto.toEntity(quizSet);
         });
@@ -37,12 +28,45 @@ export class QuizService {
     }
 
     async getQuizzes(quizSetId: number) {
+        const quizSet = await this.findQuizSet(quizSetId);
+
+        const quizzes = await this.quizRepository.findBy({ quizSet: quizSet });
+        return quizzes.map((quiz) => ({ ...quiz }));
+    }
+
+    async updateQuiz(quizId: number, updateQuizRequestDto: UpdateQuizRequestDto) {
+        const quiz = await this.findQuiz(quizId);
+
+        const updatedQuiz = {
+            ...quiz,
+            ...updateQuizRequestDto,
+        };
+
+        await this.quizRepository.save(updatedQuiz);
+    }
+
+    async deleteQuiz(quizId: number) {
+        const quiz = await this.findQuiz(quizId);
+
+        // 퀴즈 존재하면 삭제
+        await this.quizRepository.delete({ id: quizId });
+    }
+
+    async findQuizSet(quizSetId: number) {
         const quizSet = await this.quizSetRepository.findOneBy({ id: quizSetId });
         if (!quizSet) {
             throw new BadRequestException(`해당 퀴즈셋을 찾을 수 없습니다.`);
         }
 
-        const quizzes = await this.quizRepository.findBy({ quizSet: quizSet });
-        return quizzes.map((quiz) => ({ ...quiz }));
+        return quizSet;
+    }
+
+    async findQuiz(quizId: number) {
+        const quiz = await this.quizRepository.findOneBy({ id: quizId });
+        if (!quiz) {
+            throw new BadRequestException(`퀴즈를 찾을 수 없습니다.`);
+        }
+
+        return quiz;
     }
 }

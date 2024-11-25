@@ -12,10 +12,11 @@ import {
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { QuizService } from './quiz.service';
-import { CreateQuizSetRequestDto } from './dto/create-quiz-set.request.dto';
-import { CreateQuizRequestDto } from './dto/create-quiz.request.dto';
+import { CreateQuizSetRequestDto } from './dto/create-quiz-set-request.dto';
+import { CreateQuizRequestDto } from './dto/create-quiz-request.dto';
 import { FindQuizzesResponseDto } from './dto/find-quizzes-response.dto';
-import { CreateQuizSetResponseDto } from './dto/create-quiz-set.response.dto';
+import { CreateQuizSetResponseDto } from './dto/create-quiz-set-response.dto';
+import { UpdateQuizRequestDto } from './dto/update-quiz-request.dto';
 
 @ApiTags('Quiz')
 @Controller('quiz')
@@ -62,5 +63,27 @@ export class QuizController {
     @ApiResponse({ status: HttpStatus.NOT_FOUND, description: '해당 퀴즈셋의 id가 없습니다.' })
     async findQuizzes(@Param('quizSetId') quizSetId: number): Promise<FindQuizzesResponseDto[]> {
         return this.quizService.getQuizzes(quizSetId);
+    }
+
+    @Patch(':quizId')
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: '퀴즈 수정' })
+    @ApiResponse({
+        status: HttpStatus.OK,
+        description: '퀴즈의 정보를 성공적으로 수정하였습니다.',
+    })
+    async updateQuiz(
+        @Param('quizId') quizId: number,
+        @Body() updateQuizRequestDto: UpdateQuizRequestDto,
+    ) {
+        return this.quizService.updateQuiz(quizId, updateQuizRequestDto);
+    }
+
+    @Patch(':quizId')
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({ summary: '퀴즈 삭제' })
+    @Delete(':quizSetId/:quizId')
+    async deleteQuiz(@Param('quizId') quizId: number): Promise<void> {
+        return this.quizService.deleteQuiz(quizId);
     }
 }
