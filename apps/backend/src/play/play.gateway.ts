@@ -7,11 +7,11 @@ import {
     WebSocketServer,
 } from '@nestjs/websockets';
 import { PlayService } from './play.service';
-import { Server, WebSocket } from 'ws';
+import { Server } from 'ws';
 import { QuizSubmitDto } from './dto/quiz-submit.dto';
 import { QuizJoinDto } from './dto/quiz-join.dto';
 import { BadRequestException, Inject } from '@nestjs/common';
-import { CLOSE_CODE, QUIZ_ZONE_STAGE } from '../common/constants';
+import { CLOSE_CODE } from '../common/constants';
 import { SendEventMessage } from './entities/send-event.entity';
 import { ClientInfo } from './entities/client-info.entity';
 import { WebSocketWithSession } from '../core/SessionWsAdapter';
@@ -193,26 +193,23 @@ export class PlayGateway implements OnGatewayInit {
      */
     @SubscribeMessage('submit')
     async submit(
-        @ConnectedSocket() client: WebSocket,
+        @ConnectedSocket() client: WebSocketWithSession,
         @MessageBody() quizSubmit: QuizSubmitDto,
     ): Promise<SendEventMessage<string>> {
-        const clientId = client['sessionId'];
+        const clientId = client.session.id;
         const { quizZoneId } = this.getClientInfo(clientId);
 
-        await this.playService.checkQuizZoneStage(quizZoneId, QUIZ_ZONE_STAGE.IN_PROGRESS);
-
-        await this.playService.submit(quizZoneId, clientId, {
+        const { isLastSubmit } = await this.playService.submit(quizZoneId, clientId, {
             ...quizSubmit,
             receivedAt: Date.now(),
         });
 
-        const isAllSubmitted = await this.playService.checkAllSubmitted(quizZoneId);
-
-        if (isAllSubmitted) {
+        if (isLastSubmit) {
             const submitHandle = this.plays.get(quizZoneId);
-            clearTimeout(submitHandle);
-            this.plays.set(quizZoneId, undefined);
 
+            clearTimeout(submitHandle);
+
+            this.plays.set(quizZoneId, undefined);
             this.server.emit('nextQuiz', quizZoneId);
         }
 

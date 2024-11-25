@@ -31,7 +31,17 @@ export class PlayService {
      */
     async submit(quizZoneId: string, clientId: string, submitQuiz: SubmittedQuiz) {
         const quizZone = await this.quizZoneService.findOne(quizZoneId);
+        const { stage, players } = quizZone;
+
+        if (stage !== QUIZ_ZONE_STAGE.IN_PROGRESS) {
+            throw new BadRequestException('퀴즈를 제출할 수 없습니다.');
+        }
+
         this.submitQuiz(quizZone, clientId, submitQuiz);
+
+        return {
+            isLastSubmit: [...players.values()].every(({ state }) => state === PLAYER_STATE.SUBMIT),
+        };
     }
 
     /**
