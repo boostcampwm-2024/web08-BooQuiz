@@ -199,7 +199,7 @@ export class PlayService {
             isLastSubmit,
             fastestPlayerIdList,
             submittedCount: submittedPlayers.length,
-            totalPlayersCount: players.size,
+            totalPlayerCount: players.size,
             otherSubmittedPlayerIds: submittedPlayers
                 .filter((player) => player.id !== clientId)
                 .map(({ id }) => id),

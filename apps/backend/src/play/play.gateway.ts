@@ -178,7 +178,7 @@ export class PlayGateway implements OnGatewayInit {
             isLastSubmit,
             fastestPlayerIdList,
             submittedCount,
-            totalPlayersCount,
+            totalPlayerCount,
             otherSubmittedPlayerIds,
         } = await this.playService.submit(quizZoneId, clientId, {
             ...quizSubmit,
@@ -193,7 +193,7 @@ export class PlayGateway implements OnGatewayInit {
 
         return {
             event: 'submit',
-            data: { fastestPlayerIdList, submittedCount, totalPlayersCount },
+            data: { fastestPlayerIdList, submittedCount, totalPlayerCount },
         };
     }
 
