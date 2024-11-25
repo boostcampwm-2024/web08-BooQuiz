@@ -170,11 +170,17 @@ export class PlayGateway implements OnGatewayInit {
     async submit(
         @ConnectedSocket() client: WebSocketWithSession,
         @MessageBody() quizSubmit: QuizSubmitDto,
-    ): Promise<SendEventMessage<string>> {
+    ): Promise<SendEventMessage<SubmitResponseDto>> {
         const clientId = client.session.id;
         const { quizZoneId } = this.getClientInfo(clientId);
 
-        const { isLastSubmit } = await this.playService.submit(quizZoneId, clientId, {
+        const {
+            isLastSubmit,
+            fastestPlayerIdList,
+            submittedCount,
+            totalPlayersCount,
+            otherSubmittedPlayerIds,
+        } = await this.playService.submit(quizZoneId, clientId, {
             ...quizSubmit,
             receivedAt: Date.now(),
         });
@@ -183,9 +189,11 @@ export class PlayGateway implements OnGatewayInit {
             this.server.emit('nextQuiz', quizZoneId);
         }
 
+        this.broadcast(otherSubmittedPlayerIds, 'someone_submit', { clientId, submittedCount });
+
         return {
             event: 'submit',
-            data: 'OK',
+            data: { fastestPlayerIdList, submittedCount, totalPlayersCount },
         };
     }
 

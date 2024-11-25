@@ -14,6 +14,7 @@ import { PLAYER_STATE, QUIZ_ZONE_STAGE } from '../common/constants';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { RuntimeException } from '@nestjs/core/errors/exceptions';
 import { clearTimeout } from 'node:timers';
+import { Player } from '../quiz-zone/entities/player.entity';
 
 @Injectable()
 export class PlayService {
@@ -179,6 +180,15 @@ export class PlayService {
 
         this.submitQuiz(quizZone, clientId, submitQuiz);
 
+        const submittedPlayers = [...players.values()].filter(
+            (player) => player.state === PLAYER_STATE.SUBMIT,
+        );
+
+        const fastestPlayerIdList = this.getFastestPlayerIdList(
+            submittedPlayers,
+            quizZone.currentQuizIndex - 1,
+        );
+
         const isLastSubmit = [...players.values()].every(
             ({ state }) => state === PLAYER_STATE.SUBMIT,
         );
@@ -187,7 +197,24 @@ export class PlayService {
 
         return {
             isLastSubmit,
+            fastestPlayerIdList,
+            submittedCount: submittedPlayers.length,
+            totalPlayersCount: players.size,
+            otherSubmittedPlayerIds: [...players.values()]
+                .filter((player) => player.id !== clientId && player.state === PLAYER_STATE.SUBMIT)
+                .map(({ id }) => id),
         };
+    }
+
+    private getFastestPlayerIdList(submittedPlayers: Player[], currentQuizIndex, count = 3) {
+        return submittedPlayers
+            .sort(
+                (a, b) =>
+                    (a.submits[currentQuizIndex].submittedAt ?? Infinity) -
+                    (b.submits[currentQuizIndex].submittedAt ?? Infinity),
+            )
+            .slice(0, count)
+            .map(({ id }) => id);
     }
 
     /**
