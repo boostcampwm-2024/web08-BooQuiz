@@ -111,7 +111,6 @@ export class PlayService {
 
     private getCurrentQuizResult(quizZone: QuizZone): CurrentQuizResultDto {
         const { players, currentQuizIndex } = quizZone;
-
         const currentQuizResult = {} as CurrentQuizResultDto;
 
         if (currentQuizIndex === -1) {
@@ -121,14 +120,13 @@ export class PlayService {
         }
 
         if (currentQuizIndex >= 0) {
-            const answer = quizZone.quizzes.at(currentQuizIndex).answer;
-            currentQuizIndex['answer'] = answer;
-            currentQuizIndex['totalPlayerCount'] = players.size;
-            currentQuizIndex['correctPlayerCount'] = [...players.values()].filter(
-                (player) => player.submits[currentQuizIndex].answer === answer,
+            const answer: string = quizZone.quizzes.at(currentQuizIndex).answer;
+            currentQuizResult['answer'] = answer;
+            currentQuizResult['totalPlayerCount'] = players.size;
+            currentQuizResult['correctPlayerCount'] = [...players.values()].filter(
+                (player) => player.submits[currentQuizIndex]?.answer === answer,
             ).length;
         }
-
         return currentQuizResult;
     }
     /**
