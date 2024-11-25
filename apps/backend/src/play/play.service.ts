@@ -67,7 +67,13 @@ export class PlayService {
      */
     async playNextQuiz(quizZoneId: string, timeoutHandle: Function) {
         const quizZone = await this.quizZoneService.findOne(quizZoneId);
-        const { players, intervalTime } = quizZone;
+        const { players, intervalTime, currentQuizIndex } = quizZone;
+
+        const answer = quizZone.quizzes.at(currentQuizIndex).answer;
+        const totalPlayerCount = players.size;
+        const correctPlayerCount = [...players.values()].filter(
+            (player) => player.submits[currentQuizIndex].answer === answer,
+        ).length;
 
         const nextQuiz = await this.nextQuiz(quizZoneId);
 
@@ -102,6 +108,11 @@ export class PlayService {
         return {
             nextQuiz,
             playerIds: [...players.values()].map((player) => player.id),
+            currentQuizResult: {
+                answer,
+                totalPlayerCount,
+                correctPlayerCount,
+            },
         };
     }
 

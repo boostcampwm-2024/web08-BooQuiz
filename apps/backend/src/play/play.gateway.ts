@@ -134,14 +134,15 @@ export class PlayGateway implements OnGatewayInit {
      */
     private async playNextQuiz(quizZoneId: string) {
         try {
-            const nextQuizInfo = await this.playService.playNextQuiz(quizZoneId, () => {
-                this.broadcast(playerIds, 'quizTimeOut');
-                this.server.emit('nextQuiz', quizZoneId);
-            });
+            const { nextQuiz, playerIds, currentQuizResult } = await this.playService.playNextQuiz(
+                quizZoneId,
+                () => {
+                    this.broadcast(playerIds, 'quizTimeOut');
+                    this.server.emit('nextQuiz', quizZoneId);
+                },
+            );
 
-            const { nextQuiz, playerIds } = nextQuizInfo;
-
-            this.broadcast(playerIds, 'nextQuiz', nextQuiz);
+            this.broadcast(playerIds, 'nextQuiz', { nextQuiz, currentQuizResult });
         } catch (error) {
             if (error instanceof RuntimeException) {
                 await this.finishQuizZone(quizZoneId);
