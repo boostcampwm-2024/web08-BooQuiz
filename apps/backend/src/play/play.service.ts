@@ -13,44 +13,58 @@ import { CurrentQuizDto } from './dto/current-quiz.dto';
 import { PLAYER_STATE, QUIZ_ZONE_STAGE } from '../common/constants';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { RuntimeException } from '@nestjs/core/errors/exceptions';
+import { clearTimeout } from 'node:timers';
 
 @Injectable()
 export class PlayService {
     constructor(
         @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
         private readonly quizZoneService: QuizZoneService,
+        @Inject('PlayInfoStorage') private readonly plays: Map<string, NodeJS.Timeout>,
     ) {}
 
-    /**
-     * 특정 퀴즈 존에서 현재 퀴즈에 대한 답변을 제출합니다.
-     * @param quizZoneId - 퀴즈 존 ID
-     * @param clientId - 플레이어 ID
-     * @param submitQuiz - 제출된 퀴즈의 답변과 메타데이터
-     * @throws {BadRequestException} 답변을 제출할 수 없는 경우 예외가 발생합니다.
-     */
-    async submit(quizZoneId: string, clientId: string, submitQuiz: SubmittedQuiz) {
-        const quizZone = await this.quizZoneService.findOne(quizZoneId);
-        const { stage, players } = quizZone;
+    async joinQuizZone(quizZoneId: string, sessionId: string) {
+        const { players } = await this.quizZoneService.findOne(quizZoneId);
 
-        if (stage !== QUIZ_ZONE_STAGE.IN_PROGRESS) {
-            throw new BadRequestException('퀴즈를 제출할 수 없습니다.');
+        if (!players.has(sessionId)) {
+            throw new NotFoundException('참여하지 않은 사용자입니다.');
         }
 
-        this.submitQuiz(quizZone, clientId, submitQuiz);
-
         return {
-            isLastSubmit: [...players.values()].every(({ state }) => state === PLAYER_STATE.SUBMIT),
+            currentPlayer: players.get(sessionId),
+            players: [...players.values()].filter((player) => player.id !== sessionId),
         };
+    }
+
+    async startQuizZone(quizZoneId: string, clientId: string) {
+        const quizZone = await this.quizZoneService.findOne(quizZoneId);
+        const { hostId, stage, players } = quizZone;
+
+        if (hostId !== clientId) {
+            throw new UnauthorizedException('방장만 퀴즈를 시작할 수 있습니다.');
+        }
+
+        if (stage !== QUIZ_ZONE_STAGE.LOBBY) {
+            throw new BadRequestException('이미 시작된 퀴즈존입니다.');
+        }
+
+        await this.quizZoneService.updateQuizZone(quizZoneId, {
+            ...quizZone,
+            stage: QUIZ_ZONE_STAGE.IN_PROGRESS,
+        });
+
+        return [...players.values()].map((player) => player.id);
     }
 
     /**
      * 다음 퀴즈를 준비하고 타이밍과 퀴즈 데이터를 반환합니다.
      * @param quizZoneId - 퀴즈 존 ID
+     * @param timeoutHandle - 타임아웃이 발생하면 실행되어야할 콜백 함수
      * @returns 퀴즈 존에 설정된 인터벌 시간과 다음 퀴즈 데이터를 포함하는 객체
      * @throws {RuntimeException} 더 이상 진행할 퀴즈가 없을 경우 예외가 발생합니다.
      * @throws {NotFoundException} 퀴즈존 정보가 없을 경우 예외가 발생합니다..
      */
-    async playNextQuiz(quizZoneId: string) {
+    async playNextQuiz(quizZoneId: string, timeoutHandle: Function) {
         const quizZone = await this.quizZoneService.findOne(quizZoneId);
         const { players, intervalTime } = quizZone;
 
@@ -75,8 +89,16 @@ export class PlayService {
             });
         }, intervalTime);
 
+        this.setQuizZoneHandle(
+            quizZoneId,
+            () => {
+                this.quizTimeOut(quizZoneId);
+                timeoutHandle();
+            },
+            intervalTime + nextQuiz.playTime,
+        );
+
         return {
-            intervalTime,
             nextQuiz,
             playerIds: [...players.values()].map((player) => player.id),
         };
@@ -113,6 +135,12 @@ export class PlayService {
         };
     }
 
+    async finishQuizZone(quizZoneId: string) {
+        const quizZone = await this.quizZoneService.findOne(quizZoneId);
+        quizZone.stage = QUIZ_ZONE_STAGE.RESULT;
+        return [...quizZone.players.values()].map((player) => player.id);
+    }
+
     /**
      * 퀴즈 시간이 초과될 경우 퀴즈에 대해 미제출 답변으로 제출합니다.
      * @param quizZoneId - 퀴즈 존 ID.
@@ -127,8 +155,38 @@ export class PlayService {
             }
         });
 
+        this.clearQuizZoneHandle(quizZoneId);
+
         return {
             playerIds: [...players.values()].map(({ id }) => id),
+        };
+    }
+
+    /**
+     * 특정 퀴즈 존에서 현재 퀴즈에 대한 답변을 제출합니다.
+     * @param quizZoneId - 퀴즈 존 ID
+     * @param clientId - 플레이어 ID
+     * @param submitQuiz - 제출된 퀴즈의 답변과 메타데이터
+     * @throws {BadRequestException} 답변을 제출할 수 없는 경우 예외가 발생합니다.
+     */
+    async submit(quizZoneId: string, clientId: string, submitQuiz: SubmittedQuiz) {
+        const quizZone = await this.quizZoneService.findOne(quizZoneId);
+        const { stage, players } = quizZone;
+
+        if (stage !== QUIZ_ZONE_STAGE.IN_PROGRESS) {
+            throw new BadRequestException('퀴즈를 제출할 수 없습니다.');
+        }
+
+        this.submitQuiz(quizZone, clientId, submitQuiz);
+
+        const isLastSubmit = [...players.values()].every(
+            ({ state }) => state === PLAYER_STATE.SUBMIT,
+        );
+
+        isLastSubmit && this.clearQuizZoneHandle(quizZoneId);
+
+        return {
+            isLastSubmit,
         };
     }
 
@@ -173,12 +231,13 @@ export class PlayService {
     /**
      * 퀴즈 존에서 사용자의 퀴즈 진행 요약 결과를 제공합니다.
      * @param quizZoneId - 퀴즈 존 ID
-     * @param clientId - 플레이어 ID
      * @returns 퀴즈 결과 요약 DTO를 포함한 Promise
      */
     async summaryQuizZone(quizZoneId: string) {
         const quizZone = await this.quizZoneService.findOne(quizZoneId);
         const { players, quizzes } = quizZone;
+
+        this.clearQuizZoneHandle(quizZoneId);
 
         await this.quizZoneService.clearQuizZone(quizZoneId);
 
@@ -188,108 +247,6 @@ export class PlayService {
             submits,
             quizzes,
         }));
-    }
-
-    /**
-     * 퀴즈 존의 상태를 지웁니다.
-     * @param quizZoneId - 퀴즈 존 ID
-     */
-    async clearQuizZone(quizZoneId: string) {
-        await this.quizZoneService.clearQuizZone(quizZoneId);
-    }
-
-    async findOthersInfo(quizZoneId: string, clientId: string) {
-        return this.quizZoneService.findOthersInfo(quizZoneId, clientId);
-    }
-
-    async findClientInfo(quizZoneId: string, clientId: string) {
-        const quizZone = await this.quizZoneService.findOne(quizZoneId);
-        const player = quizZone.players.get(clientId);
-        if (!player) {
-            throw new NotFoundException();
-        }
-        return player;
-    }
-
-    async checkAllSubmitted(quizZoneId: string) {
-        const { players } = await this.quizZoneService.findOne(quizZoneId);
-        return [...players.values()].every((player) => player.state === PLAYER_STATE.SUBMIT);
-    }
-
-    async isHostPlayer(quizZoneId: string, clientId: string) {
-        const { hostId } = await this.quizZoneService.findOne(quizZoneId);
-        return hostId === clientId;
-    }
-
-    async validatePlayer(quizZoneId: string, clientId: string) {
-        const quizZone = await this.quizZoneService.findOne(quizZoneId);
-        if (!quizZone.players.has(clientId)) {
-            throw new BadRequestException('플레이어 정보를 찾을 수 없습니다.');
-        }
-    }
-
-    async checkQuizZoneStage(quizZoneId: string, stage: string) {
-        const quizZone = await this.quizZoneService.findOne(quizZoneId);
-        if (quizZone.stage !== stage) {
-            throw new BadRequestException(`퀴즈 존의 상태가 ${stage}가 아닙니다.`);
-        }
-    }
-    async isLobbyStage(quizZoneId: string) {
-        const quizZone = await this.quizZoneService.findOne(quizZoneId);
-        return quizZone.stage === QUIZ_ZONE_STAGE.LOBBY;
-    }
-
-    async changeQuizZoneStage(quizZoneId: string, stage: QUIZ_ZONE_STAGE) {
-        const quizZone = await this.quizZoneService.findOne(quizZoneId);
-        quizZone.stage = stage;
-    }
-    async changeAllPlayersState(quizZoneId: string, stage: PLAYER_STATE) {
-        const { players } = await this.quizZoneService.findOne(quizZoneId);
-        players.forEach((player) => {
-            player.state = stage;
-        });
-    }
-
-    async leave(quizZoneId: string, clientId: any) {
-        await this.quizZoneService.leave(quizZoneId, clientId);
-    }
-
-    async getPlayerIdList(quizZoneId: string) {
-        const quizZone = await this.quizZoneService.findOne(quizZoneId);
-        return Array.from(quizZone.players.keys());
-    }
-
-    async joinQuizZone(quizZoneId: string, sessionId: string) {
-        const { players } = await this.quizZoneService.findOne(quizZoneId);
-
-        if (!players.has(sessionId)) {
-            throw new NotFoundException('참여하지 않은 사용자입니다.');
-        }
-
-        return {
-            currentPlayer: players.get(sessionId),
-            players: [...players.values()].filter((player) => player.id !== sessionId),
-        };
-    }
-
-    async playQuizZone(quizZoneId: string, clientId: string) {
-        const quizZone = await this.quizZoneService.findOne(quizZoneId);
-        const { hostId, stage, players } = quizZone;
-
-        if (hostId !== clientId) {
-            throw new UnauthorizedException('방장만 퀴즈를 시작할 수 있습니다.');
-        }
-
-        if (stage !== QUIZ_ZONE_STAGE.LOBBY) {
-            throw new BadRequestException('이미 시작된 퀴즈존입니다.');
-        }
-
-        await this.quizZoneService.updateQuizZone(quizZoneId, {
-            ...quizZone,
-            stage: QUIZ_ZONE_STAGE.IN_PROGRESS,
-        });
-
-        return [...players.values()];
     }
 
     async leaveQuizZone(quizZoneId: string, clientId: string) {
@@ -312,5 +269,19 @@ export class PlayService {
             isHost,
             playerIds: [...players.values()].map((player) => player.id),
         };
+    }
+
+    private setQuizZoneHandle(quizZoneId: string, handle: Function, time: number) {
+        this.plays.set(
+            quizZoneId,
+            setTimeout(() => handle(), time),
+        );
+    }
+
+    private clearQuizZoneHandle(quizZoneId: string) {
+        const submitHandle = this.plays.get(quizZoneId);
+
+        clearTimeout(submitHandle);
+        this.plays.set(quizZoneId, undefined);
     }
 }

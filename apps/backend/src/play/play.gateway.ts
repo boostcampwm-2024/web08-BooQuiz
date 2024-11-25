@@ -26,8 +26,6 @@ export class PlayGateway implements OnGatewayInit {
     server: Server;
 
     constructor(
-        @Inject('PlayInfoStorage')
-        private readonly plays: Map<String, NodeJS.Timeout>,
         @Inject('ClientInfoStorage')
         private readonly clients: Map<String, ClientInfo>,
         private readonly playService: PlayService,
@@ -48,6 +46,12 @@ export class PlayGateway implements OnGatewayInit {
         socket.send(JSON.stringify({ event, data }));
     }
 
+    private async broadcast(clientIds: string[], event: string, data?: any) {
+        clientIds.forEach((clientId) => {
+            this.sendToClient(clientId, event, data);
+        });
+    }
+
     /**
      * 클라이언트의 세션 ID를 이용하여 클라이언트 정보를 조회합니다.
      *
@@ -61,12 +65,6 @@ export class PlayGateway implements OnGatewayInit {
         }
 
         return clientInfo;
-    }
-
-    private async broadcast(clientIds: string[], event: string, data?: any) {
-        clientIds.forEach((clientId) => {
-            this.sendToClient(clientId, event, data);
-        });
     }
 
     /**
@@ -87,22 +85,21 @@ export class PlayGateway implements OnGatewayInit {
             quizZoneId,
             sessionId,
         );
+
         const { id, nickname } = currentPlayer;
+        const playerIds = players.map((player) => player.id);
+        const data = players.map(({ id, nickname }) => ({
+            id,
+            nickname,
+        }));
 
         this.clients.set(sessionId, { quizZoneId, socket: client });
 
-        await this.broadcast(
-            players.map((players) => players.id),
-            'someone_join',
-            { id, nickname },
-        );
+        await this.broadcast(playerIds, 'someone_join', { id, nickname });
 
         return {
             event: 'join',
-            data: players.map(({ id, nickname }) => ({
-                id,
-                nickname,
-            })),
+            data,
         };
     }
 
@@ -116,14 +113,89 @@ export class PlayGateway implements OnGatewayInit {
         const clientId = client.session.id;
         const { quizZoneId } = this.getClientInfo(clientId);
 
-        const players = await this.playService.playQuizZone(quizZoneId, clientId);
-        await this.broadcast(
-            players.map((player) => player.id),
-            'start',
-            'OK',
-        );
+        const playerIds = await this.playService.startQuizZone(quizZoneId, clientId);
+
+        await this.broadcast(playerIds, 'start', 'OK');
 
         this.server.emit('nextQuiz', quizZoneId);
+    }
+
+    /**
+     * 다음 퀴즈를 시작하고 클라이언트에 전달합니다.
+     *
+     * @param quizZoneId - WebSocket 클라이언트
+     */
+    private async playNextQuiz(quizZoneId: string) {
+        try {
+            const nextQuizInfo = await this.playService.playNextQuiz(quizZoneId, () => {
+                this.broadcast(playerIds, 'quizTimeOut');
+                this.server.emit('nextQuiz', quizZoneId);
+            });
+
+            const { nextQuiz, playerIds } = nextQuizInfo;
+
+            await this.broadcast(playerIds, 'nextQuiz', nextQuiz);
+        } catch (error) {
+            if (error instanceof RuntimeException) {
+                await this.finishQuizZone(quizZoneId);
+            } else {
+                throw error;
+            }
+        }
+    }
+
+    private async finishQuizZone(quizZoneId: string) {
+        const playerIds = await this.playService.finishQuizZone(quizZoneId);
+
+        await this.broadcast(playerIds, 'finish');
+
+        this.server.emit('summary', quizZoneId);
+    }
+
+    /**
+     * 클라이언트가 퀴즈 답안을 제출한 경우 호출됩니다.
+     *
+     * @param client - WebSocket 클라이언트
+     * @param quizSubmit - 퀴즈 제출 데이터
+     * @returns {Promise<SendEventMessage<string>>} 제출 완료 메시지
+     */
+    @SubscribeMessage('submit')
+    async submit(
+        @ConnectedSocket() client: WebSocketWithSession,
+        @MessageBody() quizSubmit: QuizSubmitDto,
+    ): Promise<SendEventMessage<string>> {
+        const clientId = client.session.id;
+        const { quizZoneId } = this.getClientInfo(clientId);
+
+        const { isLastSubmit } = await this.playService.submit(quizZoneId, clientId, {
+            ...quizSubmit,
+            receivedAt: Date.now(),
+        });
+
+        if (isLastSubmit) {
+            this.server.emit('nextQuiz', quizZoneId);
+        }
+
+        return {
+            event: 'submit',
+            data: 'OK',
+        };
+    }
+
+    /**
+     * 퀴즈 진행이 끝나면 요약 결과를 퀴즈 존의 모든 플레이어에게 전송합니다.
+     *
+     * @param quizZoneId - WebSocket 클라이언트
+     */
+    private async summary(quizZoneId: string) {
+        const summaries = await this.playService.summaryQuizZone(quizZoneId);
+
+        await Promise.all(
+            summaries.map(async ({ id, score, submits, quizzes }) => {
+                this.sendToClient(id, 'summary', { score, submits, quizzes });
+                this.clients.delete(id);
+            }),
+        );
     }
 
     /**
@@ -149,104 +221,5 @@ export class PlayGateway implements OnGatewayInit {
         }
 
         return { event: 'leave', data: 'OK' };
-    }
-
-    /**
-     * 다음 퀴즈를 시작하고 클라이언트에 전달합니다.
-     *
-     * @param quizZoneId - WebSocket 클라이언트
-     */
-    private async playNextQuiz(quizZoneId: string) {
-        let playerIds = [];
-
-        try {
-            const nextQuizInfo = await this.playService.playNextQuiz(quizZoneId);
-            const { nextQuiz, intervalTime } = nextQuizInfo;
-
-            playerIds = nextQuizInfo.playerIds;
-
-            await this.broadcast(playerIds, 'nextQuiz', nextQuiz);
-
-            this.plays.set(
-                quizZoneId,
-                setTimeout(() => {
-                    this.quizTimeOut(quizZoneId);
-                }, intervalTime + nextQuiz.playTime),
-            );
-        } catch (error) {
-            if (error instanceof RuntimeException) {
-                await this.broadcast(playerIds, 'finish');
-                this.server.emit('summary', quizZoneId);
-            } else {
-                throw error;
-            }
-        }
-    }
-
-    /**
-     * 클라이언트가 퀴즈 답안을 제출한 경우 호출됩니다.
-     *
-     * @param client - WebSocket 클라이언트
-     * @param quizSubmit - 퀴즈 제출 데이터
-     * @returns {Promise<SendEventMessage<string>>} 제출 완료 메시지
-     */
-    @SubscribeMessage('submit')
-    async submit(
-        @ConnectedSocket() client: WebSocketWithSession,
-        @MessageBody() quizSubmit: QuizSubmitDto,
-    ): Promise<SendEventMessage<string>> {
-        const clientId = client.session.id;
-        const { quizZoneId } = this.getClientInfo(clientId);
-
-        const { isLastSubmit } = await this.playService.submit(quizZoneId, clientId, {
-            ...quizSubmit,
-            receivedAt: Date.now(),
-        });
-
-        if (isLastSubmit) {
-            const submitHandle = this.plays.get(quizZoneId);
-
-            clearTimeout(submitHandle);
-
-            this.plays.set(quizZoneId, undefined);
-            this.server.emit('nextQuiz', quizZoneId);
-        }
-
-        return {
-            event: 'submit',
-            data: 'OK',
-        };
-    }
-
-    /**
-     * 퀴즈 시간이 초과된 경우 호출되어, 타임아웃을 처리합니다.
-     *
-     * @param quizZoneId - WebSocket 클라이언트
-     */
-    private async quizTimeOut(quizZoneId: string) {
-        const { playerIds } = await this.playService.quizTimeOut(quizZoneId);
-
-        this.plays.set(quizZoneId, undefined);
-        await this.broadcast(playerIds, 'quizTimeOut');
-
-        this.server.emit('nextQuiz', quizZoneId);
-    }
-
-    /**
-     * 퀴즈 진행이 끝나면 요약 결과를 퀴즈 존의 모든 플레이어에게 전송합니다.
-     *
-     * @param quizZoneId - WebSocket 클라이언트
-     */
-    private async summary(quizZoneId: string) {
-        const summaries = await this.playService.summaryQuizZone(quizZoneId);
-
-        await Promise.all(
-            summaries.map(async ({ id, score, submits, quizzes }) => {
-                this.sendToClient(id, 'summary', { score, submits, quizzes });
-                this.clients.delete(id);
-            }),
-        );
-
-        this.plays.delete(quizZoneId);
     }
 }
