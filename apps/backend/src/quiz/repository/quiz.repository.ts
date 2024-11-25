@@ -1,4 +1,4 @@
-import { Quiz } from './quiz.entitiy';
+import { Quiz } from '../entity/quiz.entitiy';
 import { Injectable } from '@nestjs/common';
 import { DataSource, Repository } from 'typeorm';
 

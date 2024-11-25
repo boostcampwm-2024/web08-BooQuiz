@@ -1,7 +1,6 @@
 import { DataSource, Repository } from 'typeorm';
-import { QuizSet } from './quiz-set.entity';
+import { QuizSet } from '../entity/quiz-set.entity';
 import { Injectable } from '@nestjs/common';
-import { Quiz } from './quiz.entitiy';
 
 @Injectable()
 export class QuizSetRepository extends Repository<QuizSet> {

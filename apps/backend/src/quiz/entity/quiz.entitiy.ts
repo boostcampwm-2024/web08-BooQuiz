@@ -1,6 +1,6 @@
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { QuizSet } from './quiz-set.entity';
-import { QUIZ_TYPE } from '../common/constants';
+import { QUIZ_TYPE } from '../../common/constants';
 
 /**
  * 퀴즈 엔티티
@@ -24,7 +24,7 @@ export class Quiz {
     playTime: number;
 
     @Column({ name: 'quiz_type' })
-    quizType: string;
+    quizType: QUIZ_TYPE;
 
     @ManyToOne((type) => QuizSet, (quizSet) => quizSet.quizzes, {
         onDelete: 'CASCADE',
