@@ -134,35 +134,21 @@ export class PlayGateway implements OnGatewayInit {
      * @param client - WebSocket 클라이언트
      */
     @SubscribeMessage('leave')
-    async leave(@ConnectedSocket() client: WebSocket) {
-        const clientId = client['sessionId'];
+    async leave(@ConnectedSocket() client: WebSocketWithSession) {
+        const clientId = client.session.id;
         const { quizZoneId } = this.getClientInfo(clientId);
 
-        const isLobby = await this.playService.isLobbyStage(quizZoneId);
+        const { isHost, playerIds } = await this.playService.leaveQuizZone(quizZoneId, clientId);
 
-        if (!isLobby) {
-            throw new BadRequestException('게임이 진행중입니다.');
-        }
-
-        const isHost = await this.playService.isHostPlayer(quizZoneId, clientId);
         if (isHost) {
-            const playerIdList = await this.playService.getPlayerIdList(quizZoneId);
-
-            await Promise.all(
-                playerIdList.map(async (playerId) => {
-                    const socket = this.getClientInfo(playerId).socket;
-                    this.clients.delete(clientId);
-                    socket.close(CLOSE_CODE.NORMAL, '방장이 나가 퀴즈가 종료되었습니다.');
-                }),
-            );
-            this.plays.delete(quizZoneId);
-            await this.playService.clearQuizZone(quizZoneId);
-            return { event: 'leave', data: 'OK' };
+            await this.broadcast(playerIds, 'close');
+            playerIds.forEach((id) => this.clients.delete(id));
+        } else {
+            this.clients.delete(clientId);
+            await this.broadcast(playerIds, 'someone_leave', clientId);
         }
-        await this.playService.leave(quizZoneId, clientId);
-        this.clients.delete(clientId);
-        client.close(CLOSE_CODE.NORMAL, '퀴즈존을 나갔습니다.');
-        await this.broadcast(quizZoneId, 'someone_leave', clientId);
+
+        return { event: 'leave', data: 'OK' };
     }
 
     /**
@@ -258,7 +244,7 @@ export class PlayGateway implements OnGatewayInit {
             playerIdList.map(async (playerId) => {
                 const { socket } = this.getClientInfo(playerId);
                 const summaryResult = await this.playService.summary(quizZoneId, playerId);
-                
+
                 this.sendToClient(socket, 'summary', summaryResult);
                 this.clients.delete(playerId);
                 socket.close(CLOSE_CODE.NORMAL, '퀴즈가 종료되었습니다.');
