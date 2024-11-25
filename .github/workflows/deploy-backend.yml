@@ -61,7 +61,13 @@ jobs:
           build-args: |
             NODE_ENV=${{secrets.NODE_ENV}}
             SESSION_SECRET=${{secrets.SESSION_SECRET}}
-
+            MYSQL_HOST=${{secrets.MYSQL_HOST}}
+            DB_PORT=${{secrets.DB_PORT}}
+            DB_USERNAME=${{secrets.DB_USERNAME}}
+            DB_PASSWORD=${{secrets.DB_PASSWORD}}
+            DB_DATABASE=${{secrets.DB_DATABASE}}
+            DB_Synchronize=${{secrets.DB_Synchronize}}
+            
 
   deploy-backend:
     needs: push-docker
