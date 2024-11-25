@@ -1,7 +1,6 @@
 import {
     ConnectedSocket,
     MessageBody,
-    OnGatewayConnection,
     OnGatewayInit,
     SubscribeMessage,
     WebSocketGateway,
@@ -9,22 +8,20 @@ import {
 } from '@nestjs/websockets';
 import { PlayService } from './play.service';
 import { Server, WebSocket } from 'ws';
-import { IncomingMessage } from 'http';
-import { parse } from 'cookie';
 import { QuizSubmitDto } from './dto/quiz-submit.dto';
 import { QuizJoinDto } from './dto/quiz-join.dto';
 import { BadRequestException, Inject, NotFoundException } from '@nestjs/common';
-import { PLAYER_STATE, QUIZ_ZONE_STAGE } from '../common/constants';
+import { CLOSE_CODE, PLAYER_STATE, QUIZ_ZONE_STAGE } from '../common/constants';
 import { SendEventMessage } from './entities/send-event.entity';
 import { ClientInfo } from './entities/client-info.entity';
-import { CLOSE_CODE } from '../common/constants';
+import { WebSocketWithSession } from '../core/SessionWsAdapter';
 
 /**
  * 퀴즈 게임에 대한 WebSocket 연결을 관리하는 Gateway입니다.
  * 클라이언트가 퀴즈 진행, 제출, 타임아웃 및 결과 요약과 관련된 이벤트를 처리합니다.
  */
-@WebSocketGateway({ path: '/play'})
-export class PlayGateway implements OnGatewayConnection, OnGatewayInit {
+@WebSocketGateway({ path: '/play' })
+export class PlayGateway implements OnGatewayInit {
     @WebSocketServer()
     server: Server;
 
@@ -46,47 +43,14 @@ export class PlayGateway implements OnGatewayConnection, OnGatewayInit {
         server.on('summary', (quizZoneId: string) => this.summary(quizZoneId));
     }
 
-    /**
-     * WebSocket 연결이 성공적으로 이루어졌을 때 호출됩니다.
-     * 클라이언트의 세션 정보를 파싱하여 플레이 정보를 설정합니다.
-     *
-     * @param client - WebSocket 클라이언트
-     * @param request - HTTP 요청 객체
-     */
-    async handleConnection(client: WebSocket, request: IncomingMessage) {
-        try {
-            const cookies = parse(request.headers.cookie);
-            const sessionId = cookies['connect.sid'].split('.').at(0).slice(2);
-            client['sessionId'] = sessionId;
-            
-            if (this.clients.has(sessionId)) {
-                const oldClient = this.clients.get(sessionId);
-                oldClient.socket.close(CLOSE_CODE.ABNORMAL, '새로운 접속이 감지되었습니다.');
-                this.clients.delete(sessionId);
-            }
-        } catch (error) {
-            client.close(CLOSE_CODE.REFUSE, '세션 정보를 찾을 수 없습니다.');
-        }
-    }
-
-    private sendToClient(client: WebSocket, event: string, data?: any) {
-        client.send(JSON.stringify({ event, data }));
-    }
-
-    private async broadcast(quizZoneId: string, event: string, data?: any) {
-        const playerIdList = await this.playService.getPlayerIdList(quizZoneId);
-
-        playerIdList.forEach((playerId) => {
-            if (this.clients.has(playerId)) {
-                const socket = this.getClientInfo(playerId).socket;
-                this.sendToClient(socket, event, data);
-            }
-        });
+    private sendToClient(clientId: string, event: string, data?: any) {
+        const { socket } = this.getClientInfo(clientId);
+        socket.send(JSON.stringify({ event, data }));
     }
 
     /**
      * 클라이언트의 세션 ID를 이용하여 클라이언트 정보를 조회합니다.
-     * 
+     *
      * @param clientId - 클라이언트의 세션 ID
      */
     private getClientInfo(clientId: string): ClientInfo {
@@ -99,34 +63,46 @@ export class PlayGateway implements OnGatewayConnection, OnGatewayInit {
         return clientInfo;
     }
 
+    private async broadcast(clientIds: string[], event: string, data?: any) {
+        clientIds.forEach((clientId) => {
+            this.sendToClient(clientId, event, data);
+        });
+    }
+
     /**
      * 클라이언트가 퀴즈 방에 참여했다는 메세지를 방의 다른 참여자들에게 전송합니다.
-     * 
+     *
      * @param client - 클라이언트 소켓
      * @param quizJoinDto - 퀴즈 참여 정보(퀴즈 존 ID)
      */
     @SubscribeMessage('join')
     async join(
-        @ConnectedSocket() client: WebSocket,
+        @ConnectedSocket() client: WebSocketWithSession,
         @MessageBody() quizJoinDto: QuizJoinDto,
-    ): Promise<SendEventMessage<Object[]>> {
-        const sessionId = client['sessionId'];
+    ): Promise<SendEventMessage<ResponsePlayerDto[]>> {
+        const sessionId = client.session.id;
         const { quizZoneId } = quizJoinDto;
 
-        await this.playService.validatePlayer(quizZoneId, sessionId);
+        const { currentPlayer, players } = await this.playService.joinQuizZone(
+            quizZoneId,
+            sessionId,
+        );
+        const { id, nickname } = currentPlayer;
 
-        // 참여자들에게 사용자가 들어왔다고 알림
-        const { id, nickname } = await this.playService.findClientInfo(quizZoneId, sessionId);
-
-        await this.broadcast(quizZoneId, 'someone_join', { id, nickname });
-        
         this.clients.set(sessionId, { quizZoneId, socket: client });
 
-        const usersInfo = await this.playService.findOthersInfo(quizZoneId, sessionId);
+        await this.broadcast(
+            players.map((players) => players.id),
+            'someone_join',
+            { id, nickname },
+        );
 
         return {
             event: 'join',
-            data: usersInfo,
+            data: players.map(({ id, nickname }) => ({
+                id,
+                nickname,
+            })),
         };
     }
 

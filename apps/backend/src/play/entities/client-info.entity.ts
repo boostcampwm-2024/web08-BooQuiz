@@ -1,4 +1,5 @@
-import { WebSocket } from 'ws';
+import { WebSocketWithSession } from '../../core/SessionWsAdapter';
+
 /**
  * 퀴즈 클라이언트의 정보를 나타냅니다.
  *
@@ -7,5 +8,5 @@ import { WebSocket } from 'ws';
  */
 export interface ClientInfo {
     quizZoneId: string;
-    socket: WebSocket;
+    socket: WebSocketWithSession;
 }

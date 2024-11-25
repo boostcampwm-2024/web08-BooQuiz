@@ -214,4 +214,17 @@ export class PlayService {
         const quizZone = await this.quizZoneService.findOne(quizZoneId);
         return Array.from(quizZone.players.keys());
     }
+
+    async joinQuizZone(quizZoneId: string, sessionId: string) {
+        const { players } = await this.quizZoneService.findOne(quizZoneId);
+
+        if (!players.has(sessionId)) {
+            throw new NotFoundException('참여하지 않은 사용자입니다.');
+        }
+
+        return {
+            currentPlayer: players.get(sessionId),
+            players: [...players.values()].filter((player) => player.id !== sessionId),
+        };
+    }
 }
