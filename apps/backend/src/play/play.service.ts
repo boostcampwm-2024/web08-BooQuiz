@@ -9,7 +9,6 @@ import {
 import { QuizZoneService } from '../quiz-zone/quiz-zone.service';
 import { SubmittedQuiz } from '../quiz-zone/entities/submitted-quiz.entity';
 import { QuizZone } from '../quiz-zone/entities/quiz-zone.entity';
-import { QuizResultSummaryDto } from './dto/quiz-result-summary.dto';
 import { CurrentQuizDto } from './dto/current-quiz.dto';
 import { PLAYER_STATE, QUIZ_ZONE_STAGE } from '../common/constants';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
@@ -177,15 +176,18 @@ export class PlayService {
      * @param clientId - 플레이어 ID
      * @returns 퀴즈 결과 요약 DTO를 포함한 Promise
      */
-    async summary(quizZoneId: string, clientId: string): Promise<QuizResultSummaryDto> {
+    async summaryQuizZone(quizZoneId: string) {
         const quizZone = await this.quizZoneService.findOne(quizZoneId);
-        quizZone.stage = QUIZ_ZONE_STAGE.RESULT;
-        const player = quizZone.players.get(clientId);
-        return {
-            score: player.score,
-            submits: player.submits,
-            quizzes: quizZone.quizzes,
-        };
+        const { players, quizzes } = quizZone;
+
+        await this.quizZoneService.clearQuizZone(quizZoneId);
+
+        return [...players.values()].map(({ id, score, submits }) => ({
+            id,
+            score,
+            submits,
+            quizzes,
+        }));
     }
 
     /**

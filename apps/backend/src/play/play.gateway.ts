@@ -11,7 +11,6 @@ import { Server } from 'ws';
 import { QuizSubmitDto } from './dto/quiz-submit.dto';
 import { QuizJoinDto } from './dto/quiz-join.dto';
 import { BadRequestException, Inject } from '@nestjs/common';
-import { CLOSE_CODE } from '../common/constants';
 import { SendEventMessage } from './entities/send-event.entity';
 import { ClientInfo } from './entities/client-info.entity';
 import { WebSocketWithSession } from '../core/SessionWsAdapter';
@@ -239,21 +238,15 @@ export class PlayGateway implements OnGatewayInit {
      * @param quizZoneId - WebSocket 클라이언트
      */
     private async summary(quizZoneId: string) {
-        const playerIdList = await this.playService.getPlayerIdList(quizZoneId);
+        const summaries = await this.playService.summaryQuizZone(quizZoneId);
 
         await Promise.all(
-            playerIdList.map(async (playerId) => {
-                const { socket } = this.getClientInfo(playerId);
-                const summaryResult = await this.playService.summary(quizZoneId, playerId);
-
-                this.sendToClient(socket, 'summary', summaryResult);
-                this.clients.delete(playerId);
-                socket.close(CLOSE_CODE.NORMAL, '퀴즈가 종료되었습니다.');
+            summaries.map(async ({ id, score, submits, quizzes }) => {
+                this.sendToClient(id, 'summary', { score, submits, quizzes });
+                this.clients.delete(id);
             }),
         );
 
         this.plays.delete(quizZoneId);
-
-        await this.playService.clearQuizZone(quizZoneId);
     }
 }
