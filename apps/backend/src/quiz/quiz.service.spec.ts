@@ -1,12 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { QuizService } from './quiz.service';
-import { QuizRepository } from './quiz.repository';
-import { QuizSetRepository } from './quiz-set.repository';
-import { QuizSet } from './quiz-set.entity';
+import { QuizRepository } from './repository/quiz.repository';
+import { QuizSetRepository } from './repository/quiz-set.repository';
+import { QuizSet } from './entity/quiz-set.entity';
 import { QUIZ_TYPE } from '../common/constants';
-import { CreateQuizDto } from './dto/create-quiz.dto';
-import { NotFoundException } from '@nestjs/common';
-import { Quiz } from './quiz.entitiy';
+import { CreateQuizRequestDto } from './dto/create-quiz-request.dto';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 
 describe('QuizService', () => {
     let service: QuizService;
@@ -15,12 +14,12 @@ describe('QuizService', () => {
 
     const mockQuizRepository = {
         save: jest.fn(),
-        findByQuizSetId: jest.fn(),
+        findBy: jest.fn(),
     };
 
     const mockQuizSetRepository = {
         save: jest.fn(),
-        findOneById: jest.fn(),
+        findOneBy: jest.fn(),
     };
 
     beforeEach(async () => {
@@ -59,7 +58,7 @@ describe('QuizService', () => {
             const result = await service.createQuizSet(quizSetName);
 
             //then
-            expect(result).toEqual(1);
+            expect(result.id).toEqual(1);
         });
 
         it('quizSetRepository.save가 에러 발생한다.', async () => {
@@ -73,17 +72,19 @@ describe('QuizService', () => {
     });
 
     describe('createQuiz', () => {
-        it('새로운 퀴즈를 생성한다', async () => {
+        it('새로운 퀴즈를 하나 생성한다', async () => {
             //given
             const quizSetId = 1;
-            const dto = {
-                question: '퀴즈 질문',
-                answer: '퀴즈 정답',
-                playtime: 1000,
-                quizType: QUIZ_TYPE.SHORT_ANSWER,
-            } as CreateQuizDto;
+            const dto = [
+                {
+                    question: '퀴즈 질문',
+                    answer: '퀴즈 정답',
+                    playTime: 1000,
+                    quizType: QUIZ_TYPE.SHORT_ANSWER,
+                },
+            ] as CreateQuizRequestDto[];
             const quiz = {
-                ...dto,
+                ...dto[0],
                 id: 1,
                 quizSet: {
                     id: quizSetId,
@@ -91,46 +92,91 @@ describe('QuizService', () => {
                 },
             };
 
-            mockQuizSetRepository.findOneById.mockResolvedValue(quizSetId);
-            dto.toEntity = jest.fn().mockReturnValue(quiz);
+            mockQuizSetRepository.findOneBy.mockResolvedValue(quizSetId);
+            dto[0].toEntity = jest.fn().mockReturnValue(quiz);
             mockQuizRepository.save.mockResolvedValue(quiz);
 
             //when
-            const result = await service.createQuiz(1, dto);
+            const result = await service.createQuizzes(1, dto);
 
             //then
-            expect(dto.toEntity).toHaveBeenCalledTimes(1);
-            expect(dto.toEntity).toHaveBeenCalledWith(quizSetId);
+            expect(dto[0].toEntity).toHaveBeenCalledTimes(1);
+            expect(dto[0].toEntity).toHaveBeenCalledWith(quizSetId);
 
             expect(mockQuizRepository.save).toHaveBeenCalledTimes(1);
-            expect(mockQuizRepository.save).toHaveBeenCalledWith(quiz);
+            expect(mockQuizRepository.save).toHaveBeenCalledWith([quiz]);
+        });
+
+        it('새로운 퀴즈를 여러 개를 생성한다', async () => {
+            //given
+            const quizSetId = 1;
+            const dto = [
+                {
+                    question: '퀴즈 질문1',
+                    answer: '퀴즈 정답1',
+                    playTime: 1000,
+                    quizType: QUIZ_TYPE.SHORT_ANSWER,
+                },
+                {
+                    question: '퀴즈 질문2',
+                    answer: '퀴즈 정답2',
+                    playTime: 1000,
+                    quizType: QUIZ_TYPE.SHORT_ANSWER,
+                },
+            ] as CreateQuizRequestDto[];
+
+            const quiz1 = {
+                ...dto[0],
+                id: 1,
+                quizSet: {
+                    id: quizSetId,
+                    name: '퀴즈셋 이름',
+                },
+            };
+            const quiz2 = {
+                ...dto[1],
+                id: 2,
+                quizSet: {
+                    id: quizSetId,
+                    name: '퀴즈셋 이름',
+                },
+            };
+
+            mockQuizSetRepository.findOneBy.mockResolvedValue(quizSetId);
+            dto[0].toEntity = jest.fn().mockReturnValue(quiz1);
+            dto[1].toEntity = jest.fn().mockReturnValue(quiz2);
+            mockQuizRepository.save.mockResolvedValue([quiz1, quiz2]);
+
+            //when
+            const result = await service.createQuizzes(1, dto);
+
+            //then
+            expect(dto[0].toEntity).toHaveBeenCalledTimes(1);
+            expect(dto[0].toEntity).toHaveBeenCalledWith(quizSetId);
+
+            expect(mockQuizRepository.save).toHaveBeenCalledTimes(1);
+            expect(mockQuizRepository.save).toHaveBeenCalledWith([quiz1, quiz2]);
         });
 
         it('QuizSetId가 존재하지 않는 경우', async () => {
             //given
             const quizSetId = 2;
-            const dto = {
-                question: '퀴즈 질문',
-                answer: '퀴즈 정답',
-                playtime: 1000,
-                quizType: QUIZ_TYPE.SHORT_ANSWER,
-            } as CreateQuizDto;
-            const quiz = {
-                ...dto,
-                id: 1,
-                quizSet: {
-                    id: quizSetId,
-                    name: '퀴즈셋 이름',
+            const dto = [
+                {
+                    question: '퀴즈 질문',
+                    answer: '퀴즈 정답',
+                    playTime: 1000,
+                    quizType: QUIZ_TYPE.SHORT_ANSWER,
                 },
-            };
+            ] as CreateQuizRequestDto[];
 
-            mockQuizSetRepository.findOneById.mockRejectedValue(
-                new NotFoundException(`해당 퀴즈셋을 찾을 수 없습니다.`),
-            );
+            mockQuizSetRepository.findOneBy.mockResolvedValue(null);
 
             //when
             //then
-            await expect(service.createQuiz(quizSetId, dto)).rejects.toThrow(NotFoundException);
+            await expect(service.createQuizzes(quizSetId, dto)).rejects.toThrow(
+                BadRequestException,
+            );
         });
     });
 
@@ -156,15 +202,15 @@ describe('QuizService', () => {
             const quizSetId = 1;
             const quizSet: QuizSet = { id: quizSetId, name: '퀴즈셋 이름' };
 
-            mockQuizSetRepository.findOneById.mockResolvedValue(quizSet);
-            mockQuizRepository.findByQuizSetId.mockResolvedValue(quizList);
+            mockQuizSetRepository.findOneBy.mockResolvedValue(quizSet);
+            mockQuizRepository.findBy.mockResolvedValue(quizList);
 
             //when
             const result = await service.getQuizzes(quizSetId);
 
             // then
-            expect(mockQuizSetRepository.findOneById).toHaveBeenCalledTimes(1);
-            expect(mockQuizRepository.findByQuizSetId).toHaveBeenCalledTimes(1);
+            expect(mockQuizSetRepository.findOneBy).toHaveBeenCalledTimes(1);
+            expect(mockQuizRepository.findBy).toHaveBeenCalledTimes(1);
             expect(result).toEqual(quizList);
         });
 
@@ -173,14 +219,14 @@ describe('QuizService', () => {
             const quizSetId = 2;
 
             // QuizSetId가 존재하지 않을 때 null 반환 설정
-            mockQuizSetRepository.findOneById.mockResolvedValue(null);
+            mockQuizSetRepository.findOneBy.mockResolvedValue(null);
 
             // when & then
-            await expect(service.getQuizzes(quizSetId)).rejects.toThrow(NotFoundException);
+            await expect(service.getQuizzes(quizSetId)).rejects.toThrow(BadRequestException);
 
             // Mock 함수 호출 검증
-            expect(mockQuizSetRepository.findOneById).toHaveBeenCalledWith(quizSetId);
-            expect(mockQuizRepository.findByQuizSetId).not.toHaveBeenCalled();
+            expect(mockQuizSetRepository.findOneBy).toHaveBeenCalledWith({ id: quizSetId });
+            expect(mockQuizRepository.findBy).not.toHaveBeenCalled();
         });
     });
 });

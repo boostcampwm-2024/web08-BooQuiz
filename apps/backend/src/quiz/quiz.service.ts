@@ -16,27 +16,33 @@ export class QuizService {
         private quizSetRepository: QuizSetRepository,
     ) {}
 
-    async createQuizSet(quizSetName: string) {
-        const { id } = await this.quizSetRepository.save(new QuizSet(quizSetName));
-        return id;
+    async createQuizSet(name: string): Promise<CreateQuizSetResponseDto> {
+        const { id } = await this.quizSetRepository.save({ name });
+        return { id };
     }
 
-    async createQuiz(quizSetId: number, createQuizDto: CreateQuizDto) {
-        const quizSet = await this.quizSetRepository.findOneById(quizSetId);
+    async createQuizzes(quizSetId: number, createQuizDto: CreateQuizRequestDto[]) {
+        const quizSet = await this.quizSetRepository.findOneBy({ id: quizSetId });
         if (!quizSet) {
-            throw new NotFoundException(`해당 퀴즈셋을 찾을 수 없습니다.`);
+            throw new BadRequestException(`해당 퀴즈셋을 찾을 수 없습니다.`);
         }
 
         const quiz = createQuizDto.toEntity(quizSet);
         await this.quizRepository.save(quiz);
+        const quizzes = createQuizDto.map((dto) => {
+            return dto.toEntity(quizSet);
+        });
+
+        await this.quizRepository.save(quizzes);
     }
 
     async getQuizzes(quizSetId: number) {
-        const quizSet = await this.quizSetRepository.findOneById(quizSetId);
+        const quizSet = await this.quizSetRepository.findOneBy({ id: quizSetId });
         if (!quizSet) {
-            throw new NotFoundException(`해당 퀴즈셋을 찾을 수 없습니다.`);
+            throw new BadRequestException(`해당 퀴즈셋을 찾을 수 없습니다.`);
         }
 
-        return await this.quizRepository.findByQuizSetId(quizSetId);
+        const quizzes = await this.quizRepository.findBy({ quizSet: quizSet });
+        return quizzes.map((quiz) => ({ ...quiz }));
     }
 }
