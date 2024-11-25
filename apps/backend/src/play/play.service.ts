@@ -15,6 +15,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { RuntimeException } from '@nestjs/core/errors/exceptions';
 import { clearTimeout } from 'node:timers';
 import { Player } from '../quiz-zone/entities/player.entity';
+import { CurrentQuizResultDto } from './dto/current-quiz-result.dto';
 
 @Injectable()
 export class PlayService {
@@ -67,24 +68,9 @@ export class PlayService {
      */
     async playNextQuiz(quizZoneId: string, timeoutHandle: Function) {
         const quizZone = await this.quizZoneService.findOne(quizZoneId);
-        const { players, intervalTime, currentQuizIndex } = quizZone;
+        const { players, intervalTime } = quizZone;
 
-        const currentQuizResult = {};
-
-        if (currentQuizIndex === -1) {
-            currentQuizResult['answer'] = undefined;
-            currentQuizResult['totalPlayerCount'] = 0;
-            currentQuizResult['correctPlayerCount'] = 0;
-        }
-
-        if (currentQuizIndex >= 0) {
-            const answer = quizZone.quizzes.at(currentQuizIndex).answer;
-            currentQuizIndex['answer'] = answer;
-            currentQuizIndex['totalPlayerCount'] = players.size;
-            currentQuizIndex['correctPlayerCount'] = [...players.values()].filter(
-                (player) => player.submits[currentQuizIndex].answer === answer,
-            ).length;
-        }
+        const currentQuizResult = this.getCurrentQuizResult(quizZone);
 
         const nextQuiz = await this.nextQuiz(quizZoneId);
 
@@ -123,6 +109,28 @@ export class PlayService {
         };
     }
 
+    private getCurrentQuizResult(quizZone: QuizZone): CurrentQuizResultDto {
+        const { players, currentQuizIndex } = quizZone;
+
+        const currentQuizResult = {} as CurrentQuizResultDto;
+
+        if (currentQuizIndex === -1) {
+            currentQuizResult['answer'] = undefined;
+            currentQuizResult['totalPlayerCount'] = 0;
+            currentQuizResult['correctPlayerCount'] = 0;
+        }
+
+        if (currentQuizIndex >= 0) {
+            const answer = quizZone.quizzes.at(currentQuizIndex).answer;
+            currentQuizIndex['answer'] = answer;
+            currentQuizIndex['totalPlayerCount'] = players.size;
+            currentQuizIndex['correctPlayerCount'] = [...players.values()].filter(
+                (player) => player.submits[currentQuizIndex].answer === answer,
+            ).length;
+        }
+
+        return currentQuizResult;
+    }
     /**
      * 퀴즈 존에서 다음 퀴즈를 불러오고 퀴즈 타이밍을 업데이트합니다.
      * @param quizZoneId - 퀴즈 존 ID
