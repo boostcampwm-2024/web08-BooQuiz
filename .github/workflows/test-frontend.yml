@@ -1,0 +1,39 @@
+name: frontend test
+
+on:
+  pull_request:
+    branches: [develop, main]
+    paths:
+      - apps/frontend/**
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    name: test frontend
+    environment: ${{ github.base_ref == 'main' && 'prod' || 'staging' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'node'
+
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Install root dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Build frontend
+        working-directory: apps/frontend
+        env:
+          VITE_API_URL: ${{secrets.VITE_API_URL}}
+          VITE_WS_URL: ${{secrets.VITE_WS_URL}}
+        run: pnpm run build
+
+      - name: Run tests for frontend
+        working-directory: apps/frontend
+        run: pnpm test
