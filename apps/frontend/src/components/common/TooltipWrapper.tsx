@@ -21,8 +21,8 @@ const TooltipWrapper = ({
     return (
         <TooltipProvider>
             <Tooltip delayDuration={delayDuration}>
-                <TooltipTrigger asChild>
-                    <div> {children}</div>
+                <TooltipTrigger asChild type={type}>
+                    {children}
                 </TooltipTrigger>
                 <TooltipContent
                     side={side}
