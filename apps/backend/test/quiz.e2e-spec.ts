@@ -11,7 +11,6 @@ import { QuizSet } from '../src/quiz/entity/quiz-set.entity';
 import { initializeTransactionalContext } from 'typeorm-transactional';
 import { QUIZ_TYPE } from '../src/common/constants';
 import { CreateQuizRequestDto, QuizDetailsDto } from '../src/quiz/dto/create-quiz-request.dto';
-import { CreateQuizSetRequestDto } from '../src/quiz/dto/create-quiz-set-request.dto';
 import { UpdateQuizRequestDto } from '../src/quiz/dto/update-quiz-request.dto';
 import { beforeEach } from 'node:test';
 
