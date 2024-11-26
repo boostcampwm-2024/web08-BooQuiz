@@ -1,7 +1,7 @@
-name: backend test
+name: backend deploy
 
 on:
-  pull_request:
+  push:
     branches: [develop, main]
     paths:
         - apps/backend/**
@@ -38,7 +38,7 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     name: push-docker
-    environment: ${{ github.base_ref == 'main' && 'prod' || 'staging' }}
+    environment: ${{ github.ref == 'refs/heads/main' && 'prod' || 'staging' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -74,7 +74,7 @@ jobs:
     needs: push-docker
     runs-on: ubuntu-latest
     name: Deploy Backend
-    environment: ${{ github.base_ref == 'main' && 'prod' || 'staging' }}
+    environment: ${{ github.ref == 'refs/heads/main' && 'prod' || 'staging' }}
     steps:
       - name: Set up SSH agent and add SSH key
         run: |

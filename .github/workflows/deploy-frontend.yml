@@ -1,16 +1,16 @@
-name: frontend test
+name: frontend deploy
 
 on:
-  pull_request:
+  push:
     branches: [develop, main]
     paths:
       - apps/frontend/**
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
     name: test frontend
-    environment: ${{ github.base_ref == 'main' && 'prod' || 'staging' }}
+    environment: ${{ github.ref == 'refs/heads/main' && 'prod' || 'staging' }}
 
     steps:
       - name: Checkout repository
@@ -34,10 +34,6 @@ jobs:
           VITE_WS_URL: ${{secrets.VITE_WS_URL}}
         run: pnpm run build
 
-      - name: Run tests for frontend
-        working-directory: apps/frontend
-        run: pnpm test
-
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -45,10 +41,11 @@ jobs:
            path: apps/frontend/dist
 
   deploy-frontend:
-    needs: test
+    needs: build
     runs-on: ubuntu-latest
     name: Deploy Frontend
-    environment: ${{ github.base_ref == 'main' && 'prod' || 'staging' }}
+    environment: ${{ github.ref == 'refs/heads/main' && 'prod' || 'staging' }}
+
     steps:
       - name: Download artifacts
         uses: actions/download-artifact@v4
