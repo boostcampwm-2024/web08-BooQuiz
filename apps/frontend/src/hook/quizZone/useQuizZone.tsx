@@ -1,13 +1,23 @@
 import { useReducer } from 'react';
 import useWebSocket from '@/hook/useWebSocket.tsx';
-import { CurrentQuiz, Player, QuizZone, QuizZoneResultState } from '@/types/quizZone.types.ts';
+import {
+    NextQuizResponse,
+    Player,
+    QuizZone,
+    QuizZoneResultState,
+    SomeoneSubmitResponse,
+    SubmitResponse,
+} from '@/types/quizZone.types.ts';
 
 export type QuizZoneAction =
     | { type: 'init'; payload: QuizZone }
     | { type: 'join'; payload: { players: Player[] } }
+    | { type: 'someone_join'; payload: Player }
+    | { type: 'someone_leave'; payload: string }
     | { type: 'start'; payload: undefined }
-    | { type: 'submit'; payload: undefined }
-    | { type: 'nextQuiz'; payload: CurrentQuiz }
+    | { type: 'submit'; payload: SubmitResponse }
+    | { type: 'someone_submit'; payload: SomeoneSubmitResponse }
+    | { type: 'nextQuiz'; payload: NextQuizResponse }
     | { type: 'playQuiz'; payload: undefined }
     | { type: 'quizTimeout'; payload: undefined }
     | { type: 'finish'; payload: undefined }
@@ -42,6 +52,10 @@ const quizZoneReducer: Reducer<QuizZone, QuizZoneAction> = (state, action) => {
             };
         case 'join':
             return { ...state, players: payload.players };
+        case 'someone_join':
+            return { ...state, players: [...(state.players ?? []), payload] };
+        case 'someone_leave':
+            return { ...state, players: state.players?.filter((player) => player.id !== payload) };
         case 'start':
             return {
                 ...state,
@@ -56,7 +70,29 @@ const quizZoneReducer: Reducer<QuizZone, QuizZoneAction> = (state, action) => {
                     state: 'SUBMIT',
                 },
             };
+        case 'someone_submit':
+            const currentQuizResult = state.currentQuizResult ?? {
+                answer: '',
+                totalPlayerCount: 1,
+                submittedCount: 0,
+                correctPlayerCount: 0,
+                fastPlayerIds: [],
+            };
+            const { fastPlayerIds } = currentQuizResult;
+            const { clientId, submittedCount } = payload;
+
+            return {
+                ...state,
+                currentQuizResult: {
+                    ...currentQuizResult,
+                    fastPlayerIds:
+                        fastPlayerIds.length > 3 ? fastPlayerIds : [...fastPlayerIds, clientId],
+                    submittedCount,
+                },
+            };
         case 'nextQuiz':
+            const { nextQuiz } = payload;
+
             return {
                 ...state,
                 stage: 'IN_PROGRESS',
@@ -66,12 +102,16 @@ const quizZoneReducer: Reducer<QuizZone, QuizZoneAction> = (state, action) => {
                 },
                 currentQuiz: {
                     ...state.currentQuiz,
-                    question: atob(payload.question),
-                    currentIndex: payload.currentIndex,
-                    playTime: payload.playTime,
-                    startTime: payload.startTime,
-                    deadlineTime: payload.deadlineTime,
+                    question: atob(nextQuiz.question),
+                    currentIndex: nextQuiz.currentIndex,
+                    playTime: nextQuiz.playTime,
+                    startTime: nextQuiz.startTime,
+                    deadlineTime: nextQuiz.deadlineTime,
                     type: 'SHORT',
+                },
+                currentQuizResult: {
+                    ...state.currentQuizResult,
+                    ...payload.currentQuizResult,
                 },
             };
         case 'playQuiz':
@@ -169,13 +209,14 @@ const useQuizZone = () => {
             payload: data,
         });
     };
-    const wsUrl = import.meta.env.VITE_WS_URL;
 
-    const { sendMessage, closeConnection } = useWebSocket(`${wsUrl}/play`, messageHandler);
+    const wsUrl = `${import.meta.env.VITE_WS_URL}/play`;
+    const { beginConnection, sendMessage, closeConnection } = useWebSocket(messageHandler);
 
     //initialize QuizZOne
     const initQuizZoneData = (initialData: any) => {
         dispatch({ type: 'init', payload: initialData });
+        beginConnection(wsUrl);
     };
 
     //퀴즈 시작 함수
