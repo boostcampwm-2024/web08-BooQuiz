@@ -111,7 +111,6 @@ describe('QuizZoneService', () => {
                 currentQuizStartTime: 0,
                 currentQuizDeadlineTime: 0,
                 intervalTime: 5000,
-                submitCount: 0,
             };
 
             mockQuizZoneRepository.get.mockResolvedValue(mockQuizZone);
@@ -163,7 +162,6 @@ describe('QuizZoneService', () => {
                 currentQuizStartTime: 0,
                 currentQuizDeadlineTime: 0,
                 intervalTime: 5000,
-                submitCount: 0,
             };
 
             mockQuizZoneRepository.get.mockResolvedValue(mockQuizZone);
@@ -217,7 +215,6 @@ describe('QuizZoneService', () => {
                 currentQuizStartTime: 0,
                 currentQuizDeadlineTime: 0,
                 intervalTime: 5000,
-                submitCount: 0,
             };
 
             mockQuizZoneRepository.get.mockResolvedValue(mockQuizZone);
@@ -269,7 +266,6 @@ describe('QuizZoneService', () => {
                 currentQuizStartTime: 0,
                 currentQuizDeadlineTime: 0,
                 intervalTime: 5000,
-                submitCount: 0,
             };
 
             mockQuizZoneRepository.get.mockResolvedValue(mockQuizZone);
@@ -305,7 +301,6 @@ describe('QuizZoneService', () => {
                 currentQuizStartTime: Date.now(),
                 currentQuizDeadlineTime: Date.now() + playTime,
                 intervalTime: 5000,
-                submitCount: 0,
             };
 
             mockQuizZoneRepository.get.mockResolvedValue(mockQuizZone);
@@ -357,7 +352,6 @@ describe('QuizZoneService', () => {
                 currentQuizStartTime: Date.now(),
                 currentQuizDeadlineTime: Date.now() + playTime,
                 intervalTime: 5000,
-                submitCount: 0,
             };
 
             mockQuizZoneRepository.get.mockResolvedValue(mockQuizZone);
@@ -406,7 +400,6 @@ describe('QuizZoneService', () => {
                 currentQuizStartTime: 0,
                 currentQuizDeadlineTime: 0,
                 intervalTime: 5000,
-                submitCount: 0,
             };
 
             mockQuizZoneRepository.get.mockResolvedValue(mockQuizZone);
@@ -484,7 +477,6 @@ describe('QuizZoneService', () => {
                 currentQuizStartTime: 0,
                 currentQuizDeadlineTime: 0,
                 intervalTime: 5000,
-                submitCount: 0,
             };
 
             mockQuizZoneRepository.get.mockResolvedValue(mockQuizZone);
@@ -523,7 +515,6 @@ describe('QuizZoneService', () => {
                 currentQuizStartTime: 0,
                 currentQuizDeadlineTime: 0,
                 intervalTime: 5000,
-                submitCount: 0,
             };
 
             mockQuizZoneRepository.get.mockResolvedValue(mockQuizZone);
@@ -549,7 +540,6 @@ describe('QuizZoneService', () => {
                 currentQuizStartTime: 0,
                 currentQuizDeadlineTime: 0,
                 intervalTime: 5000,
-                submitCount: 0,
             };
 
             mockQuizZoneRepository.get.mockResolvedValue(mockQuizZone);
@@ -594,7 +584,6 @@ describe('QuizZoneService', () => {
                 currentQuizStartTime: 0,
                 currentQuizDeadlineTime: 0,
                 intervalTime: 5000,
-                submitCount: 0,
             };
 
             mockQuizZoneRepository.get.mockResolvedValue(mockQuizZone);
