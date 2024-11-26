@@ -295,13 +295,39 @@ export class PlayService {
         this.clearQuizZoneHandle(quizZoneId);
 
         await this.quizZoneService.clearQuizZone(quizZoneId);
+        const ranks = this.getRanking(players);
 
         return [...players.values()].map(({ id, score, submits }) => ({
             id,
             score,
             submits,
             quizzes,
+            ranks,
         }));
+    }
+
+    private getRanking(players: Map<string, Player>) {
+        const sortedPlayers = [...players.values()].sort((a, b) => b.score - a.score);
+        let currentRank = 1;
+        let currentScore = sortedPlayers[0]?.score;
+        let sameRankCount = -1; // 첫 번째 플레이어를 위해 -1로 시작
+
+        return sortedPlayers.map((player) => {
+            if (player.score < currentScore) {
+                currentRank = currentRank + sameRankCount + 1;
+                currentScore = player.score;
+                sameRankCount = 0;
+            } else {
+                sameRankCount++;
+            }
+
+            return {
+                id: player.id,
+                nickname: player.nickname,
+                score: player.score,
+                ranking: currentRank,
+            };
+        });
     }
 
     async leaveQuizZone(quizZoneId: string, clientId: string) {

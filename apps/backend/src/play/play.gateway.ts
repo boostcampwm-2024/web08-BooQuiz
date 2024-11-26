@@ -229,8 +229,8 @@ export class PlayGateway implements OnGatewayInit {
         const summaries = await this.playService.summaryQuizZone(quizZoneId);
 
         await Promise.all(
-            summaries.map(async ({ id, score, submits, quizzes }) => {
-                this.sendToClient(id, 'summary', { score, submits, quizzes });
+            summaries.map(async ({ id, score, submits, quizzes, ranks }) => {
+                this.sendToClient(id, 'summary', { score, submits, quizzes, ranks });
                 this.clearClient(id, 'finish');
             }),
         );

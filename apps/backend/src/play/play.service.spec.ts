@@ -387,6 +387,7 @@ describe('PlayService', () => {
                 state: PLAYER_STATE.SUBMIT,
                 score: 2,
                 submits: mockSubmits,
+                nickname: 'player1',
             };
 
             const quizZoneWithResults = {
@@ -421,6 +422,10 @@ describe('PlayService', () => {
                     score: 2,
                     submits: mockSubmits,
                     quizzes: mockQuizZone.quizzes,
+                    ranks: [
+                        { id: 'player-1', nickname: 'player1', score: 2, ranking: 1 },
+                        { id: 'player-2', nickname: 'player2', score: 1, ranking: 2 },
+                    ],
                 },
                 {
                     id: 'player-2',
@@ -436,10 +441,67 @@ describe('PlayService', () => {
                         }),
                     ]),
                     quizzes: mockQuizZone.quizzes,
+                    ranks: [
+                        { id: 'player-1', nickname: 'player1', score: 2, ranking: 1 },
+                        { id: 'player-2', nickname: 'player2', score: 1, ranking: 2 },
+                    ],
                 },
             ]);
 
             expect(quizZoneService.clearQuizZone).toHaveBeenCalledWith('test-zone');
+        });
+
+        it('동점자가 있는 경우 동일한 순위가 부여되어야 합니다', async () => {
+            const quizZoneWithTiedScores = {
+                ...mockQuizZone,
+                stage: QUIZ_ZONE_STAGE.RESULT,
+                players: new Map([
+                    [
+                        'player-1',
+                        {
+                            ...mockPlayer,
+                            id: 'player-1',
+                            nickname: 'player1',
+                            score: 2,
+                            submits: [],
+                        },
+                    ],
+                    [
+                        'player-2',
+                        {
+                            ...mockPlayer,
+                            id: 'player-2',
+                            nickname: 'player2',
+                            score: 2,
+                            submits: [],
+                        },
+                    ],
+                    [
+                        'player-3',
+                        {
+                            ...mockPlayer,
+                            id: 'player-3',
+                            nickname: 'player3',
+                            score: 1,
+                            submits: [],
+                        },
+                    ],
+                ]),
+            };
+
+            quizZoneService.findOne.mockResolvedValue(quizZoneWithTiedScores);
+
+            const result = await service.summaryQuizZone('test-zone');
+
+            const expectedRanks = [
+                { id: 'player-1', nickname: 'player1', score: 2, ranking: 1 },
+                { id: 'player-2', nickname: 'player2', score: 2, ranking: 1 },
+                { id: 'player-3', nickname: 'player3', score: 1, ranking: 3 },
+            ];
+
+            expect(result[0].ranks).toEqual(expectedRanks);
+            expect(result[1].ranks).toEqual(expectedRanks);
+            expect(result[2].ranks).toEqual(expectedRanks);
         });
 
         it('플레이어가 없는 경우 빈 배열을 반환해야 합니다', async () => {
@@ -476,6 +538,8 @@ describe('PlayService', () => {
                         'player-1',
                         {
                             ...mockPlayer,
+                            id: 'player-1',
+                            nickname: 'player1',
                             score: 1,
                             submits: mockPlayer1Submits,
                         },
@@ -497,18 +561,25 @@ describe('PlayService', () => {
 
             const result = await service.summaryQuizZone('test-zone');
 
+            const expectedRanks = [
+                { id: 'player-1', nickname: 'player1', score: 1, ranking: 1 },
+                { id: 'player-2', nickname: 'player2', score: 1, ranking: 1 },
+            ];
+
             expect(result).toEqual([
                 {
                     id: 'player-1',
                     score: 1,
                     submits: mockPlayer1Submits,
                     quizzes: mockQuizZone.quizzes,
+                    ranks: expectedRanks,
                 },
                 {
                     id: 'player-2',
                     score: 1,
                     submits: mockPlayer2Submits,
                     quizzes: mockQuizZone.quizzes,
+                    ranks: expectedRanks,
                 },
             ]);
         });
