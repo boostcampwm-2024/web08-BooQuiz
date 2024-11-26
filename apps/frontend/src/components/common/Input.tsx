@@ -12,6 +12,7 @@ interface InputProps {
     isUnderline?: boolean;
     onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
     isAutoFocus?: boolean;
+    className?: string;
 }
 
 /**
@@ -59,10 +60,12 @@ const Input = ({
     isUnderline = false,
     onKeyDown,
     isAutoFocus = false,
+    className,
     ...rest
 }: InputProps) => {
+    const classes = className ? `input-wrapper ${className}` : 'input-wrapper';
     return (
-        <div className="input-wrapper">
+        <div className={classes}>
             <label htmlFor={name}>{label}</label>
             <input
                 autoFocus={isAutoFocus}

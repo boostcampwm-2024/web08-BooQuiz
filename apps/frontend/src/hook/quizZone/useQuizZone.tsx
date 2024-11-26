@@ -1,6 +1,12 @@
-import { useReducer } from 'react';
+import { useEffect, useReducer } from 'react';
 import useWebSocket from '@/hook/useWebSocket.tsx';
-import { CurrentQuiz, Player, QuizZone, QuizZoneResultState } from '@/types/quizZone.types.ts';
+import {
+    CurrentQuiz,
+    Player,
+    QuizZone,
+    QuizZoneResultState,
+    ChatMessage,
+} from '@/types/quizZone.types.ts';
 
 export type QuizZoneAction =
     | { type: 'init'; payload: QuizZone }
@@ -11,7 +17,8 @@ export type QuizZoneAction =
     | { type: 'playQuiz'; payload: undefined }
     | { type: 'quizTimeout'; payload: undefined }
     | { type: 'finish'; payload: undefined }
-    | { type: 'summary'; payload: QuizZoneResultState };
+    | { type: 'summary'; payload: QuizZoneResultState }
+    | { type: 'chat'; payload: ChatMessage };
 
 type Reducer<S, A> = (state: S, action: A) => S;
 
@@ -106,6 +113,11 @@ const quizZoneReducer: Reducer<QuizZone, QuizZoneAction> = (state, action) => {
                 submits: payload.submits,
                 quizzes: payload.quizzes,
             };
+        case 'chat':
+            return {
+                ...state,
+                chatMessages: [...(state.chatMessages || []), payload],
+            };
         default:
             return state;
     }
@@ -159,11 +171,13 @@ const useQuizZone = () => {
         score: 0,
         submits: [],
         quizzes: [],
+        chatMessages: [],
     };
     const [quizZoneState, dispatch] = useReducer(quizZoneReducer, initialQuizZoneState);
 
     const messageHandler = (event: MessageEvent) => {
         const { event: QuizZoneEvent, data } = JSON.parse(event.data);
+
         dispatch({
             type: QuizZoneEvent,
             payload: data,
@@ -212,6 +226,10 @@ const useQuizZone = () => {
         sendMessage(message);
     };
 
+    const sendChat = (chatMessage: any) => {
+        sendMessage(JSON.stringify({ event: 'chat', data: chatMessage }));
+    };
+
     return {
         quizZoneState,
         initQuizZoneData,
@@ -221,6 +239,7 @@ const useQuizZone = () => {
         closeConnection,
         exitQuiz,
         joinQuizZone,
+        sendChat,
     };
 };
 

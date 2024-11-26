@@ -21,6 +21,7 @@ export interface QuizZone {
     quizzes?: Quiz[];
     submits?: SubmittedQuiz[];
     isLastQuiz?: boolean;
+    chatMessages?: ChatMessage[];
 }
 
 export interface QuizZoneLobbyState {
@@ -64,4 +65,10 @@ export interface QuizZoneResultState {
     score: number;
     submits: SubmittedQuiz[];
     quizzes: Quiz[];
+}
+
+export interface ChatMessage {
+    clientId: string;
+    nickname: string;
+    message: string;
 }
