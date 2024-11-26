@@ -2,21 +2,37 @@ import { QuizZone } from '@/types/quizZone.types';
 import QuizWaiting from './QuizWaiting';
 import QuizInProgress from './QuizInProgress';
 import QuizCompleted from './QuizCompleted';
+import { ChatMessage } from '@/types/quizZone.types';
 
 interface QuizZoneInProgressProps {
     quizZoneState: QuizZone;
+    sendChat: (chatMessage: ChatMessage) => void;
     submitAnswer: (answer: string) => void;
     playQuiz: () => void;
 }
 
-const QuizZoneInProgress = ({ quizZoneState, submitAnswer, playQuiz }: QuizZoneInProgressProps) => {
-    const { currentPlayer, currentQuiz } = quizZoneState;
-    const { state } = currentPlayer;
+const QuizZoneInProgress = ({
+    quizZoneState,
+    sendChat,
+    submitAnswer,
+    playQuiz,
+}: QuizZoneInProgressProps) => {
+    const { currentPlayer, currentQuiz, chatMessages } = quizZoneState;
+    const { id, nickname, state } = currentPlayer;
     const { playTime, startTime } = currentQuiz ?? {};
 
     switch (state) {
         case 'WAIT':
-            return <QuizWaiting startTime={startTime!} playQuiz={playQuiz} />;
+            return (
+                <QuizWaiting
+                    id={id}
+                    nickname={nickname}
+                    chatMessages={chatMessages ?? []}
+                    startTime={startTime!}
+                    playQuiz={playQuiz}
+                    sendChat={sendChat}
+                />
+            );
         case 'PLAY':
             return (
                 <QuizInProgress
@@ -28,6 +44,10 @@ const QuizZoneInProgress = ({ quizZoneState, submitAnswer, playQuiz }: QuizZoneI
         case 'SUBMIT':
             return (
                 <QuizCompleted
+                    id={id}
+                    nickname={nickname}
+                    chatMessages={chatMessages ?? []}
+                    sendChat={sendChat}
                     isLastQuiz={quizZoneState.isLastQuiz ?? false}
                     deadlineTime={quizZoneState.currentQuiz?.deadlineTime ?? 0}
                 />

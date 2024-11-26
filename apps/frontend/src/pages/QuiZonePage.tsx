@@ -33,6 +33,7 @@ const QuizZonePage = () => {
         playQuiz,
         exitQuiz,
         joinQuizZone,
+        sendChat,
     } = useQuizZone();
 
     const initQuizZone = async () => {
@@ -71,6 +72,7 @@ const QuizZonePage = () => {
                         quizZoneId={quizZoneId ?? ''}
                         startQuiz={startQuiz}
                         exitQuiz={exitQuiz}
+                        sendChat={sendChat}
                     />
                 );
             case 'IN_PROGRESS':
@@ -78,6 +80,7 @@ const QuizZonePage = () => {
                     <QuizZoneInProgress
                         quizZoneState={quizZoneState}
                         submitAnswer={submitQuiz}
+                        sendChat={sendChat}
                         playQuiz={playQuiz}
                     />
                 );
@@ -88,7 +91,6 @@ const QuizZonePage = () => {
         }
     };
 
-    
     return (
         <div>
             {showError && (

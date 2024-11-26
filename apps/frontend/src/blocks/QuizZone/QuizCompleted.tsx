@@ -1,14 +1,27 @@
 import ContentBox from '@/components/common/ContentBox';
 import Typography from '@/components/common/Typogrpahy';
+import ChatBox from '@/components/ui/chat-box';
+import { ChatMessage } from '@/types/quizZone.types';
 import { useTimer } from '@/hook/useTimer';
 import { useEffect } from 'react';
 
 interface QuizCompletedProps {
+    id: string;
+    nickname: string;
+    chatMessages: ChatMessage[];
+    sendChat: (chatMessage: ChatMessage) => void;
     isLastQuiz: boolean;
     deadlineTime: number;
 }
 
-const QuizCompleted = ({ isLastQuiz, deadlineTime }: QuizCompletedProps) => {
+const QuizCompleted = ({
+    id,
+    nickname,
+    chatMessages,
+    sendChat,
+    isLastQuiz,
+    deadlineTime,
+}: QuizCompletedProps) => {
     const currentTime = new Date().getTime();
     const remainingPrepTime = Math.max(0, deadlineTime - currentTime) / 1000;
 
@@ -20,6 +33,7 @@ const QuizCompleted = ({ isLastQuiz, deadlineTime }: QuizCompletedProps) => {
     useEffect(() => {
         start();
     }, []);
+
     return (
         <div className="w-full h-screen flex flex-col items-center justify-center gap-4">
             <img width="200px" src="/BooQuizLogo.png" alt="BooQuiz Logo" />
@@ -48,6 +62,24 @@ const QuizCompleted = ({ isLastQuiz, deadlineTime }: QuizCompletedProps) => {
                             />
                         </div>
                     )}
+                </div>
+                <div className="w-full flex flex-col items-center gap-2">
+                    <Typography
+                        size="base"
+                        color="gray"
+                        text="퀴즈가 시작되면 문제를 풀 수 있습니다."
+                    />
+                    <Typography
+                        size="base"
+                        color="gray"
+                        text="다른 플레이어와 대화를 나눠보세요."
+                    />
+                    <ChatBox
+                        chatMessages={chatMessages ?? []}
+                        clientId={id}
+                        nickname={nickname}
+                        sendHandler={sendChat}
+                    />
                 </div>
             </ContentBox>
         </div>
