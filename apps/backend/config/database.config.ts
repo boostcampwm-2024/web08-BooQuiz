@@ -4,5 +4,5 @@ export default () => ({
     db_username: process.env.DB_USERNAME || 'root',
     db_password: process.env.DB_PASSWORD || '',
     db_database: process.env.DB_DATABASE || 'booquiz',
-    db_synchronize: process.env.DB_Synchronize === 'true',
+    db_synchronize: process.env.DB_SYNCHRONIZE === 'true',
 });
