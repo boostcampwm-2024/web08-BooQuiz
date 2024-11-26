@@ -6,6 +6,8 @@ import { QuizZone } from '../quiz-zone/entities/quiz-zone.entity';
 import { SubmittedQuiz } from '../quiz-zone/entities/submitted-quiz.entity';
 import { PLAYER_STATE, QUIZ_ZONE_STAGE } from '../common/constants';
 import { RuntimeException } from '@nestjs/core/errors/exceptions';
+import { describe } from 'node:test';
+import exp from 'node:constants';
 
 describe('PlayService', () => {
     let service: PlayService;
@@ -509,6 +511,47 @@ describe('PlayService', () => {
                     quizzes: mockQuizZone.quizzes,
                 },
             ]);
+        });
+    });
+
+    describe('changeNickname', () => {
+        it('Lobby에 있는 wait상태의 참여자는 닉네임을 변경할 수 있다.', async () => {
+            const players = new Map([
+                ['player-1', mockPlayer],
+                ['player-2', { ...mockPlayer, id: 'player-2', nickname: 'player2' }],
+            ]);
+            const mockQuizZoneWithPlayers = {
+                ...mockQuizZone,
+                players: players,
+            };
+            quizZoneService.findOne.mockResolvedValue(mockQuizZoneWithPlayers);
+
+            const result = await service.changeNickname('test-zone', 'player-2', 'new-nickname');
+            expect(players.get('player-2').nickname).toEqual('new-nickname');
+        });
+
+        it('퀴즈존이 Lobby, 사용자는 Wait 상태에서만 닉네임을 변경할 수 있다.', async () => {
+            const mockQuizZoneWithPlayers = {
+                ...mockQuizZone,
+                stage: QUIZ_ZONE_STAGE.IN_PROGRESS,
+                players: new Map([
+                    ['player-1', mockPlayer],
+                    [
+                        'player-2',
+                        {
+                            ...mockPlayer,
+                            id: 'player-2',
+                            nickname: 'player2',
+                            state: PLAYER_STATE.WAIT,
+                        },
+                    ],
+                ]),
+            };
+            quizZoneService.findOne.mockResolvedValue(mockQuizZoneWithPlayers);
+
+            await expect(
+                service.changeNickname('test-zone', 'player-2', 'new-nickname'),
+            ).rejects.toThrow(new BadRequestException('현재 닉네임을 변경할 수 없습니다.'));
         });
     });
 

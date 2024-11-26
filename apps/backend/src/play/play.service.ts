@@ -339,4 +339,27 @@ export class PlayService {
         clearTimeout(submitHandle);
         this.plays.set(quizZoneId, undefined);
     }
+
+    async changeNickname(quizZoneId: string, clientId: string, changedNickname: string) {
+        const quizZone = await this.quizZoneService.findOne(quizZoneId);
+        const { players } = quizZone;
+
+        if (!players.has(clientId)) {
+            throw new NotFoundException('사용자 정보를 찾을 수 없습니다.');
+        }
+
+        const player = players.get(clientId);
+
+        if (player.state !== PLAYER_STATE.WAIT || quizZone.stage !== QUIZ_ZONE_STAGE.LOBBY) {
+            throw new BadRequestException('현재 닉네임을 변경할 수 없습니다.');
+        }
+
+        player.nickname = changedNickname;
+
+        return {
+            playerIds: [...players.values()]
+                .filter((player) => player.id !== clientId)
+                .map((player) => player.id),
+        };
+    }
 }
