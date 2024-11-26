@@ -326,6 +326,19 @@ export class PlayService {
         };
     }
 
+    async chatQuizZone(clientId: string, quizZoneId: string) {
+        const quizZone = await this.quizZoneService.findOne(quizZoneId);
+        const { players } = quizZone;
+
+        if (players.get(clientId).state === PLAYER_STATE.PLAY) {
+            throw new BadRequestException('채팅을 제출한 플레이어 상태가 PLAY입니다.');
+        }
+
+        return [...players.values()]
+            .filter((player) => player.state !== PLAYER_STATE.PLAY)
+            .map((player) => player.id);
+    }
+
     private setQuizZoneHandle(quizZoneId: string, handle: Function, time: number) {
         this.plays.set(
             quizZoneId,
