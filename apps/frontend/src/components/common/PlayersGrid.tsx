@@ -49,7 +49,7 @@ const PlayersGrid = ({ players, hostId, className = '' }: PlayersGridProps) => {
     if (!players.length) {
         return (
             <div className="text-center py-8 text-gray-500">
-                <Typography text="아직 참가자가 없습니다" size="lg" />
+                <Typography text="아직 참가자가 없습니다" size="lg" color="blue" />
             </div>
         );
     }
