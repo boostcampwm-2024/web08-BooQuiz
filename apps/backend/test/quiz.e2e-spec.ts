@@ -10,7 +10,7 @@ import { Quiz } from '../src/quiz/entity/quiz.entitiy';
 import { QuizSet } from '../src/quiz/entity/quiz-set.entity';
 import { initializeTransactionalContext } from 'typeorm-transactional';
 import { QUIZ_TYPE } from '../src/common/constants';
-import { CreateQuizRequestDto } from '../src/quiz/dto/create-quiz-request.dto';
+import { CreateQuizRequestDto, QuizDetailsDto } from '../src/quiz/dto/create-quiz-request.dto';
 import { CreateQuizSetRequestDto } from '../src/quiz/dto/create-quiz-set-request.dto';
 import { UpdateQuizRequestDto } from '../src/quiz/dto/update-quiz-request.dto';
 import { beforeEach } from 'node:test';
@@ -86,30 +86,23 @@ describe('QuizController (e2e)', () => {
         await app.close();
     });
 
-    describe('createQuizSet', () => {
-        it('퀴즈셋 정상적으로 저장', async () => {
-            const dto = {
-                name: "퀴즈셋 이름 테스트"
-            } as CreateQuizSetRequestDto;
-
-            const response = await agent.post(`/quiz`).send(dto).expect(201);
-
-            expect(response.body).toEqual({
-                id: expect.any(Number),
-            });
-        });
-    })
 
     describe('createQuizzes', () => {
         it('새로운 퀴즈 추가 요청 성공', async () => {
             const quizSetId = 1;
 
-            const quizData = [{
-                question: '지브리는 뭘로 돈 벌게요?',
-                answer: '토토로',
-                playTime: 30000,
-                quizType: 'SHORT_ANSWER',
-            }] as CreateQuizRequestDto[];
+            const quizData = {
+                quizSetName: "퀴즈셋 이름",
+                quizDetails:
+                [
+                    {
+                        question: '지브리는 뭘로 돈 벌게요?',
+                        answer: '토토로',
+                        playTime: 30000,
+                        quizType: 'SHORT_ANSWER',
+                    },
+                ]
+            } as CreateQuizRequestDto;
 
             const response = await agent.post(`/quiz/${quizSetId}`).send(quizData).expect(201);
         });
@@ -118,11 +111,17 @@ describe('QuizController (e2e)', () => {
             const quizSetId = 3;
 
             const quizData = {
-                question: '테스트 퀴즈 질문',
-                answer: '테스트 정답',
-                playTime: 3000,
-                quizType: 'SHORT_ANSWER',
-            };
+                quizSetName: "퀴즈셋 이름",
+                quizDetails:
+                    [
+                        {
+                            question: '지브리는 뭘로 돈 벌게요?',
+                            answer: '토토로',
+                            playTime: 30000,
+                            quizType: 'SHORT_ANSWER',
+                        },
+                    ]
+            } as CreateQuizRequestDto;
 
             await agent.post(`/quiz/${quizSetId}`).send(quizData).expect(400);
         });

@@ -49,43 +49,23 @@ describe('QuizService', () => {
         jest.clearAllMocks();
     });
 
-    describe('createQuizSet', () => {
-        it('새로운 퀴즈셋을 생성한다', async () => {
-            //given
-            const quizSetName = '퀴즈셋 이름';
-            const quizSet = new QuizSet('퀴즈셋 이름');
-            quizSet.id = 1;
-            mockQuizSetRepository.save.mockResolvedValue({ id: quizSet.id });
-
-            //when
-            const result = await service.createQuizSet(quizSetName);
-
-            //then
-            expect(result.id).toEqual(1);
-        });
-
-        it('quizSetRepository.save가 에러 발생한다.', async () => {
-            //given
-            const quizSetName = '퀴즈셋 이름';
-            mockQuizSetRepository.save.mockRejectedValue(new Error('DB 오류'));
-
-            //when
-            await expect(service.createQuizSet(quizSetName)).rejects.toThrow('DB 오류');
-        });
-    });
 
     describe('createQuiz', () => {
         it('새로운 퀴즈를 하나 생성한다', async () => {
             //given
             const quizSetId = 1;
-            const dto = [
-                {
-                    question: '퀴즈 질문',
-                    answer: '퀴즈 정답',
-                    playTime: 1000,
-                    quizType: QUIZ_TYPE.SHORT_ANSWER,
-                },
-            ] as CreateQuizRequestDto[];
+            const dto = {
+                quizSetName: "퀴즈셋 이름",
+                quizDetails:
+                    [
+                        {
+                            question: '지브리는 뭘로 돈 벌게요?',
+                            answer: '토토로',
+                            playTime: 30000,
+                            quizType: 'SHORT_ANSWER',
+                        },
+                    ]
+            } as CreateQuizRequestDto;
             const quiz = {
                 ...dto[0],
                 id: 1,
@@ -96,15 +76,15 @@ describe('QuizService', () => {
             };
 
             mockQuizSetRepository.findOneBy.mockResolvedValue(quizSetId);
-            dto[0].toEntity = jest.fn().mockReturnValue(quiz);
+            dto.quizDetails[0].toEntity = jest.fn().mockReturnValue(quiz);
             mockQuizRepository.save.mockResolvedValue(quiz);
 
             //when
-            const result = await service.createQuizzes(1, dto);
+            const result = await service.createQuizzes(dto);
 
             //then
-            expect(dto[0].toEntity).toHaveBeenCalledTimes(1);
-            expect(dto[0].toEntity).toHaveBeenCalledWith(quizSetId);
+            expect(dto.quizDetails[0].toEntity).toHaveBeenCalledTimes(1);
+            expect(dto.quizDetails[0].toEntity).toHaveBeenCalledWith(quizSetId);
 
             expect(mockQuizRepository.save).toHaveBeenCalledTimes(1);
             expect(mockQuizRepository.save).toHaveBeenCalledWith([quiz]);
@@ -113,20 +93,18 @@ describe('QuizService', () => {
         it('새로운 퀴즈를 여러 개를 생성한다', async () => {
             //given
             const quizSetId = 1;
-            const dto = [
-                {
-                    question: '퀴즈 질문1',
-                    answer: '퀴즈 정답1',
-                    playTime: 1000,
-                    quizType: QUIZ_TYPE.SHORT_ANSWER,
-                },
-                {
-                    question: '퀴즈 질문2',
-                    answer: '퀴즈 정답2',
-                    playTime: 1000,
-                    quizType: QUIZ_TYPE.SHORT_ANSWER,
-                },
-            ] as CreateQuizRequestDto[];
+            const dto = {
+                quizSetName: "퀴즈셋 이름",
+                quizDetails:
+                    [
+                        {
+                            question: '지브리는 뭘로 돈 벌게요?',
+                            answer: '토토로',
+                            playTime: 30000,
+                            quizType: 'SHORT_ANSWER',
+                        },
+                    ]
+            } as CreateQuizRequestDto;
 
             const quiz1 = {
                 ...dto[0],
@@ -151,7 +129,7 @@ describe('QuizService', () => {
             mockQuizRepository.save.mockResolvedValue([quiz1, quiz2]);
 
             //when
-            const result = await service.createQuizzes(1, dto);
+            const result = await service.createQuizzes(dto);
 
             //then
             expect(dto[0].toEntity).toHaveBeenCalledTimes(1);
@@ -164,20 +142,24 @@ describe('QuizService', () => {
         it('QuizSetId가 존재하지 않는 경우', async () => {
             //given
             const quizSetId = 2;
-            const dto = [
-                {
-                    question: '퀴즈 질문',
-                    answer: '퀴즈 정답',
-                    playTime: 1000,
-                    quizType: QUIZ_TYPE.SHORT_ANSWER,
-                },
-            ] as CreateQuizRequestDto[];
+            const dto = {
+                quizSetName: "퀴즈셋 이름",
+                quizDetails:
+                    [
+                        {
+                            question: '지브리는 뭘로 돈 벌게요?',
+                            answer: '토토로',
+                            playTime: 30000,
+                            quizType: 'SHORT_ANSWER',
+                        },
+                    ]
+            } as CreateQuizRequestDto;
 
             mockQuizSetRepository.findOneBy.mockResolvedValue(null);
 
             //when
             //then
-            await expect(service.createQuizzes(quizSetId, dto)).rejects.toThrow(
+            await expect(service.createQuizzes(dto)).rejects.toThrow(
                 BadRequestException,
             );
         });

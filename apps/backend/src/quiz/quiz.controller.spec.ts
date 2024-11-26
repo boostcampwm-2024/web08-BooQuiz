@@ -31,40 +31,28 @@ describe('QuizController', () => {
         quizService = module.get<QuizService>(QuizService);
     });
 
-    describe('createQuizSet', () => {
-        it('새로운 퀴즈셋을 생성한다.', async () => {
-            // given
-            const dto: CreateQuizSetRequestDto = { name: '퀴즈셋 이름' };
-            const response = { id: 1 };
-            mockQuizService.createQuizSet.mockResolvedValue(response);
-
-            // when
-            const result = await quizController.createQuizSet(dto);
-
-            // then
-            expect(quizService.createQuizSet).toHaveBeenCalledWith(dto.name);
-            expect(result).toEqual(response);
-        });
-    });
 
     describe('createQuiz', () => {
         it('새로운 퀴즈를 생성한다.', async () => {
             // given
-            const quizSetId = 1;
-            const dto = [
-                {
-                    question: '퀴즈 질문',
-                    answer: '퀴즈 정답',
-                    playTime: 1000,
-                    quizType: QUIZ_TYPE.SHORT_ANSWER,
-                },
-            ] as CreateQuizRequestDto[];
+            const dto = {
+                quizSetName: "퀴즈셋 이름",
+                quizDetails:
+                    [
+                        {
+                            question: '지브리는 뭘로 돈 벌게요?',
+                            answer: '토토로',
+                            playTime: 30000,
+                            quizType: 'SHORT_ANSWER',
+                        },
+                    ]
+            } as CreateQuizRequestDto;
 
             // when
-            await quizController.createQuizzes(quizSetId, dto);
+            await quizController.createQuizzes(dto);
 
             // then
-            expect(quizService.createQuizzes).toHaveBeenCalledWith(quizSetId, dto);
+            expect(quizService.createQuizzes).toHaveBeenCalledWith(dto);
         });
     });
 
