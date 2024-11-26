@@ -1,10 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { QuizController } from './quiz.controller';
 import { QuizService } from './quiz.service';
-import { CreateQuizSetRequestDto } from './dto/create-quiz-set-request.dto';
 import { CreateQuizRequestDto } from './dto/create-quiz-request.dto';
 import { NotFoundException } from '@nestjs/common';
-import { QUIZ_TYPE } from '../common/constants';
 
 describe('QuizController', () => {
     let quizController: QuizController;

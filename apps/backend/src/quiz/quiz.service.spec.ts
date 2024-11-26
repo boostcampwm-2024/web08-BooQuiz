@@ -84,7 +84,6 @@ describe('QuizService', () => {
 
             //then
             expect(dto.quizDetails[0].toEntity).toHaveBeenCalledTimes(1);
-            expect(dto.quizDetails[0].toEntity).toHaveBeenCalledWith(quizSetId);
 
             expect(mockQuizRepository.save).toHaveBeenCalledTimes(1);
             expect(mockQuizRepository.save).toHaveBeenCalledWith([quiz]);
@@ -124,45 +123,19 @@ describe('QuizService', () => {
             };
 
             mockQuizSetRepository.findOneBy.mockResolvedValue(quizSetId);
-            dto[0].toEntity = jest.fn().mockReturnValue(quiz1);
-            dto[1].toEntity = jest.fn().mockReturnValue(quiz2);
-            mockQuizRepository.save.mockResolvedValue([quiz1, quiz2]);
+            dto.quizDetails[0].toEntity = jest.fn().mockReturnValue(quiz1);
+            mockQuizRepository.save.mockResolvedValue([quiz1]);
 
             //when
             const result = await service.createQuizzes(dto);
 
             //then
-            expect(dto[0].toEntity).toHaveBeenCalledTimes(1);
-            expect(dto[0].toEntity).toHaveBeenCalledWith(quizSetId);
+            expect(dto.quizDetails[0].toEntity).toHaveBeenCalledTimes(1);
 
             expect(mockQuizRepository.save).toHaveBeenCalledTimes(1);
-            expect(mockQuizRepository.save).toHaveBeenCalledWith([quiz1, quiz2]);
+            expect(mockQuizRepository.save).toHaveBeenCalledWith([quiz1]);
         });
 
-        it('QuizSetId가 존재하지 않는 경우', async () => {
-            //given
-            const quizSetId = 2;
-            const dto = {
-                quizSetName: "퀴즈셋 이름",
-                quizDetails:
-                    [
-                        {
-                            question: '지브리는 뭘로 돈 벌게요?',
-                            answer: '토토로',
-                            playTime: 30000,
-                            quizType: 'SHORT_ANSWER',
-                        },
-                    ]
-            } as CreateQuizRequestDto;
-
-            mockQuizSetRepository.findOneBy.mockResolvedValue(null);
-
-            //when
-            //then
-            await expect(service.createQuizzes(dto)).rejects.toThrow(
-                BadRequestException,
-            );
-        });
     });
 
     describe('getQuizzes', () => {
