@@ -217,12 +217,12 @@ const useQuizZone = () => {
     };
 
     const wsUrl = `${import.meta.env.VITE_WS_URL}/play`;
-    const { beginConnection, sendMessage, closeConnection } = useWebSocket(messageHandler);
+    const { beginConnection, sendMessage, closeConnection } = useWebSocket(wsUrl, messageHandler);
 
     //initialize QuizZOne
     const initQuizZoneData = (initialData: any) => {
         dispatch({ type: 'init', payload: initialData });
-        beginConnection(wsUrl);
+        beginConnection();
     };
 
     //퀴즈 시작 함수
