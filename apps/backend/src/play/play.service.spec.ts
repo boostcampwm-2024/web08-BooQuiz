@@ -78,7 +78,10 @@ describe('PlayService', () => {
 
             expect(result).toEqual({
                 currentPlayer: mockPlayer,
-                players: [{ ...mockPlayer, id: 'player-2', nickname: 'player2' }],
+                players: [
+                    { ...mockPlayer, id: 'player-1', nickname: 'player1' },
+                    { ...mockPlayer, id: 'player-2', nickname: 'player2' },
+                ],
             });
         });
 
