@@ -34,6 +34,7 @@ function atob(encodedString: string): string {
         return encodedString; // 실패 시 원본 문자열 반환
     }
 }
+
 const quizZoneReducer: Reducer<QuizZone, QuizZoneAction> = (state, action) => {
     const { type, payload } = action;
 
@@ -51,7 +52,7 @@ const quizZoneReducer: Reducer<QuizZone, QuizZoneAction> = (state, action) => {
                 players: [],
             };
         case 'join':
-            return { ...state, players: payload.players };
+            return { ...state, players: payload };
         case 'someone_join':
             return { ...state, players: [...(state.players ?? []), payload] };
         case 'someone_leave':
@@ -70,29 +71,23 @@ const quizZoneReducer: Reducer<QuizZone, QuizZoneAction> = (state, action) => {
                     state: 'SUBMIT',
                 },
                 currentQuizResult: {
-                    ...(state.currentQuizResult ?? {}),
-                    fastPlayerIds: payload.fastPlayerIds,
-                    totalPlayerCount: payload.totalPlayerCount,
+                    fastestPlayers: payload.fastestPlayerIds
+                        .map((id) => state.players?.find((p) => p.id === id))
+                        .filter((p) => !!p),
                     submittedCount: payload.submittedCount,
+                    totalPlayerCount: payload.totalPlayerCount,
                 },
             };
         case 'someone_submit':
-            const currentQuizResult = state.currentQuizResult ?? {
-                answer: '',
-                totalPlayerCount: 1,
-                submittedCount: 0,
-                correctPlayerCount: 0,
-                fastPlayerIds: [],
-            };
-            const { fastPlayerIds } = currentQuizResult;
             const { clientId, submittedCount } = payload;
+            const player = state.players?.find((p) => p.id === clientId);
+            const fastestPlayers = state.currentQuizResult?.fastestPlayers ?? [];
 
             return {
                 ...state,
                 currentQuizResult: {
-                    ...currentQuizResult,
-                    fastPlayerIds:
-                        fastPlayerIds.length >= 3 ? fastPlayerIds : [...fastPlayerIds, clientId],
+                    ...state.currentQuizResult!,
+                    fastestPlayers: [...fastestPlayers, player].slice(0, 3).filter((p) => !!p),
                     submittedCount,
                 },
             };

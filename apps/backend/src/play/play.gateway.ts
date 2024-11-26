@@ -177,7 +177,7 @@ export class PlayGateway implements OnGatewayInit {
 
         const {
             isLastSubmit,
-            fastestPlayerIdList,
+            fastestPlayerIds,
             submittedCount,
             totalPlayerCount,
             otherSubmittedPlayerIds,
@@ -194,7 +194,7 @@ export class PlayGateway implements OnGatewayInit {
 
         return {
             event: 'submit',
-            data: { fastestPlayerIdList, submittedCount, totalPlayerCount },
+            data: { fastestPlayerIds, submittedCount, totalPlayerCount },
         };
     }
 

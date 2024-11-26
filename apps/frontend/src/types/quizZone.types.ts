@@ -68,7 +68,7 @@ export interface QuizZoneResultState {
 }
 
 export interface SubmitResponse {
-    fastPlayerIds: string[];
+    fastestPlayerIds: string[];
     submittedCount: number;
     totalPlayerCount: number;
 }
@@ -80,10 +80,10 @@ export interface SomeoneSubmitResponse {
 
 export interface CurrentQuizResult {
     answer?: string;
+    correctPlayerCount?: number;
     totalPlayerCount: number;
     submittedCount: number;
-    correctPlayerCount?: number;
-    fastPlayerIds: string[];
+    fastestPlayers: Player[];
 }
 
 export interface NextQuizResponse {

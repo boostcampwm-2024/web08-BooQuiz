@@ -30,6 +30,7 @@ const QuizZoneInProgress = ({ quizZoneState, submitAnswer, playQuiz }: QuizZoneI
                 <QuizCompleted
                     isLastQuiz={quizZoneState.isLastQuiz ?? false}
                     deadlineTime={quizZoneState.currentQuiz?.deadlineTime ?? 0}
+                    currentQuizResult={quizZoneState.currentQuizResult!}
                 />
             );
         default:

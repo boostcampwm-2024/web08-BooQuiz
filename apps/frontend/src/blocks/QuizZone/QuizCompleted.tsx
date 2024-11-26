@@ -2,16 +2,20 @@ import ContentBox from '@/components/common/ContentBox';
 import Typography from '@/components/common/Typogrpahy';
 import { useTimer } from '@/hook/useTimer';
 import { useEffect } from 'react';
+import { CurrentQuizResult } from '@/types/quizZone.types.ts';
+import ParticipantGrid from '@/components/common/ParticipantGrid.tsx';
 
 interface QuizCompletedProps {
     isLastQuiz: boolean;
     deadlineTime: number;
+    currentQuizResult?: CurrentQuizResult;
 }
 
-const QuizCompleted = ({ isLastQuiz, deadlineTime }: QuizCompletedProps) => {
+const QuizCompleted = ({ isLastQuiz, deadlineTime, currentQuizResult }: QuizCompletedProps) => {
     const currentTime = new Date().getTime();
     const remainingPrepTime = Math.max(0, deadlineTime - currentTime) / 1000;
 
+    const { fastestPlayers, submittedCount } = currentQuizResult ?? {};
     const { start, time } = useTimer({
         initialTime: remainingPrepTime,
         onComplete: () => {},
@@ -23,6 +27,17 @@ const QuizCompleted = ({ isLastQuiz, deadlineTime }: QuizCompletedProps) => {
     return (
         <div className="w-full h-screen flex flex-col items-center justify-center gap-4">
             <img width="200px" src="/BooQuizLogo.png" alt="BooQuiz Logo" />
+            {currentQuizResult && (
+                <ContentBox>
+                    <Typography
+                        size="xl"
+                        color="black"
+                        text={`${submittedCount}명 제출 완료`}
+                        bold={true}
+                    />
+                    <ParticipantGrid participants={fastestPlayers ?? []} hostId={'1234'} />
+                </ContentBox>
+            )}
             <ContentBox>
                 <div className="w-full flex flex-col items-center gap-2">
                     <Typography
