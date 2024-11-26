@@ -110,6 +110,28 @@ export class PlayGateway implements OnGatewayInit {
         };
     }
 
+    @SubscribeMessage('changeNickname')
+    async changeNickname(
+        @ConnectedSocket() client: WebSocketWithSession,
+        @MessageBody() changedNickname: string,
+    ): Promise<SendEventMessage<string>> {
+        const clientId = client.session.id;
+        const { quizZoneId } = this.getClientInfo(clientId);
+
+        const { playerIds } = await this.playService.changeNickname(
+            quizZoneId,
+            clientId,
+            changedNickname,
+        );
+
+        this.broadcast(playerIds, 'updateNickname', { clientId, changedNickname });
+
+        return {
+            event: 'changeNickname',
+            data: 'OK',
+        };
+    }
+
     /**
      * 퀴즈 게임을 시작하는 메시지를 클라이언트로 전송합니다.
      *
@@ -207,8 +229,8 @@ export class PlayGateway implements OnGatewayInit {
         const summaries = await this.playService.summaryQuizZone(quizZoneId);
 
         await Promise.all(
-            summaries.map(async ({ id, score, submits, quizzes }) => {
-                this.sendToClient(id, 'summary', { score, submits, quizzes });
+            summaries.map(async ({ id, score, submits, quizzes, ranks }) => {
+                this.sendToClient(id, 'summary', { score, submits, quizzes, ranks });
                 this.clearClient(id, 'finish');
             }),
         );

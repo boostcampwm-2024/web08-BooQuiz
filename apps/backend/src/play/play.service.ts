@@ -291,13 +291,39 @@ export class PlayService {
         this.clearQuizZoneHandle(quizZoneId);
 
         await this.quizZoneService.clearQuizZone(quizZoneId);
+        const ranks = this.getRanking(players);
 
         return [...players.values()].map(({ id, score, submits }) => ({
             id,
             score,
             submits,
             quizzes,
+            ranks,
         }));
+    }
+
+    private getRanking(players: Map<string, Player>) {
+        const sortedPlayers = [...players.values()].sort((a, b) => b.score - a.score);
+        let currentRank = 1;
+        let currentScore = sortedPlayers[0]?.score;
+        let sameRankCount = -1; // 첫 번째 플레이어를 위해 -1로 시작
+
+        return sortedPlayers.map((player) => {
+            if (player.score < currentScore) {
+                currentRank = currentRank + sameRankCount + 1;
+                currentScore = player.score;
+                sameRankCount = 0;
+            } else {
+                sameRankCount++;
+            }
+
+            return {
+                id: player.id,
+                nickname: player.nickname,
+                score: player.score,
+                ranking: currentRank,
+            };
+        });
     }
 
     async leaveQuizZone(quizZoneId: string, clientId: string) {
@@ -334,5 +360,26 @@ export class PlayService {
 
         clearTimeout(submitHandle);
         this.plays.set(quizZoneId, undefined);
+    }
+
+    async changeNickname(quizZoneId: string, clientId: string, changedNickname: string) {
+        const quizZone = await this.quizZoneService.findOne(quizZoneId);
+        const { players } = quizZone;
+
+        if (!players.has(clientId)) {
+            throw new NotFoundException('사용자 정보를 찾을 수 없습니다.');
+        }
+
+        const player = players.get(clientId);
+
+        if (player.state !== PLAYER_STATE.WAIT || quizZone.stage !== QUIZ_ZONE_STAGE.LOBBY) {
+            throw new BadRequestException('현재 닉네임을 변경할 수 없습니다.');
+        }
+
+        player.nickname = changedNickname;
+
+        return {
+            playerIds: [...players.values()].map((player) => player.id),
+        };
     }
 }
