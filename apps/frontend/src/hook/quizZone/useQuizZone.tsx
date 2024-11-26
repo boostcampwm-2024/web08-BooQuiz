@@ -1,6 +1,13 @@
 import { useReducer } from 'react';
 import useWebSocket from '@/hook/useWebSocket.tsx';
-import { CurrentQuiz, Player, QuizZone, QuizZoneResultState } from '@/types/quizZone.types.ts';
+import {
+    NextQuizResponse,
+    Player,
+    QuizZone,
+    QuizZoneResultState,
+    SomeoneSubmitResponse,
+    SubmitResponse,
+} from '@/types/quizZone.types.ts';
 import atob from '@/utils/atob';
 
 export type QuizZoneAction =

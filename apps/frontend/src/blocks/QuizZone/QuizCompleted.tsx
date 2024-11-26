@@ -3,7 +3,7 @@ import Typography from '@/components/common/Typogrpahy';
 import { useTimer } from '@/hook/useTimer';
 import { useEffect } from 'react';
 import { CurrentQuizResult } from '@/types/quizZone.types.ts';
-import ParticipantGrid from '@/components/common/ParticipantGrid.tsx';
+import PlayersGrid from '@/components/common/PlayersGrid.tsx';
 
 interface QuizCompletedProps {
     isLastQuiz: boolean;
@@ -34,7 +34,7 @@ const QuizCompleted = ({ isLastQuiz, deadlineTime, currentQuizResult }: QuizComp
                         text={`${submittedCount}명 제출 완료`}
                         bold={true}
                     />
-                    <ParticipantGrid participants={fastestPlayers ?? []} hostId={'1234'} />
+                    <PlayersGrid players={fastestPlayers ?? []} hostId={'1234'} />
                 </ContentBox>
             )}
             <ContentBox>
