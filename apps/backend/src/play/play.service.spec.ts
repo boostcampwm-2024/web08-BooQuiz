@@ -78,7 +78,10 @@ describe('PlayService', () => {
 
             expect(result).toEqual({
                 currentPlayer: mockPlayer,
-                players: [{ ...mockPlayer, id: 'player-2', nickname: 'player2' }],
+                players: [
+                    { ...mockPlayer, id: 'player-1', nickname: 'player1' },
+                    { ...mockPlayer, id: 'player-2', nickname: 'player2' },
+                ],
             });
         });
 
@@ -247,7 +250,7 @@ describe('PlayService', () => {
 
             expect(result).toEqual({
                 isLastSubmit: true,
-                fastestPlayerIdList: ['player-1'],
+                fastestPlayerIds: ['player-1'],
                 submittedCount: 1,
                 totalPlayerCount: 1,
                 otherSubmittedPlayerIds: [],
@@ -283,7 +286,7 @@ describe('PlayService', () => {
 
             expect(result).toEqual({
                 isLastSubmit: true,
-                fastestPlayerIdList: ['player-2', 'player-1'],
+                fastestPlayerIds: ['player-2', 'player-1'],
                 submittedCount: 2,
                 totalPlayerCount: 2,
                 otherSubmittedPlayerIds: ['player-2'],

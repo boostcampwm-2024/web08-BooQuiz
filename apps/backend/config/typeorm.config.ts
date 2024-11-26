@@ -1,10 +1,9 @@
 import { TypeOrmModuleOptions, TypeOrmOptionsFactory } from '@nestjs/typeorm';
 import { Quiz } from '../src/quiz/entity/quiz.entitiy';
 import { QuizSet } from '../src/quiz/entity/quiz-set.entity';
-import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
-@Injectable()
+// @Injectable()
 export class TypeormConfig implements TypeOrmOptionsFactory {
     constructor(private readonly configService: ConfigService) {}
 

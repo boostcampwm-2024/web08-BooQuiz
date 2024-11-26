@@ -34,7 +34,7 @@ export class PlayService {
 
         return {
             currentPlayer: players.get(sessionId),
-            players: [...players.values()].filter((player) => player.id !== sessionId),
+            players: [...players.values()],
         };
     }
 
@@ -208,7 +208,7 @@ export class PlayService {
             (player) => player.state === PLAYER_STATE.SUBMIT,
         );
 
-        const fastestPlayerIdList = this.getFastestPlayerIdList(
+        const fastestPlayerIds = this.getFastestPlayerIds(
             submittedPlayers,
             quizZone.currentQuizIndex,
         );
@@ -221,7 +221,7 @@ export class PlayService {
 
         return {
             isLastSubmit,
-            fastestPlayerIdList,
+            fastestPlayerIds,
             submittedCount: submittedPlayers.length,
             totalPlayerCount: players.size,
             otherSubmittedPlayerIds: submittedPlayers
@@ -230,11 +230,7 @@ export class PlayService {
         };
     }
 
-    private getFastestPlayerIdList(
-        submittedPlayers: Player[],
-        currentQuizIndex: number,
-        count = 3,
-    ) {
+    private getFastestPlayerIds(submittedPlayers: Player[], currentQuizIndex: number, count = 3) {
         return submittedPlayers
             .sort(
                 (a, b) =>
