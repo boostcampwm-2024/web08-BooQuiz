@@ -69,6 +69,12 @@ const quizZoneReducer: Reducer<QuizZone, QuizZoneAction> = (state, action) => {
                     ...state.currentPlayer,
                     state: 'SUBMIT',
                 },
+                currentQuizResult: {
+                    ...(state.currentQuizResult ?? {}),
+                    fastPlayerIds: payload.fastPlayerIds,
+                    totalPlayerCount: payload.totalPlayerCount,
+                    submittedCount: payload.submittedCount,
+                },
             };
         case 'someone_submit':
             const currentQuizResult = state.currentQuizResult ?? {
@@ -86,7 +92,7 @@ const quizZoneReducer: Reducer<QuizZone, QuizZoneAction> = (state, action) => {
                 currentQuizResult: {
                     ...currentQuizResult,
                     fastPlayerIds:
-                        fastPlayerIds.length > 3 ? fastPlayerIds : [...fastPlayerIds, clientId],
+                        fastPlayerIds.length >= 3 ? fastPlayerIds : [...fastPlayerIds, clientId],
                     submittedCount,
                 },
             };
