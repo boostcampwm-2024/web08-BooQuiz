@@ -383,9 +383,7 @@ export class PlayService {
         player.nickname = changedNickname;
 
         return {
-            playerIds: [...players.values()]
-                .filter((player) => player.id !== clientId)
-                .map((player) => player.id),
+            playerIds: [...players.values()].map((player) => player.id),
         };
     }
 }
