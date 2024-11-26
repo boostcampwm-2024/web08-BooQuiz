@@ -44,7 +44,7 @@ const Typography = ({ text, size, color, bold = false }: TypographyProps) => {
         black: 'text-black',
     };
 
-    const classes = `${sizeClasses[size] || sizeClasses.base} ${colorClasses[color] || colorClasses.black} ${bold ? 'font-bold' : ''}`;
+    const classes = `break-all ${sizeClasses[size] || sizeClasses.base} ${colorClasses[color] || colorClasses.black} ${bold ? 'font-bold' : ''}`;
     return <p className={classes}>{text}</p>;
 };
 

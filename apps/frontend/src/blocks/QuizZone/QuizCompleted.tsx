@@ -36,7 +36,6 @@ const QuizCompleted = ({
 
     return (
         <div className="w-full h-screen flex flex-col items-center justify-center gap-4">
-            <img width="200px" src="/BooQuizLogo.png" alt="BooQuiz Logo" />
             <ContentBox>
                 <div className="w-full flex flex-col items-center gap-2">
                     <Typography

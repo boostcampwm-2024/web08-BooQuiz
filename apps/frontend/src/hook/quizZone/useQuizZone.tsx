@@ -7,6 +7,7 @@ import {
     QuizZoneResultState,
     ChatMessage,
 } from '@/types/quizZone.types.ts';
+import atob from '@/utils/atob';
 
 export type QuizZoneAction =
     | { type: 'init'; payload: QuizZone }
@@ -18,24 +19,28 @@ export type QuizZoneAction =
     | { type: 'quizTimeout'; payload: undefined }
     | { type: 'finish'; payload: undefined }
     | { type: 'summary'; payload: QuizZoneResultState }
+    | { type: 'someone_join'; payload: Player }
+    | { type: 'someone_leave'; payload: string }
     | { type: 'chat'; payload: ChatMessage };
 
 type Reducer<S, A> = (state: S, action: A) => S;
 
-function atob(encodedString: string): string {
-    try {
-        // 브라우저 native atob 사용
-        return decodeURIComponent(escape(window.atob(encodedString)));
-    } catch (error) {
-        console.error('Base64 디코딩 실패:', error);
-        return encodedString; // 실패 시 원본 문자열 반환
-    }
-}
 const quizZoneReducer: Reducer<QuizZone, QuizZoneAction> = (state, action) => {
     const { type, payload } = action;
-
+    let updatedPlayers = null;
     switch (type) {
         case 'init':
+            const existingPlayers = payload.players || [];
+            const currentPlayer = payload.currentPlayer;
+
+            // currentPlayer가 이미 players 배열에 있는지 확인
+            const isCurrentPlayerInPlayers = existingPlayers.some(
+                (player) => player.id === currentPlayer.id,
+            );
+            // players 배열 구성
+            updatedPlayers = isCurrentPlayerInPlayers
+                ? existingPlayers
+                : [...existingPlayers, currentPlayer];
             return {
                 ...state,
                 stage: payload.stage,
@@ -45,10 +50,34 @@ const quizZoneReducer: Reducer<QuizZone, QuizZoneAction> = (state, action) => {
                 hostId: payload.hostId,
                 currentPlayer: payload.currentPlayer,
                 currentQuiz: payload.currentQuiz,
-                players: [],
+                players: updatedPlayers,
             };
         case 'join':
-            return { ...state, players: payload.players };
+            return {
+                ...state,
+                players: Array.isArray(payload) ? [...payload, state.currentPlayer] : state.players,
+            };
+        case 'someone_join':
+            // 이미 존재하는 플레이어인지 확인
+            const isPlayerExist = state.players?.some((player) => player.id === payload.id);
+            if (isPlayerExist) {
+                return state; // 이미 존재하는 플레이어라면 상태 변경 없음
+            }
+
+            // 새로운 플레이어 추가
+            return {
+                ...state,
+                players: [...(state.players || []), payload],
+            };
+
+        case 'someone_leave':
+            // 플레이어 제거 시 배열이 undefined가 되지 않도록 보호
+            updatedPlayers = state.players?.filter((player) => player.id !== payload) ?? [];
+
+            return {
+                ...state,
+                players: updatedPlayers,
+            };
         case 'start':
             return {
                 ...state,
@@ -177,11 +206,23 @@ const useQuizZone = () => {
 
     const messageHandler = (event: MessageEvent) => {
         const { event: QuizZoneEvent, data } = JSON.parse(event.data);
+        switch (QuizZoneEvent) {
+            case 'someone_join':
+                dispatch({
+                    type: QuizZoneEvent,
+                    payload: {
+                        id: data.id,
+                        nickname: data.nickname,
+                    },
+                });
+                break;
 
-        dispatch({
-            type: QuizZoneEvent,
-            payload: data,
-        });
+            default:
+                dispatch({
+                    type: QuizZoneEvent,
+                    payload: data,
+                });
+        }
     };
     const wsUrl = import.meta.env.VITE_WS_URL;
 

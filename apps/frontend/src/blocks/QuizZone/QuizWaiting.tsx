@@ -38,7 +38,6 @@ const QuizWaiting = ({
 
     return (
         <div className="w-full h-screen flex flex-col items-center justify-center gap-4">
-            <img width="200px" src="/BooQuizLogo.png" alt="BooQuiz Logo" />
             <div className="w-full flex flex-row justify-center items-center gap-4">
                 <ContentBox className="w-4/5 md:w-[48rem] gap-8 flex flex-col items-center box-border">
                     <div className="w-full flex flex-col items-center gap-2">
@@ -61,7 +60,7 @@ const QuizWaiting = ({
                             <Typography
                                 size="3xl"
                                 color="blue"
-                                text={`${time.toFixed(1)}`}
+                                text={`${time.toFixed(0)}`}
                                 bold={true}
                             />
                             <Typography

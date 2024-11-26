@@ -1,29 +1,16 @@
 import QuizZoneInProgress from '@/blocks/QuizZone/QuizZoneInProgress';
 import QuizZoneLobby from '@/blocks/QuizZone/QuizZoneLobby';
 import QuizZoneResult from '@/blocks/QuizZone/QuizZoneResult';
+import { AsyncBoundary } from '@/components/boundary/AsyncBoundary';
 import useQuizZone from '@/hook/quizZone/useQuizZone';
+import { useAsyncError } from '@/hook/useAsyncError';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import CustomAlertDialog from '@/components/common/CustomAlertDialog';
 
-const QuizZonePage = () => {
+const QuizZoneContent = () => {
     const [isLoading, setIsLoading] = useState(true);
-    const [showError, setShowError] = useState(false);
-
-    //QuizZoneId를 받아오기 위해 useParams 사용
     const { quizZoneId } = useParams();
-
-    const navigate = useNavigate();
-
-    const fetchQuizZoneData = async (quizZoneId: string) => {
-        const response = await fetch(`/api/quiz-zone/${quizZoneId}`, { method: 'GET' });
-
-        if (!response.ok) {
-            throw new Error('퀴즈존을 찾을 수 없습니다.');
-        }
-
-        return response.json();
-    };
+    const throwError = useAsyncError();
 
     const {
         initQuizZoneData,
@@ -33,32 +20,25 @@ const QuizZonePage = () => {
         playQuiz,
         exitQuiz,
         joinQuizZone,
-        sendChat,
     } = useQuizZone();
 
     const initQuizZone = async () => {
-        try {
-            const quizZoneInitialData = await fetchQuizZoneData(quizZoneId ?? '');
-            initQuizZoneData(quizZoneInitialData);
-            joinQuizZone({ quizZoneId });
-            setIsLoading(false);
-        } catch (e) {
-            //alertDialog >> 퀴즈존을 찾을 수 없습니다. >> 확인 누르면 navigate(-1)
-            setShowError(true);
-            setIsLoading(false);
+        const response = await fetch(`/api/quiz-zone/${quizZoneId}`, { method: 'GET' });
+
+        if (!response.ok) {
+            throw throwError(response);
         }
+
+        const quizZoneInitialData = await response.json();
+        initQuizZoneData(quizZoneInitialData);
+        joinQuizZone({ quizZoneId });
+        setIsLoading(false);
     };
 
     useEffect(() => {
         initQuizZone();
     }, []);
 
-    const handleErrorConfirm = () => {
-        setShowError(false);
-        navigate(-1);
-    };
-
-    // 로딩 중 표시
     if (isLoading) {
         return <div className="flex justify-center items-center h-screen">로딩 중...</div>;
     }
@@ -72,7 +52,6 @@ const QuizZonePage = () => {
                         quizZoneId={quizZoneId ?? ''}
                         startQuiz={startQuiz}
                         exitQuiz={exitQuiz}
-                        sendChat={sendChat}
                     />
                 );
             case 'IN_PROGRESS':
@@ -80,7 +59,6 @@ const QuizZonePage = () => {
                     <QuizZoneInProgress
                         quizZoneState={quizZoneState}
                         submitAnswer={submitQuiz}
-                        sendChat={sendChat}
                         playQuiz={playQuiz}
                     />
                 );
@@ -91,20 +69,26 @@ const QuizZonePage = () => {
         }
     };
 
+    return <div className="w-4/5 h-screen">{renderQuizZone()}</div>;
+};
+
+const QuizZonePage = () => {
+    const navigate = useNavigate();
+
     return (
-        <div>
-            {showError && (
-                <CustomAlertDialog
-                    showError={showError}
-                    setShowError={setShowError}
-                    onConfirm={handleErrorConfirm}
-                    title="퀴즈존을 찾을 수 없습니다."
-                    description="퀴즈존이 존재하지 않거나 삭제되었습니다."
-                    confirmText="돌아가기"
-                />
-            )}
-            {renderQuizZone()}
-        </div>
+        <AsyncBoundary
+            pending={
+                <div className="flex h-screen items-center justify-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500" />
+                </div>
+            }
+            handleError={(error: any) => {
+                console.error('QuizZone Error:', error);
+            }}
+            onReset={() => navigate('/')}
+        >
+            <QuizZoneContent />
+        </AsyncBoundary>
     );
 };
 
