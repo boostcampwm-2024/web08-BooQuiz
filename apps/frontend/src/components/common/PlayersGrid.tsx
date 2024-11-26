@@ -30,14 +30,9 @@ const PlayerCard = ({ player, isHost }: PlayerCardProps) => {
                 </AvatarFallback>
             </Avatar>
             <div className="flex items-center gap-2 flex-1 min-w-0">
-                <Typography text={player.nickname} size="base" color="black" className="truncate" />
+                <Typography text={player.nickname} size="base" color="black" />
                 {isHost && (
-                    <Crown
-                        className="text-yellow-500 flex-shrink-0"
-                        size={20}
-                        aria-label="Host"
-                        title="퀴즈 방장"
-                    />
+                    <Crown className="text-yellow-500 flex-shrink-0" size={20} aria-label="Host" />
                 )}
             </div>
         </div>
