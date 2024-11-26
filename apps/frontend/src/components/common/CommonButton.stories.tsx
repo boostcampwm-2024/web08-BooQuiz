@@ -14,7 +14,7 @@ const meta = {
             control: 'text',
             description: '버튼에 표시될 텍스트',
         },
-        isFulfill: {
+        isFilled: {
             control: 'boolean',
             description: '버튼의 스타일을 결정하는 플래그',
         },
@@ -40,7 +40,7 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
     args: {
         text: '기본 버튼',
-        isFulfill: false,
+        isFilled: false,
         clickEvent: () => {
             alert('버튼이 클릭되었습니다!');
         },
@@ -51,7 +51,7 @@ export const Default: Story = {
 export const Fulfilled: Story = {
     args: {
         text: '활성화 버튼',
-        isFulfill: true,
+        isFilled: true,
         clickEvent: () => {
             alert('버튼이 클릭되었습니다!');
         },
@@ -62,7 +62,7 @@ export const Fulfilled: Story = {
 export const CustomSize: Story = {
     args: {
         text: '커스텀 크기 버튼',
-        isFulfill: true,
+        isFilled: true,
         width: '300px',
         height: '40px',
         clickEvent: () => {
@@ -75,7 +75,7 @@ export const CustomSize: Story = {
 export const ClickEvent: Story = {
     args: {
         text: '클릭해보세요',
-        isFulfill: true,
+        isFilled: true,
         clickEvent: () => {
             alert('버튼이 클릭되었습니다!');
         },

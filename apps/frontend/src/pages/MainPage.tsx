@@ -2,97 +2,144 @@ import CommonButton from '@/components/common/CommonButton';
 import ContentBox from '@/components/common/ContentBox';
 import Input from '@/components/common/Input';
 import Typography from '@/components/common/Typogrpahy';
+import TooltipWrapper from '@/components/common/TooltipWrapper';
+import { AsyncBoundary } from '@/components/boundary/AsyncBoundary';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAsyncError } from '@/hook/useAsyncError';
+import { ValidationError } from '@/types/error.types';
 
-const MainPage = () => {
+const MainPageContent = () => {
     const [input, setInput] = useState('');
-
     const navigate = useNavigate();
+    const throwError = useAsyncError();
 
-    const handleMoveToQuizZone = () => {
-        navigate(`/newQuizZone/${input}`);
+    const validateInput = (input: string) => {
+        if (!input) {
+            throw new ValidationError('퀴즈존 코드를 입력해주세요');
+        }
+        if (input.length < 5 || input.length > 10) {
+            throw new ValidationError('퀴즈존 코드를 입력해주세요');
+        }
     };
 
-    //입장하기 버튼을 클릭하면 서버에 퀴즈존 세션 생성 요청을 날린다.
-    // 퀴즈존 세션 생성 요청이 성공하면, 퀴즈존 대기실 정보 요청을 날린다.
-    // 퀴즈존 대기실 정보를 받으면 퀴즈존 대기실으로 렌더링 한다.
-    const handleCreateQuizZone = () => {
-        fetch('/api/quiz-zone/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ quizZoneId: input }),
-        })
-            .then((response) => {
-                console.log(typeof response);
-                console.log(response.status);
-                if (response.status === 201) {
-                    handleMoveToQuizZone();
-                }
-            })
-            .then((data) => {
-                console.log(data);
-            })
-            .catch((error) => {
-                console.error('Error:', error);
+    const handleCreateQuizZone = async () => {
+        try {
+            validateInput(input);
+            const response = await fetch('/api/quiz-zone/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ quizZoneId: input }),
             });
+            if (!response.ok) {
+                throwError(response);
+                return;
+            }
+            navigate(`/${input}`);
+        } catch (error) {
+            throwError(error);
+        }
     };
-    const handleMoveToQuizZoneLobby = () => {
-        //baseURL 나중에 하기
-        fetch(`/api/quiz-zone/${input}`, { method: 'GET' })
-            .then((response) => {
-                console.log(typeof response);
-                console.log(response.status);
-                if (response.status === 200) {
-                    handleMoveToQuizZone();
-                }
-            })
-            .then((data) => {
-                console.log(data);
-            })
-            .catch((error) => {
-                console.error('Error:', error);
-            });
+
+    const handleMoveToQuizZoneLobby = async () => {
+        try {
+            validateInput(input);
+            const response = await fetch(`/api/quiz-zone/${input}`, { method: 'GET' });
+            if (!response.ok) {
+                throwError(response);
+                return;
+            }
+            navigate(`/${input}`);
+        } catch (error) {
+            throwError(error);
+        }
     };
 
     return (
         <>
-            <img src="/BooQuizLogo.png" alt="BooQuiz Logo" />
+            <TooltipWrapper content="BooQuiz - 실시간 퀴즈 플랫폼">
+                <img src="/BooQuizLogo.png" alt="BooQuiz Logo" />
+            </TooltipWrapper>
+
             <Typography
                 size="2xl"
                 color="blue"
                 text="실시간 퀴즈 플랫폼 BooQuiz에 오신 것을 환영합니다!"
                 bold={true}
             />
+
             <ContentBox className="w-4/5 md:w-[48rem]">
                 <Typography size="base" color="blue" text="퀴즈 참여하기" bold={true} />
-                <Input
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    name="입장코드"
-                    isAutoFocus={false}
-                    placeholder="입장 코드를 5자리에서 10자리 까지 작성해주세요"
-                />
+
+                <TooltipWrapper
+                    content="퀴즈존 코드를 입력해주세요"
+                    side="bottom"
+                    className="w-full"
+                >
+                    <Input
+                        value={input}
+                        onChange={(e) => setInput(e.target.value)}
+                        name="입장코드"
+                        isAutoFocus={false}
+                        placeholder="입장 코드를 5자리에서 10자리 까지 작성해주세요(예:1A2B3C)"
+                    />
+                </TooltipWrapper>
+
                 <Typography
                     size="xs"
                     color="gray"
                     text="버튼을 눌러 퀴즈존에 참여해보세요"
                     bold={true}
                 />
-                <CommonButton
-                    text="퀴즈존 참여하기"
-                    isFulfill={true}
-                    clickEvent={handleMoveToQuizZoneLobby}
-                />
-                <CommonButton
-                    text="퀴즈존 생성하기"
-                    isFulfill={true}
-                    clickEvent={handleCreateQuizZone}
-                />
+
+                <TooltipWrapper
+                    content="입력한 퀴즈존 코드로 이동합니다"
+                    side="bottom"
+                    className="w-full"
+                >
+                    <CommonButton
+                        text="퀴즈존 참여하기"
+                        isFilled={true}
+                        clickEvent={handleMoveToQuizZoneLobby}
+                        className="w-full"
+                    />
+                </TooltipWrapper>
+
+                <TooltipWrapper
+                    content="새로운 퀴즈존을 생성합니다"
+                    side="bottom"
+                    className="w-full"
+                >
+                    <CommonButton
+                        text="퀴즈존 생성하기"
+                        clickEvent={handleCreateQuizZone}
+                        className="w-full"
+                    />
+                </TooltipWrapper>
             </ContentBox>
         </>
+    );
+};
+
+const MainPage = () => {
+    const navigate = useNavigate();
+
+    return (
+        <AsyncBoundary
+            pending={
+                <div className="flex h-screen items-center justify-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500" />
+                </div>
+            }
+            handleError={(error: any) => {
+                console.error('Main Page Error:', error);
+            }}
+            onReset={() => navigate('/')}
+        >
+            <MainPageContent />
+        </AsyncBoundary>
     );
 };
 
