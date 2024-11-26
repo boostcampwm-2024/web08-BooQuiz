@@ -11,7 +11,7 @@ import {
 
 export type QuizZoneAction =
     | { type: 'init'; payload: QuizZone }
-    | { type: 'join'; payload: { players: Player[] } }
+    | { type: 'join'; payload: Player[] }
     | { type: 'someone_join'; payload: Player }
     | { type: 'someone_leave'; payload: string }
     | { type: 'start'; payload: undefined }
@@ -49,14 +49,16 @@ const quizZoneReducer: Reducer<QuizZone, QuizZoneAction> = (state, action) => {
                 hostId: payload.hostId,
                 currentPlayer: payload.currentPlayer,
                 currentQuiz: payload.currentQuiz,
-                players: [],
             };
         case 'join':
             return { ...state, players: payload };
         case 'someone_join':
             return { ...state, players: [...(state.players ?? []), payload] };
         case 'someone_leave':
-            return { ...state, players: state.players?.filter((player) => player.id !== payload) };
+            return {
+                ...state,
+                players: state.players?.filter((player) => player.id !== payload) ?? [],
+            };
         case 'start':
             return {
                 ...state,

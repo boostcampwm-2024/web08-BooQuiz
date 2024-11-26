@@ -46,6 +46,7 @@ const QuizInProgress = ({ currentQuiz, submitAnswer }: QuizInProgressProps) => {
                         }
                     }}
                 />
+
                 <CommonButton
                     text={'제출하기'}
                     clickEvent={() => {

@@ -10,13 +10,19 @@ interface QuizZoneInProgressProps {
 }
 
 const QuizZoneInProgress = ({ quizZoneState, submitAnswer, playQuiz }: QuizZoneInProgressProps) => {
-    const { currentPlayer, currentQuiz } = quizZoneState;
+    const { currentPlayer, currentQuiz, currentQuizResult } = quizZoneState;
     const { state } = currentPlayer;
     const { playTime, startTime } = currentQuiz ?? {};
 
     switch (state) {
         case 'WAIT':
-            return <QuizWaiting startTime={startTime!} playQuiz={playQuiz} />;
+            return (
+                <QuizWaiting
+                    startTime={startTime!}
+                    playQuiz={playQuiz}
+                    currentQuizSummary={currentQuizResult}
+                />
+            );
         case 'PLAY':
             return (
                 <QuizInProgress
