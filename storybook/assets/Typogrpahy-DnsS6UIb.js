@@ -1,4 +1,4 @@
-import{j as x}from"./jsx-runtime-DR9Q75dM.js";const o=({text:a,size:t,color:r,bold:s=!1})=>{const e={xs:"text-xs",sm:"text-sm",base:"text-base",lg:"text-lg",xl:"text-xl","2xl":"text-2xl","3xl":"text-3xl","4xl":"text-4xl","5xl":"text-5xl","6xl":"text-6xl"},l={gray:"text-gray-400",red:"text-red-600",blue:"text-blue-600",black:"text-black"},n=`${e[t]||e.base} ${l[r]||l.black} ${s?"font-bold":""}`;return x.jsx("p",{className:n,children:a})};o.__docgenInfo={description:`@description
+import{j as x}from"./jsx-runtime-DR9Q75dM.js";const o=({text:a,size:t,color:r,bold:s=!1})=>{const e={xs:"text-xs",sm:"text-sm",base:"text-base",lg:"text-lg",xl:"text-xl","2xl":"text-2xl","3xl":"text-3xl","4xl":"text-4xl","5xl":"text-5xl","6xl":"text-6xl"},l={gray:"text-gray-400",red:"text-red-600",blue:"text-blue-600",black:"text-black"},n=`break-all ${e[t]||e.base} ${l[r]||l.black} ${s?"font-bold":""}`;return x.jsx("p",{className:n,children:a})};o.__docgenInfo={description:`@description
 \`Typography\` 컴포넌트는 Tailwind CSS를 사용하여 텍스트의 크기와 색상을 조절할 수 있도록 합니다.
 
 @component
