@@ -137,3 +137,7 @@ const nickNames: string[] = [
 export const getRandomNickName = (): string => {
     return nickNames[Math.floor(Math.random() * nickNames.length)];
 };
+
+export enum QUIZ_TYPE {
+    SHORT_ANSWER = 'SHORT_ANSWER',
+}
