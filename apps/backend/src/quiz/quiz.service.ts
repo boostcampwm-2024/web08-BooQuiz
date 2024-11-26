@@ -12,15 +12,11 @@ export class QuizService {
         private quizSetRepository: QuizSetRepository,
     ) {}
 
-    async createQuizSet(name: string): Promise<CreateQuizSetResponseDto> {
-        const { id } = await this.quizSetRepository.save({ name });
-        return { id };
-    }
 
-    async createQuizzes(quizSetId: number, createQuizDto: CreateQuizRequestDto[]) {
-        const quizSet = await this.findQuizSet(quizSetId);
+    async createQuizzes(createQuizDto: CreateQuizRequestDto) {
+        const quizSet = await this.quizSetRepository.save({ name: createQuizDto.quizSetName });
 
-        const quizzes = createQuizDto.map((dto) => {
+        const quizzes = createQuizDto.quizDetails.map((dto) => {
             return dto.toEntity(quizSet);
         });
 
