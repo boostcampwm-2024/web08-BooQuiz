@@ -17,7 +17,7 @@ const QuizZoneInProgress = ({
     submitAnswer,
     playQuiz,
 }: QuizZoneInProgressProps) => {
-    const { currentPlayer, currentQuiz, chatMessages } = quizZoneState;
+    const { currentPlayer, currentQuiz, chatMessages, currentQuizResult } = quizZoneState;
     const { id, nickname, state } = currentPlayer;
     const { playTime, startTime } = currentQuiz ?? {};
 
@@ -31,6 +31,7 @@ const QuizZoneInProgress = ({
                     startTime={startTime!}
                     playQuiz={playQuiz}
                     sendChat={sendChat}
+                    currentQuizSummary={currentQuizResult}
                 />
             );
         case 'PLAY':
@@ -50,6 +51,7 @@ const QuizZoneInProgress = ({
                     sendChat={sendChat}
                     isLastQuiz={quizZoneState.isLastQuiz ?? false}
                     deadlineTime={quizZoneState.currentQuiz?.deadlineTime ?? 0}
+                    currentQuizResult={quizZoneState.currentQuizResult!}
                 />
             );
         default:

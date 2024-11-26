@@ -4,6 +4,8 @@ import ChatBox from '@/components/ui/chat-box';
 import { ChatMessage } from '@/types/quizZone.types';
 import { useTimer } from '@/hook/useTimer';
 import { useEffect } from 'react';
+import { CurrentQuizResult } from '@/types/quizZone.types.ts';
+import PlayersGrid from '@/components/common/PlayersGrid.tsx';
 
 interface QuizCompletedProps {
     id: string;
@@ -12,6 +14,7 @@ interface QuizCompletedProps {
     sendChat: (chatMessage: ChatMessage) => void;
     isLastQuiz: boolean;
     deadlineTime: number;
+    currentQuizResult?: CurrentQuizResult;
 }
 
 const QuizCompleted = ({
@@ -21,10 +24,12 @@ const QuizCompleted = ({
     sendChat,
     isLastQuiz,
     deadlineTime,
+    currentQuizResult,
 }: QuizCompletedProps) => {
     const currentTime = new Date().getTime();
     const remainingPrepTime = Math.max(0, deadlineTime - currentTime) / 1000;
 
+    const { fastestPlayers, submittedCount } = currentQuizResult ?? {};
     const { start, time } = useTimer({
         initialTime: remainingPrepTime,
         onComplete: () => {},
@@ -36,6 +41,17 @@ const QuizCompleted = ({
 
     return (
         <div className="w-full h-screen flex flex-col items-center justify-center gap-4">
+            {currentQuizResult && (
+                <ContentBox>
+                    <Typography
+                        size="xl"
+                        color="black"
+                        text={`${submittedCount}명 제출 완료`}
+                        bold={true}
+                    />
+                    <PlayersGrid players={fastestPlayers ?? []} hostId={'1234'} />
+                </ContentBox>
+            )}
             <ContentBox>
                 <div className="w-full flex flex-col items-center gap-2">
                     <Typography

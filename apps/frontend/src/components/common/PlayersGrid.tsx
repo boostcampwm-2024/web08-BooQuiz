@@ -1,4 +1,4 @@
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Crown } from 'lucide-react';
 import Typography from '@/components/common/Typogrpahy';
 import { Player } from '@/types/quizZone.types';

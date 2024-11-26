@@ -62,7 +62,7 @@ importers:
         version: 10.4.7(@nestjs/common@10.4.7(class-transformer@0.5.1)(class-validator@0.14.1)(reflect-metadata@0.2.2)(rxjs@7.8.1))(@nestjs/core@10.4.7)(@nestjs/platform-socket.io@10.4.7)(reflect-metadata@0.2.2)(rxjs@7.8.1)
       backend:
         specifier: 'file:'
-        version: file:apps/backend(@nestjs/platform-socket.io@10.4.7)(encoding@0.1.13)(sqlite3@5.1.7)(supertest@7.0.0)(ts-node@10.9.2(@types/node@20.17.6)(typescript@5.6.3))
+        version: file:apps/backend(@nestjs/platform-socket.io@10.4.7)(encoding@0.1.13)(supertest@7.0.0)(ts-node@10.9.2(@types/node@20.17.6)(typescript@5.6.3))
       class-transformer:
         specifier: ^0.5.1
         version: 0.5.1
@@ -9221,7 +9221,7 @@ snapshots:
       babel-plugin-jest-hoist: 29.6.3
       babel-preset-current-node-syntax: 1.1.0(@babel/core@7.26.0)
 
-  backend@file:apps/backend(@nestjs/platform-socket.io@10.4.7)(encoding@0.1.13)(sqlite3@5.1.7)(supertest@7.0.0)(ts-node@10.9.2(@types/node@20.17.6)(typescript@5.6.3)):
+  backend@file:apps/backend(@nestjs/platform-socket.io@10.4.7)(encoding@0.1.13)(supertest@7.0.0)(ts-node@10.9.2(@types/node@20.17.6)(typescript@5.6.3)):
     dependencies:
       '@nestjs/common': 10.4.7(class-transformer@0.5.1)(class-validator@0.14.1)(reflect-metadata@0.2.2)(rxjs@7.8.1)
       '@nestjs/config': 3.3.0(@nestjs/common@10.4.7(class-transformer@0.5.1)(class-validator@0.14.1)(reflect-metadata@0.2.2)(rxjs@7.8.1))(rxjs@7.8.1)
@@ -9243,6 +9243,7 @@ snapshots:
       reflect-metadata: 0.2.2
       rxjs: 7.8.1
       socket.io-client: 4.8.1
+      sqlite3: 5.1.7
       superwstest: 2.0.4(supertest@7.0.0)
       typeorm: 0.3.20(mysql2@3.11.4)(sqlite3@5.1.7)(ts-node@10.9.2(@types/node@20.17.6)(typescript@5.6.3))
       typeorm-transactional: 0.5.0(reflect-metadata@0.2.2)(typeorm@0.3.20(mysql2@3.11.4)(sqlite3@5.1.7)(ts-node@10.9.2(@types/node@20.17.6)(typescript@5.6.3)))
@@ -9255,6 +9256,7 @@ snapshots:
       - '@nestjs/platform-socket.io'
       - '@sap/hana-client'
       - better-sqlite3
+      - bluebird
       - bufferutil
       - encoding
       - hdb-pool
@@ -9267,7 +9269,6 @@ snapshots:
       - pg-query-stream
       - redis
       - sql.js
-      - sqlite3
       - supertest
       - supports-color
       - ts-node

@@ -17,6 +17,7 @@ export interface QuizZone {
     quizCount: number;
     players?: Player[];
     currentQuiz?: CurrentQuiz;
+    currentQuizResult?: CurrentQuizResult;
     score?: number;
     quizzes?: Quiz[];
     submits?: SubmittedQuiz[];
@@ -65,6 +66,30 @@ export interface QuizZoneResultState {
     score: number;
     submits: SubmittedQuiz[];
     quizzes: Quiz[];
+}
+
+export interface SubmitResponse {
+    fastestPlayerIds: string[];
+    submittedCount: number;
+    totalPlayerCount: number;
+}
+
+export interface SomeoneSubmitResponse {
+    clientId: string;
+    submittedCount: number;
+}
+
+export interface CurrentQuizResult {
+    answer?: string;
+    correctPlayerCount?: number;
+    totalPlayerCount: number;
+    submittedCount: number;
+    fastestPlayers: Player[];
+}
+
+export interface NextQuizResponse {
+    nextQuiz: CurrentQuiz;
+    currentQuizResult: CurrentQuizResult;
 }
 
 export interface ChatMessage {
