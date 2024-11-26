@@ -6,9 +6,12 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { Environment } from '../config/http.config';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { initializeTransactionalContext } from 'typeorm-transactional';
 import { SessionWsAdapter } from './core/SessionWsAdapter';
 
 async function bootstrap() {
+    initializeTransactionalContext();
+
     const app = await NestFactory.create(AppModule);
     const configService = app.get(ConfigService);
 
@@ -34,9 +37,8 @@ async function bootstrap() {
     app.use(cookieParser());
     app.use(sessionMiddleware);
 
+    app.useGlobalPipes(new ValidationPipe({ transform: true }));
     app.useWebSocketAdapter(new SessionWsAdapter(app, sessionMiddleware));
-
-    app.useGlobalPipes(new ValidationPipe());
 
     await app.listen(port);
 }

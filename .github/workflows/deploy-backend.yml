@@ -1,7 +1,7 @@
-name: backend test
+name: backend deploy
 
 on:
-  pull_request:
+  push:
     branches: [develop, main]
     paths:
         - apps/backend/**
@@ -38,7 +38,7 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     name: push-docker
-    environment: ${{ github.base_ref == 'main' && 'prod' || 'staging' }}
+    environment: ${{ github.ref == 'refs/heads/main' && 'prod' || 'staging' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -61,13 +61,20 @@ jobs:
           build-args: |
             NODE_ENV=${{secrets.NODE_ENV}}
             SESSION_SECRET=${{secrets.SESSION_SECRET}}
-
+            MYSQL_HOST=${{secrets.MYSQL_HOST}}
+            DB_PORT=${{secrets.DB_PORT}}
+            DB_USERNAME=${{secrets.DB_USERNAME}}
+            DB_PASSWORD=${{secrets.DB_PASSWORD}}
+            DB_DATABASE=${{secrets.DB_DATABASE}}
+            DB_SYNCHRONIZE=${{secrets.DB_SYNCHRONIZE}}
+            
+            
 
   deploy-backend:
     needs: push-docker
     runs-on: ubuntu-latest
     name: Deploy Backend
-    environment: ${{ github.base_ref == 'main' && 'prod' || 'staging' }}
+    environment: ${{ github.ref == 'refs/heads/main' && 'prod' || 'staging' }}
     steps:
       - name: Set up SSH agent and add SSH key
         run: |
@@ -107,6 +114,7 @@ jobs:
                   sudo docker stop booquiz-backend || true && \
                   sudo docker rm booquiz-backend || true && \
                   sudo docker run -d --name booquiz-backend -p 3000:3000 $DOCKER_USERNAME/booquiz-backend:${{secrets.DOCKER_TAG}} && \
+                  sudo docker network connect booquiz booquiz-backend
                   sudo docker image prune -f"
           EOF
           exit

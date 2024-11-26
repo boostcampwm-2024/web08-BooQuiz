@@ -26,7 +26,6 @@ const QuizCompleted = ({ isLastQuiz, deadlineTime, currentQuizResult }: QuizComp
     }, []);
     return (
         <div className="w-full h-screen flex flex-col items-center justify-center gap-4">
-            <img width="200px" src="/BooQuizLogo.png" alt="BooQuiz Logo" />
             {currentQuizResult && (
                 <ContentBox>
                     <Typography

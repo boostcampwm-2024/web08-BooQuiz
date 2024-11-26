@@ -6,6 +6,8 @@ import Typography from '@/components/common/Typogrpahy';
 import { useNavigate } from 'react-router-dom';
 
 import { QuizZone } from '@/types/quizZone.types';
+import PlayersGrid from '@/components/common/PlayersGrid';
+import TooltipWrapper from '@/components/common/TooltipWrapper';
 
 interface QuizZoneLobbyProps {
     quizZoneState: QuizZone;
@@ -26,7 +28,6 @@ const QuizZoneLobby = ({ quizZoneState, quizZoneId, startQuiz, exitQuiz }: QuizZ
 
     return (
         <div className="w-full h-screen flex flex-col items-center justify-center gap-4">
-            <img className="w-[20rem]" src="/BooQuizLogo.png" alt="BooQuiz Logo" />
             <ContentBox className="w-full md:min-w-[48rem] min-h-[32rem]">
                 <div className="w-full h-full flex flex-row gap-2 items-center justify-center">
                     <ContentBox className="flex-[7] h-full">
@@ -50,10 +51,10 @@ const QuizZoneLobby = ({ quizZoneState, quizZoneId, startQuiz, exitQuiz }: QuizZ
                                 color="black"
                             /> */}
                         </div>
-                        {/* <ParticipantGrid
-                            participants={quizZoneState.players ?? [{ name: '참가자1' }]}
+                        <PlayersGrid
+                            players={quizZoneState.players ?? []}
                             hostId={quizZoneState.hostId}
-                        /> */}
+                        />
                     </ContentBox>
                     <ContentBox className="flex-[3] h-full flex justify-around">
                         <div className="flex flex-col gap-1">
@@ -66,8 +67,10 @@ const QuizZoneLobby = ({ quizZoneState, quizZoneId, startQuiz, exitQuiz }: QuizZ
                             />
                         </div>
                         <div className="flex flex-col gap-1">
-                            <Typography text={`임시 PIN 번호`} size="base" color="black" />
-                            <TextCopy size="2xl" bold={true} text={quizZoneId} />
+                            <Typography text={`입장코드`} size="base" color="black" />
+                            <TooltipWrapper content="입장코드를 복사할 수 있습니다.">
+                                <TextCopy size="xl" bold={true} text={quizZoneId} />
+                            </TooltipWrapper>
                         </div>
                         <div className="flex flex-col gap-1">
                             <Typography text={`퀴즈 개수`} size="base" color="black" />

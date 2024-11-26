@@ -25,7 +25,6 @@ const QuizInProgress = ({ currentQuiz, submitAnswer }: QuizInProgressProps) => {
 
     return (
         <div className="w-full h-screen flex flex-col items-center justify-center gap-4">
-            <img width="200px" src="/BooQuizLogo.png" alt="BooQuiz Logo" />
             <ProgressBar deadlineTime={currentQuiz.deadlineTime} onTimeEnd={() => {}} />
             <ContentBox className="md:min-w-[48rem] w-4/5">
                 <Typography

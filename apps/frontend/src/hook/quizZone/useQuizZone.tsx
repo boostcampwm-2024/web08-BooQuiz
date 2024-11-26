@@ -1,13 +1,7 @@
 import { useReducer } from 'react';
 import useWebSocket from '@/hook/useWebSocket.tsx';
-import {
-    NextQuizResponse,
-    Player,
-    QuizZone,
-    QuizZoneResultState,
-    SomeoneSubmitResponse,
-    SubmitResponse,
-} from '@/types/quizZone.types.ts';
+import { CurrentQuiz, Player, QuizZone, QuizZoneResultState } from '@/types/quizZone.types.ts';
+import atob from '@/utils/atob';
 
 export type QuizZoneAction =
     | { type: 'init'; payload: QuizZone }
@@ -25,16 +19,6 @@ export type QuizZoneAction =
 
 type Reducer<S, A> = (state: S, action: A) => S;
 
-function atob(encodedString: string): string {
-    try {
-        // 브라우저 native atob 사용
-        return decodeURIComponent(escape(window.atob(encodedString)));
-    } catch (error) {
-        console.error('Base64 디코딩 실패:', error);
-        return encodedString; // 실패 시 원본 문자열 반환
-    }
-}
-
 const quizZoneReducer: Reducer<QuizZone, QuizZoneAction> = (state, action) => {
     const { type, payload } = action;
 
@@ -49,6 +33,7 @@ const quizZoneReducer: Reducer<QuizZone, QuizZoneAction> = (state, action) => {
                 hostId: payload.hostId,
                 currentPlayer: payload.currentPlayer,
                 currentQuiz: payload.currentQuiz,
+                players: [],
             };
         case 'join':
             return { ...state, players: payload };
