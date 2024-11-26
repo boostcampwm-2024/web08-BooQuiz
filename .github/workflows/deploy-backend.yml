@@ -114,6 +114,7 @@ jobs:
                   sudo docker stop booquiz-backend || true && \
                   sudo docker rm booquiz-backend || true && \
                   sudo docker run -d --name booquiz-backend -p 3000:3000 $DOCKER_USERNAME/booquiz-backend:${{secrets.DOCKER_TAG}} && \
+                  sudo docker network connect booquiz booquiz-backend
                   sudo docker image prune -f"
           EOF
           exit

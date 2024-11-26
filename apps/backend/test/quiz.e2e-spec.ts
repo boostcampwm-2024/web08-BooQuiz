@@ -11,11 +11,16 @@ import { QuizSet } from '../src/quiz/entity/quiz-set.entity';
 import { initializeTransactionalContext } from 'typeorm-transactional';
 import { QUIZ_TYPE } from '../src/common/constants';
 import { CreateQuizRequestDto } from '../src/quiz/dto/create-quiz-request.dto';
+import { CreateQuizSetRequestDto } from '../src/quiz/dto/create-quiz-set-request.dto';
+import { UpdateQuizRequestDto } from '../src/quiz/dto/update-quiz-request.dto';
+import { beforeEach } from 'node:test';
 
 describe('QuizController (e2e)', () => {
     let app: INestApplication;
     let agent: TestAgent;
     let dataSource: DataSource;
+    let quiz: Quiz;
+    let quizSet: QuizSet;
 
     beforeAll(async () => {
         // 트랜잭션 컨텍스트 초기화
@@ -26,14 +31,10 @@ describe('QuizController (e2e)', () => {
             imports: [
                 AppModule,
                 TypeOrmModule.forRoot({
-                    type: 'mysql',
-                    host: 'localhost',
-                    port: 3306,
-                    username: 'root',
-                    password: '',
-                    database: 'test_db',
+                    type: 'sqlite',
+                    database: ':memory',
                     entities: [Quiz, QuizSet],
-                    synchronize: true, // 테스트 시 스키마 동기화
+                    synchronize: true,
                 }),
                 QuizModule,
             ],
@@ -45,28 +46,38 @@ describe('QuizController (e2e)', () => {
         dataSource = app.get(DataSource);
         agent = request.agent(app.getHttpServer());
 
-        await dataSource.synchronize(true);
+    });
+
+    beforeEach(async () => {
+        await dataSource.query('PRAGMA foreign_keys = OFF'); // 외래 키 비활성화
+        const entities = dataSource.entityMetadatas;
+        for (const entity of entities) {
+            const repository = dataSource.getRepository(entity.name);
+            await repository.query(`DELETE FROM ${entity.tableName}`);
+        }
+        await dataSource.query('PRAGMA foreign_keys = ON'); // 외래 키 활성화
 
         // 초기 데이터 삽입
         const quizSetRepository = dataSource.getRepository(QuizSet);
         const quizRepository = dataSource.getRepository(Quiz);
 
         // QuizSet 데이터 삽입
-        const quizSet = await quizSetRepository.save({
+        quizSet = await quizSetRepository.save({
             id: 1,
             name: '테스트 퀴즈셋',
         });
 
         // Quiz 데이터 삽입
-        await quizRepository.save({
+        quiz = await quizRepository.save({
             id: 1,
             question: '테스트 퀴즈 질문',
             answer: '테스트 정답',
             playTime: 5000,
             quizType: QUIZ_TYPE.SHORT_ANSWER,
-            quizSet,
+            quizSet: {id: 1},
         });
-    });
+    })
+
 
     afterAll(async () => {
         if (dataSource && dataSource.isInitialized) {
@@ -75,16 +86,32 @@ describe('QuizController (e2e)', () => {
         await app.close();
     });
 
-    describe('Error cases', () => {
-        it('퀴즈 리스트 반환 요청 - 존재하지 않는 QuizSetId로 요청 시 404 반환', async () => {
-            const nonExistentQuizSetId = 10;
-            const response = await agent.get(`/quiz/${nonExistentQuizSetId}`).expect(400);
+    describe('createQuizSet', () => {
+        it('퀴즈셋 정상적으로 저장', async () => {
+            const dto = {
+                name: "퀴즈셋 이름 테스트"
+            } as CreateQuizSetRequestDto;
+
+            const response = await agent.post(`/quiz`).send(dto).expect(201);
 
             expect(response.body).toEqual({
-                statusCode: 400,
-                message: '해당 퀴즈셋을 찾을 수 없습니다.',
-                error: 'Bad Request',
+                id: expect.any(Number),
             });
+        });
+    })
+
+    describe('createQuizzes', () => {
+        it('새로운 퀴즈 추가 요청 성공', async () => {
+            const quizSetId = 1;
+
+            const quizData = [{
+                question: '지브리는 뭘로 돈 벌게요?',
+                answer: '토토로',
+                playTime: 30000,
+                quizType: 'SHORT_ANSWER',
+            }] as CreateQuizRequestDto[];
+
+            const response = await agent.post(`/quiz/${quizSetId}`).send(quizData).expect(201);
         });
 
         it('퀴즈 생성 요청 - 존재하지 않는 퀴즈셋 id로 저장 요청 -> 400 반환', async () => {
@@ -99,9 +126,9 @@ describe('QuizController (e2e)', () => {
 
             await agent.post(`/quiz/${quizSetId}`).send(quizData).expect(400);
         });
-    });
+    })
 
-    describe('Success cases', () => {
+    describe('getQuizzes', () => {
         it('정상적으로 퀴즈 리스트 반환', async () => {
             const quizSetId = 1;
 
@@ -120,22 +147,55 @@ describe('QuizController (e2e)', () => {
             );
         });
 
-        // 수정 필요
-        it('새로운 퀴즈 추가 요청 성공', async () => {
-            const quizSetId = 1;
-
-            const quizData = {
-                question: '지브리는 뭘로 돈 벌게요?',
-                answer: '토토로',
-                playTime: 30000,
-                quizType: 'SHORT_ANSWER',
-            } as CreateQuizRequestDto;
-
-            const response = await agent.post(`/quiz/${quizSetId}`).send(quizData);
+        it('퀴즈 리스트 반환 요청 - 존재하지 않는 QuizSetId로 요청 시 400 반환', async () => {
+            const nonExistentQuizSetId = 10;
+            const response = await agent.get(`/quiz/${nonExistentQuizSetId}`).expect(400);
 
             expect(response.body).toEqual({
-                id: expect.any(Number),
+                statusCode: 400,
+                message: '해당 퀴즈셋을 찾을 수 없습니다.',
+                error: 'Bad Request',
             });
+        });
+    })
+    describe('updateQuiz', () => {
+        it('퀴즈 정상적으로 수정', async () => {
+            const quizId = quiz.id;
+            const dto = {
+                question: "질문 수정 테스트",
+                answer: "대답 수정 테스트",
+                playTime: 5000,
+                quizType: QUIZ_TYPE.SHORT_ANSWER,
+            } as UpdateQuizRequestDto;
+
+            const response = await agent.patch(`/quiz/${quizId}`).send(dto).expect(200);
+        });
+
+        it('존재하지 않는 퀴즈 수정 요청 -> 400 에러', async () => {
+                const quizId = 100;
+                const dto = {
+                    question: "질문 수정 테스트",
+                    answer: "대답 수정 테스트",
+                    playTime: 5000,
+                    quizType: QUIZ_TYPE.SHORT_ANSWER,
+                } as UpdateQuizRequestDto;
+
+                const response = await agent.patch(`/quiz/${quizId}`).send(dto).expect(200);
+        })
+    })
+
+    describe('deleteQuiz', () => {
+        it('퀴즈 정상적으로 삭제', async () => {
+            const quizId = quiz.id;
+
+            const response = await agent.delete(`/quiz/${quizId}`).expect(200);
+
+        });
+
+        it('존재하지 않는 퀴즈 삭제 요청 -> 400 에러', async () => {
+            const quizId = 100;
+
+            const response = await agent.delete(`/quiz/${quizId}`).expect(400);
         });
     });
 });

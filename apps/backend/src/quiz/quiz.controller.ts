@@ -60,7 +60,7 @@ export class QuizController {
         type: FindQuizzesResponseDto,
         isArray: true,
     })
-    @ApiResponse({ status: HttpStatus.NOT_FOUND, description: '해당 퀴즈셋의 id가 없습니다.' })
+    @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: '해당 퀴즈셋의 id가 없습니다.' })
     async findQuizzes(@Param('quizSetId') quizSetId: number): Promise<FindQuizzesResponseDto[]> {
         return this.quizService.getQuizzes(quizSetId);
     }
@@ -79,10 +79,13 @@ export class QuizController {
         return this.quizService.updateQuiz(quizId, updateQuizRequestDto);
     }
 
-    @Patch(':quizId')
+    @Delete(':quizId')
     @HttpCode(HttpStatus.OK)
     @ApiOperation({ summary: '퀴즈 삭제' })
-    @Delete(':quizSetId/:quizId')
+    @ApiResponse({
+        status: HttpStatus.OK,
+        description: '퀴즈의 정보를 성공적으로 삭제하였습니다.',
+    })
     async deleteQuiz(@Param('quizId') quizId: number): Promise<void> {
         return this.quizService.deleteQuiz(quizId);
     }
