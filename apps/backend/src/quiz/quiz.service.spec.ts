@@ -7,6 +7,8 @@ import { QUIZ_TYPE } from '../common/constants';
 import { CreateQuizRequestDto } from './dto/create-quiz-request.dto';
 import { BadRequestException } from '@nestjs/common';
 import { UpdateQuizRequestDto } from './dto/update-quiz-request.dto';
+import { describe } from 'node:test';
+import { SearchQuizSetRequestDTO } from './dto/search-quiz-set-request.dto';
 
 describe('QuizService', () => {
     let service: QuizService;
@@ -23,6 +25,8 @@ describe('QuizService', () => {
     const mockQuizSetRepository = {
         save: jest.fn(),
         findOneBy: jest.fn(),
+        searchByName: jest.fn(),
+        countByName: jest.fn(),
     };
 
     beforeEach(async () => {
@@ -49,6 +53,33 @@ describe('QuizService', () => {
         jest.clearAllMocks();
     });
 
+    describe('searchQuizSet', () => {
+        it('퀴즈셋 정상적으로 검색', async () => {
+            //given
+            const dto = {
+                name: "퀴즈셋 검색",
+                page: 1,
+                size: 10
+            } as SearchQuizSetRequestDTO;
+            const quizSets = [
+                { id: 1, name: '퀴즈셋 검색1' },
+                { id: 2, name: '퀴즈셋 검색2' },
+            ] as QuizSet[];
+            const count = quizSets.length;
+
+            mockQuizSetRepository.searchByName.mockResolvedValue(quizSets);
+            mockQuizSetRepository.countByName.mockResolvedValue(count);
+
+            //when
+            const response = await service.searchQuizSet(dto);
+
+            //then
+            expect(response).toEqual({
+                quizSetDetails: response.quizSetDetails,
+                meta: response.meta,
+            })
+        })
+    })
 
     describe('createQuiz', () => {
         it('새로운 퀴즈를 하나 생성한다', async () => {
