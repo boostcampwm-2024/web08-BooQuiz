@@ -52,6 +52,10 @@ const quizZoneReducer: Reducer<QuizZone, QuizZoneAction> = (state, action) => {
         case 'join':
             return { ...state, players: payload };
         case 'someone_join':
+            const isPlayerExist = state.players?.some((player) => player.id === payload.id);
+            if (isPlayerExist) {
+                return state; // 이미 존재하는 플레이어라면 상태 변경 없음
+            }
             return { ...state, players: [...(state.players ?? []), payload] };
         case 'someone_leave':
             return {
@@ -95,6 +99,7 @@ const quizZoneReducer: Reducer<QuizZone, QuizZoneAction> = (state, action) => {
         case 'nextQuiz':
             const { nextQuiz } = payload;
 
+            // console.log('nextQuiz', atob(payload.question), payload.question);
             return {
                 ...state,
                 stage: 'IN_PROGRESS',
