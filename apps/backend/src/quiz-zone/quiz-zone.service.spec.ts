@@ -116,8 +116,18 @@ describe('QuizZoneService', () => {
             };
             const adminId = 'adminId';
             const mockQuizzes = [
-                { question: '문제1', answer: '답1', playTime: 30000 },
-                { question: '문제2', answer: '답2', playTime: 30000 },
+                {
+                    question: '문제1',
+                    answer: '답1',
+                    playTime: 30000,
+                    quizType: QUIZ_TYPE.SHORT_ANSWER,
+                },
+                {
+                    question: '문제2',
+                    answer: '답2',
+                    playTime: 30000,
+                    quizType: QUIZ_TYPE.SHORT_ANSWER,
+                },
             ];
 
             mockQuizZoneRepository.has.mockResolvedValue(false);
@@ -136,9 +146,14 @@ describe('QuizZoneService', () => {
                     maxPlayers: createQuizZoneDto.limitPlayerCount,
                     stage: QUIZ_ZONE_STAGE.LOBBY,
                     currentQuizIndex: -1,
+                    currentQuizStartTime: 0,
+                    currentQuizDeadlineTime: 0,
+                    intervalTime: 3000,
+                    players: expect.any(Map),
                     quizzes: mockQuizzes.map((quiz) => ({
                         ...quiz,
                         question: Buffer.from(quiz.question).toString('base64'),
+                        playTime: quiz.playTime * 1000,
                     })),
                 }),
             );

@@ -50,7 +50,7 @@ describe('QuizZoneController', () => {
 
             await controller.create(createQuizZoneDto, session);
 
-            expect(service.create).toHaveBeenCalledWith(quizZoneId, session.id);
+            expect(service.create).toHaveBeenCalledWith(createQuizZoneDto, session.id);
         });
 
         it('퀴즈존의 세션 아이디가 중복되면 예외가 발생한다.', async () => {
@@ -84,7 +84,7 @@ describe('QuizZoneController', () => {
             const result = await controller.findQuizZoneInfo(session, quizZoneId);
 
             // then
-            expect(service.getQuizZoneInfo).toHaveBeenCalledWith(session.id, quizZoneId);
+            expect(service.getQuizZoneInfo).toHaveBeenCalledWith(session.id, quizZoneId, undefined);
             expect(result).toEqual(mockQuizZoneInfo);
         });
 
