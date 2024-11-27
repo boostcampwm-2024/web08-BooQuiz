@@ -76,14 +76,10 @@ export class QuizZoneService {
     }
 
     async getQuizZoneInfo(clientId: string, quizZoneId: string, sessionQuizZoneId?: string) {
-        const { isDuplicateConnection } = await this.checkExistingQuizZoneParticipation(
-            clientId,
-            quizZoneId,
-            sessionQuizZoneId,
-        );
-
-        if (isDuplicateConnection) {
-            await this.leave(sessionQuizZoneId, clientId);
+        if (sessionQuizZoneId !== undefined && sessionQuizZoneId !== quizZoneId) {
+            if (await this.repository.has(sessionQuizZoneId)) {
+                await this.leave(sessionQuizZoneId, clientId);
+            }
         }
 
         const quizZoneStage = await this.getQuizZoneStage(quizZoneId);
