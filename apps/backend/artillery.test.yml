@@ -1,0 +1,25 @@
+config:
+  target: "http://test.booquiz.kro.kr" # 서버의 기본 URL
+  phases:
+    - duration: 1 # 테스트 지속 시간 (초)
+      arrivalRate: 9 # 초당 요청 수
+  variables:
+    quizZoneId: "asdf1234" # 테스트용 퀴즈존 ID
+  http:
+    headers:
+      Content-Type: "application/json" # 모든 요청의 공통 헤더
+
+scenarios:
+  - name: Create and Get Quiz Zone
+    flow:
+      - post:
+          url: "/api/quiz-zone" # 퀴즈존 생성 API
+          json:
+            quizZoneId: "{{ quizZoneId }}" # 퀴즈존 ID를 요청 데이터에 포함
+          capture:
+            - json: "$.sessionId" # 응답에서 세션 ID 추출
+              as: sessionId
+      - get:
+          url: "/api/quiz-zone/{{ quizZoneId }}" # 생성된 퀴즈존에 GET 요청
+          headers:
+            Cookie: "sessionId={{ sessionId }}" # 세션 ID를 쿠키로 포함
