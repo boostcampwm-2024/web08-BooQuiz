@@ -17,15 +17,6 @@ import { QuizService } from '../quiz/quiz.service';
 const playTime = 30_000;
 const INTERVAL_TIME = 3000;
 
-const quizzes: Quiz[] = [
-    { question: '포도가 자기소개하면?', answer: '포도당', playTime },
-    { question: '고양이를 싫어하는 동물은?', answer: '미어캣', playTime },
-    { question: '게를 냉동실에 넣으면?', answer: '게으름', playTime },
-    { question: '오리를 생으로 먹으면?', answer: '회오리', playTime },
-    { question: '네 사람이 동시에 오줌을 누면?', answer: '포뇨', playTime },
-    { question: '지브리가 뭘로 돈 벌게요?', answer: '토토로', playTime },
-];
-
 @Injectable()
 export class QuizZoneService {
     constructor(
@@ -59,11 +50,11 @@ export class QuizZoneService {
             state: PLAYER_STATE.WAIT,
         };
 
-        const quizSet = await this.quizService.getQuizzes(quizSetId);
-
-        const encodedQuizzes = quizSet.map((quiz) => ({
-            ...quiz,
+        const quizzes: Quiz[] = (await this.quizService.getQuizzes(quizSetId)).map((quiz) => ({
             question: Buffer.from(quiz.question).toString('base64'),
+            answer: quiz.answer,
+            playTime: quiz.playTime,
+            quizType: quiz.quizType,
         }));
 
         const quizZone: QuizZone = {
@@ -72,7 +63,7 @@ export class QuizZoneService {
             description,
             hostId: hostId,
             maxPlayers: limitPlayerCount,
-            quizzes: encodedQuizzes,
+            quizzes,
             stage: QUIZ_ZONE_STAGE.LOBBY,
             currentQuizIndex: -1,
             currentQuizStartTime: 0,
@@ -149,6 +140,7 @@ export class QuizZoneService {
             hostId,
             title,
             description,
+            quizzes,
         } = await this.findOne(quizZoneId);
         const { id, nickname, state } = players.get(clientId);
 
@@ -171,7 +163,8 @@ export class QuizZoneService {
     }
 
     private async getResultInfo(clientId: string, quizZoneId: string): Promise<FindQuizZoneDto> {
-        const { players, stage, title, description, hostId } = await this.findOne(quizZoneId);
+        const { players, stage, title, description, hostId, quizzes } =
+            await this.findOne(quizZoneId);
         const { id, nickname, state, submits, score } = players.get(clientId);
 
         return {
