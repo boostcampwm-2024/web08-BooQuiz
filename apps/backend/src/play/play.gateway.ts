@@ -101,7 +101,7 @@ export class PlayGateway implements OnGatewayInit {
             nickname,
         }));
 
-        if (this.clients.has(sessionId)) {
+        if (this.clients.has(sessionId) && this.clients.get(sessionId).quizZoneId === quizZoneId) {
             this.clients.set(sessionId, { quizZoneId, socket: client });
             return {
                 event: 'join',
