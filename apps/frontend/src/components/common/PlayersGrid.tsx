@@ -5,11 +5,12 @@ import { Player } from '@/types/quizZone.types';
 
 // 개별 플레이어 카드 컴포넌트
 interface PlayerCardProps {
+    isCurrentPlayer?: boolean;
     player: Player;
     isHost: boolean;
 }
 
-const PlayerCard = ({ player, isHost }: PlayerCardProps) => {
+const PlayerCard = ({ isCurrentPlayer = false, player, isHost }: PlayerCardProps) => {
     const initials = player.nickname
         .split(' ')
         .map((word) => word[0])
@@ -23,16 +24,30 @@ const PlayerCard = ({ player, isHost }: PlayerCardProps) => {
             role="listitem"
             aria-label={`Player ${player.nickname}${isHost ? ' (Host)' : ''}`}
         >
-            <Avatar className="border-2 border-gray-200 shadow-sm">
-                <AvatarImage src={'/BooQuizFavicon.png'} alt={`${player.nickname}'s avatar`} />
-                <AvatarFallback className="bg-primary-50 text-primary-700">
-                    {initials}
-                </AvatarFallback>
-            </Avatar>
-            <div className="flex items-center gap-2 flex-1 min-w-0">
-                <Typography text={player.nickname} size="base" color="black" />
+            <div className="relative">
+                <Avatar className="border-2 border-gray-200 shadow-sm">
+                    <AvatarImage
+                        src={`https://api.dicebear.com/7.x/initials/svg?seed=${isHost ? '방장' : player.nickname}`}
+                        alt={`${player.nickname}'s avatar`}
+                    />
+                    <AvatarFallback className="bg-primary-50 text-primary-700">
+                        {initials}
+                    </AvatarFallback>
+                </Avatar>
                 {isHost && (
-                    <Crown className="text-yellow-500 flex-shrink-0" size={20} aria-label="Host" />
+                    <Crown
+                        className="absolute -top-3 right-3 text-yellow-400 drop-shadow-md"
+                        size={16}
+                        aria-label="Host"
+                        fill="currentColor"
+                    />
+                )}
+            </div>
+            <div className="flex items-center gap-2 flex-1 min-w-0">
+                {isCurrentPlayer ? (
+                    <Typography text={player.nickname} size="base" color="blue" bold={true} />
+                ) : (
+                    <Typography text={player.nickname} size="base" color="black" bold={false} />
                 )}
             </div>
         </div>
@@ -40,12 +55,13 @@ const PlayerCard = ({ player, isHost }: PlayerCardProps) => {
 };
 
 interface PlayersGridProps {
+    currentPlayer?: Player;
     players: Player[];
     hostId: string;
     className?: string;
 }
 
-const PlayersGrid = ({ players, hostId, className = '' }: PlayersGridProps) => {
+const PlayersGrid = ({ currentPlayer, players, hostId, className = '' }: PlayersGridProps) => {
     if (!players.length) {
         return (
             <div className="text-center py-8 text-gray-500">
@@ -63,6 +79,7 @@ const PlayersGrid = ({ players, hostId, className = '' }: PlayersGridProps) => {
             {players.map((player) => (
                 <PlayerCard
                     key={`${player.id}-${player.nickname}`}
+                    isCurrentPlayer={currentPlayer?.id === player.id}
                     player={player}
                     isHost={player.id === hostId}
                 />

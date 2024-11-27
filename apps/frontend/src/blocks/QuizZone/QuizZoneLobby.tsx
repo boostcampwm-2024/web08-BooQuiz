@@ -63,6 +63,7 @@ const QuizZoneLobby = ({
                             /> */}
                             </div>
                             <PlayersGrid
+                                currentPlayer={currentPlayer}
                                 players={quizZoneState.players ?? []}
                                 hostId={quizZoneState.hostId}
                             />
