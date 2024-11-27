@@ -6,20 +6,35 @@ import {
     HttpCode,
     HttpStatus,
     Param,
-    ParseArrayPipe,
     Patch,
-    Post,
+    Post, Query,
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { QuizService } from './quiz.service';
 import { CreateQuizRequestDto } from './dto/create-quiz-request.dto';
 import { FindQuizzesResponseDto } from './dto/find-quizzes-response.dto';
 import { UpdateQuizRequestDto } from './dto/update-quiz-request.dto';
+import { SearchQuizSetResponseDTO } from './dto/search-quiz-set-response.dto';
+import { SearchQuizSetRequestDTO } from './dto/search-quiz-set-request.dto';
 
 @ApiTags('Quiz')
 @Controller('quiz')
 export class QuizController {
     constructor(private readonly quizService: QuizService) {}
+
+    @Get()
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({summary: '퀴즈셋 검색'})
+    @ApiResponse({
+        status: HttpStatus.OK,
+        description: '퀴즈셋의 검색을 성공적으로 반환했습니다',
+        type: SearchQuizSetResponseDTO
+    })
+    async searchQuizSet(
+        @Query() searchQuery: SearchQuizSetRequestDTO,
+    ): Promise<SearchQuizSetResponseDTO> {
+        return this.quizService.searchQuizSet(searchQuery);
+    }
 
     @Post()
     @HttpCode(HttpStatus.CREATED)
