@@ -14,7 +14,6 @@ import { FindQuizZoneDto } from './dto/find-quiz-zone.dto';
 import { CreateQuizZoneDto } from './dto/create-quiz-zone.dto';
 import { QuizService } from '../quiz/quiz.service';
 
-const playTime = 30_000;
 const INTERVAL_TIME = 3000;
 
 @Injectable()
@@ -53,7 +52,7 @@ export class QuizZoneService {
         const quizzes: Quiz[] = (await this.quizService.getQuizzes(quizSetId)).map((quiz) => ({
             question: Buffer.from(quiz.question).toString('base64'),
             answer: quiz.answer,
-            playTime: quiz.playTime,
+            playTime: quiz.playTime * 1000,
             quizType: quiz.quizType,
         }));
 
