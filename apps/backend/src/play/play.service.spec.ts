@@ -4,10 +4,9 @@ import { PlayService } from './play.service';
 import { QuizZoneService } from '../quiz-zone/quiz-zone.service';
 import { QuizZone } from '../quiz-zone/entities/quiz-zone.entity';
 import { SubmittedQuiz } from '../quiz-zone/entities/submitted-quiz.entity';
-import { PLAYER_STATE, QUIZ_ZONE_STAGE } from '../common/constants';
+import { PLAYER_STATE, QUIZ_TYPE, QUIZ_ZONE_STAGE } from '../common/constants';
 import { RuntimeException } from '@nestjs/core/errors/exceptions';
 import { describe } from 'node:test';
-import exp from 'node:constants';
 
 describe('PlayService', () => {
     let service: PlayService;
@@ -33,8 +32,18 @@ describe('PlayService', () => {
         currentQuizStartTime: Date.now(),
         currentQuizDeadlineTime: Date.now() + 10000,
         quizzes: [
-            { question: '1번 문제입니다', answer: '정답1', playTime: 30000 },
-            { question: '2번 문제입니다', answer: '정답2', playTime: 30000 },
+            {
+                question: '1번 문제입니다',
+                answer: '정답1',
+                playTime: 30000,
+                quizType: QUIZ_TYPE.SHORT_ANSWER,
+            },
+            {
+                question: '2번 문제입니다',
+                answer: '정답2',
+                playTime: 30000,
+                quizType: QUIZ_TYPE.SHORT_ANSWER,
+            },
         ],
         players: new Map([['player-1', mockPlayer]]),
     };
