@@ -1,4 +1,4 @@
-import { useEffect, useReducer } from 'react';
+import { useReducer } from 'react';
 import useWebSocket from '@/hook/useWebSocket.tsx';
 import {
     NextQuizResponse,
@@ -25,6 +25,11 @@ export type QuizZoneAction =
     | { type: 'finish'; payload: undefined }
     | { type: 'summary'; payload: QuizZoneResultState }
     | { type: 'chat'; payload: ChatMessage };
+
+export type chatAction = {
+    type: 'chat';
+    payload: ChatMessage;
+};
 
 type Reducer<S, A> = (state: S, action: A) => S;
 
@@ -153,6 +158,17 @@ const quizZoneReducer: Reducer<QuizZone, QuizZoneAction> = (state, action) => {
     }
 };
 
+export const chatMessagesReducer: Reducer<ChatMessage[], chatAction> = (chatMessages, action) => {
+    const { type, payload } = action;
+
+    switch (type) {
+        case 'chat':
+            return [...chatMessages, payload];
+        default:
+            return chatMessages;
+    }
+};
+
 /**
  * @description 다중 사용자 퀴즈 게임 환경에서 퀴즈존 상태와 상호작용을 관리하는 커스텀 훅입니다.
  *
@@ -203,10 +219,17 @@ const useQuizZone = () => {
         quizzes: [],
         chatMessages: [],
     };
+
     const [quizZoneState, dispatch] = useReducer(quizZoneReducer, initialQuizZoneState);
+    // const [chatMessages, setChatMessages] = useReducer(chatMessagesReducer, []);
 
     const messageHandler = (event: MessageEvent) => {
         const { event: QuizZoneEvent, data } = JSON.parse(event.data);
+        // if (QuizZoneEvent === 'chat') {
+        //     setChatMessages({ type: 'chat', payload: data });
+        //     return;
+        // }
+
         dispatch({
             type: QuizZoneEvent,
             payload: data,
