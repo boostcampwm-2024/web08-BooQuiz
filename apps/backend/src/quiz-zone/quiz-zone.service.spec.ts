@@ -4,7 +4,7 @@ import { BadRequestException, ConflictException, NotFoundException } from '@nest
 import { QuizZone } from './entities/quiz-zone.entity';
 import { IQuizZoneRepository } from './repository/quiz-zone.repository.interface';
 import { Quiz } from './entities/quiz.entity';
-import { PLAYER_STATE, QUIZ_ZONE_STAGE } from '../common/constants';
+import { PLAYER_STATE, QUIZ_TYPE, QUIZ_ZONE_STAGE } from '../common/constants';
 import { QuizService } from '../quiz/quiz.service';
 
 const nickNames: string[] = [
@@ -23,12 +23,42 @@ const nickNames: string[] = [
 const playTime = 30_000;
 
 const quizzes: Quiz[] = [
-    { question: '포도가 자기소개하면?', answer: '포도당', playTime },
-    { question: '고양이를 싫어하는 동물은?', answer: '미어캣', playTime },
-    { question: '게를 냉동실에 넣으면?', answer: '게으름', playTime },
-    { question: '오리를 생으로 먹으면?', answer: '회오리', playTime },
-    { question: '네 사람이 동시에 오줌을 누면?', answer: '포뇨', playTime },
-    { question: '지브리가 뭘로 돈 벌게요?', answer: '토토로', playTime },
+    {
+        question: '포도가 자기소개하면?',
+        answer: '포도당',
+        playTime,
+        quizType: QUIZ_TYPE.SHORT_ANSWER,
+    },
+    {
+        question: '고양이를 싫어하는 동물은?',
+        answer: '미어캣',
+        playTime,
+        quizType: QUIZ_TYPE.SHORT_ANSWER,
+    },
+    {
+        question: '게를 냉동실에 넣으면?',
+        answer: '게으름',
+        playTime,
+        quizType: QUIZ_TYPE.SHORT_ANSWER,
+    },
+    {
+        question: '오리를 생으로 먹으면?',
+        answer: '회오리',
+        playTime,
+        quizType: QUIZ_TYPE.SHORT_ANSWER,
+    },
+    {
+        question: '네 사람이 동시에 오줌을 누면?',
+        answer: '포뇨',
+        playTime,
+        quizType: QUIZ_TYPE.SHORT_ANSWER,
+    },
+    {
+        question: '지브리가 뭘로 돈 벌게요?',
+        answer: '토토로',
+        playTime,
+        quizType: QUIZ_TYPE.SHORT_ANSWER,
+    },
 ];
 
 describe('QuizZoneService', () => {
