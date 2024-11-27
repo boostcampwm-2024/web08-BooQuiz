@@ -14,7 +14,6 @@ export class QuizService {
         private quizSetRepository: QuizSetRepository,
     ) {}
 
-
     async createQuizzes(createQuizDto: CreateQuizRequestDto) {
         const quizSet = await this.quizSetRepository.save({ name: createQuizDto.quizSetName });
 
@@ -23,12 +22,13 @@ export class QuizService {
         });
 
         await this.quizRepository.save(quizzes);
+
+        return quizSet.id;
     }
 
     async getQuizzes(quizSetId: number): Promise<FindQuizzesResponseDto[]> {
         const quizSet = await this.findQuizSet(quizSetId);
         return await this.quizRepository.findBy({ quizSet: quizSet });
-
     }
 
     async updateQuiz(quizId: number, updateQuizRequestDto: UpdateQuizRequestDto) {
@@ -43,7 +43,7 @@ export class QuizService {
     }
 
     async deleteQuiz(quizId: number) {
-        const quiz = await this.findQuiz(quizId);
+        await this.findQuiz(quizId);
 
         // 퀴즈 존재하면 삭제
         await this.quizRepository.delete({ id: quizId });
@@ -68,15 +68,15 @@ export class QuizService {
     }
 
     async searchQuizSet(searchQuery: SearchQuizSetRequestDTO) {
-        const {name, page, size} = searchQuery;
+        const { name, page, size } = searchQuery;
         const [quizSets, count] = await Promise.all([
             this.quizSetRepository.searchByName(name, page, size),
-            this.quizSetRepository.countByName(name)
+            this.quizSetRepository.countByName(name),
         ]);
 
         const quizSetDetails = quizSets.map(QuizSetDetails.from);
-        const meta = {total: count, page: page};
+        const meta = { total: count, page: page };
 
-        return {quizSetDetails, meta}
+        return { quizSetDetails, meta };
     }
 }

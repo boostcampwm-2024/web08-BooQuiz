@@ -139,5 +139,5 @@ export const getRandomNickName = (): string => {
 };
 
 export enum QUIZ_TYPE {
-    SHORT_ANSWER = 'SHORT_ANSWER',
+    SHORT_ANSWER = 'SHORT',
 }

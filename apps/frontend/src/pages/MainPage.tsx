@@ -25,19 +25,7 @@ const MainPageContent = () => {
 
     const handleCreateQuizZone = async () => {
         try {
-            validateInput(input);
-            const response = await fetch('/api/quiz-zone/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ quizZoneId: input }),
-            });
-            if (!response.ok) {
-                throwError(response);
-                return;
-            }
-            navigate(`/${input}`);
+            navigate(`/quiz-zone`);
         } catch (error) {
             throwError(error);
         }
