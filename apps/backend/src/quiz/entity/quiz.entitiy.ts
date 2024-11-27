@@ -14,16 +14,16 @@ export class Quiz {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column()
+    @Column({type: 'varchar', length: 255})
     question: string;
 
-    @Column()
+    @Column({type: 'varchar', length: 50})
     answer: string;
 
-    @Column()
+    @Column({ type: 'int' })
     playTime: number;
 
-    @Column({ name: 'quiz_type' })
+    @Column({ name: 'quiz_type', type: 'varchar', length: 20 })
     quizType: QUIZ_TYPE;
 
     @ManyToOne((type) => QuizSet, (quizSet) => quizSet.quizzes, {

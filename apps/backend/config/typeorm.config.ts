@@ -2,12 +2,27 @@ import { TypeOrmModuleOptions, TypeOrmOptionsFactory } from '@nestjs/typeorm';
 import { Quiz } from '../src/quiz/entity/quiz.entitiy';
 import { QuizSet } from '../src/quiz/entity/quiz-set.entity';
 import { ConfigService } from '@nestjs/config';
+import { Environment } from './http.config';
+import { Injectable } from '@nestjs/common';
 
-// @Injectable()
+@Injectable()
 export class TypeormConfig implements TypeOrmOptionsFactory {
     constructor(private readonly configService: ConfigService) {}
 
     createTypeOrmOptions(): TypeOrmModuleOptions {
+        const env = this.configService.get<Environment>('env');
+
+        if(env === 'DEV') {
+
+            return {
+                type: 'sqlite',
+                database: ':booquiz',
+                entities: [Quiz, QuizSet],
+                synchronize: true,
+                logging: ['query'],
+            }
+        }
+
         return {
             type: 'mysql',
             host: this.configService.get<string>('host'),

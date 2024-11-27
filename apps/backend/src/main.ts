@@ -7,9 +7,10 @@ import { ConfigService } from '@nestjs/config';
 import { Environment } from '../config/http.config';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { SessionWsAdapter } from './core/SessionWsAdapter';
+import { initializeTransactionalContext } from 'typeorm-transactional';
 
 async function bootstrap() {
-    // initializeTransactionalContext();
+    initializeTransactionalContext();
 
     const app = await NestFactory.create(AppModule);
     const configService = app.get(ConfigService);
