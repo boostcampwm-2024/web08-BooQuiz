@@ -5,6 +5,7 @@ import { QuizZone } from './entities/quiz-zone.entity';
 import { IQuizZoneRepository } from './repository/quiz-zone.repository.interface';
 import { Quiz } from './entities/quiz.entity';
 import { PLAYER_STATE, QUIZ_ZONE_STAGE } from '../common/constants';
+import { QuizService } from '../quiz/quiz.service';
 
 const nickNames: string[] = [
     '전설의고양이',
@@ -33,7 +34,7 @@ const quizzes: Quiz[] = [
 describe('QuizZoneService', () => {
     let service: QuizZoneService;
     let repository: IQuizZoneRepository;
-
+    let quizService: QuizService;
     const mockQuizZoneRepository = {
         set: jest.fn(),
         get: jest.fn(),
@@ -41,6 +42,14 @@ describe('QuizZoneService', () => {
         has: jest.fn(),
     };
 
+    const mockQuizService = {
+        createQuizzes: jest.fn(),
+        getQuizzes: jest.fn(),
+        updateQuiz: jest.fn(),
+        deleteQuiz: jest.fn(),
+        findQuizSet: jest.fn(),
+        findQuiz: jest.fn(),
+    };
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [
@@ -49,11 +58,16 @@ describe('QuizZoneService', () => {
                     provide: 'QuizZoneRepository',
                     useValue: mockQuizZoneRepository,
                 },
+                {
+                    provide: QuizService,
+                    useValue: mockQuizService,
+                },
             ],
         }).compile();
 
         service = module.get<QuizZoneService>(QuizZoneService);
         repository = module.get<IQuizZoneRepository>('QuizZoneRepository');
+        quizService = module.get<QuizService>(QuizService);
     });
 
     afterEach(() => {
@@ -62,32 +76,61 @@ describe('QuizZoneService', () => {
 
     describe('create', () => {
         it('새로운 퀴즈존을 생성한다', async () => {
-            const quizZoneId = 'testQuizZone';
+            // given
+            const createQuizZoneDto = {
+                quizZoneId: 'test123',
+                title: '테스트 퀴즈',
+                description: '테스트용 퀴즈입니다',
+                limitPlayerCount: 100,
+                quizSetId: 1,
+            };
             const adminId = 'adminId';
+            const mockQuizzes = [
+                { question: '문제1', answer: '답1', playTime: 30000 },
+                { question: '문제2', answer: '답2', playTime: 30000 },
+            ];
 
             mockQuizZoneRepository.has.mockResolvedValue(false);
+            mockQuizService.getQuizzes.mockResolvedValue(mockQuizzes);
 
-            await service.create(quizZoneId, adminId);
+            // when
+            await service.create(createQuizZoneDto, adminId);
 
+            // then
             expect(repository.set).toHaveBeenCalledWith(
-                quizZoneId,
+                createQuizZoneDto.quizZoneId,
                 expect.objectContaining({
                     hostId: adminId,
+                    title: createQuizZoneDto.title,
+                    description: createQuizZoneDto.description,
+                    maxPlayers: createQuizZoneDto.limitPlayerCount,
                     stage: QUIZ_ZONE_STAGE.LOBBY,
                     currentQuizIndex: -1,
-                    title: '넌센스 퀴즈',
-                    description: '넌센스 퀴즈 입니다',
+                    quizzes: mockQuizzes.map((quiz) => ({
+                        ...quiz,
+                        question: Buffer.from(quiz.question).toString('base64'),
+                    })),
                 }),
             );
         });
 
         it('이미 존재하는 퀴즈존 ID로 생성 시 ConflictException을 던진다', async () => {
-            const quizZoneId = 'testQuizZone';
+            // given
+            const createQuizZoneDto = {
+                quizZoneId: 'test123',
+                title: '테스트 퀴즈',
+                description: '테스트용 퀴즈입니다',
+                limitPlayerCount: 100,
+                quizSetId: 1,
+            };
             const adminId = 'adminId';
 
             mockQuizZoneRepository.has.mockResolvedValue(true);
 
-            await expect(service.create(quizZoneId, adminId)).rejects.toThrow(ConflictException);
+            // when & then
+            await expect(service.create(createQuizZoneDto, adminId)).rejects.toThrow(
+                ConflictException,
+            );
         });
     });
 

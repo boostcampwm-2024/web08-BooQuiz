@@ -26,12 +26,11 @@ export class QuizZoneController {
         @Body() createQuizZoneDto: CreateQuizZoneDto,
         @Session() session: Record<string, any>,
     ): Promise<void> {
-        const { quizZoneId } = createQuizZoneDto;
         if (!session || !session.id) {
             throw new BadRequestException('세션 정보가 없습니다.');
         }
         const hostId = session.id;
-        await this.quizZoneService.create(quizZoneId, hostId);
+        await this.quizZoneService.create(createQuizZoneDto, hostId);
     }
 
     @Get('check/:quizZoneId')

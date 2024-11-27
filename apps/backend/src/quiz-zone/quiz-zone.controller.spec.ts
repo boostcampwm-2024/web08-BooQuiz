@@ -32,6 +32,10 @@ describe('QuizZoneController', () => {
         // create 관련 테스트는 변경사항이 없으므로 그대로 유지
         const createQuizZoneDto: CreateQuizZoneDto = {
             quizZoneId: 'test123',
+            title: 'Test Quiz',
+            description: 'Test Description',
+            limitPlayerCount: 8,
+            quizSetId: 1,
         };
 
         it('세션 정보가 없으면 BadRequestException을 던진다', async () => {

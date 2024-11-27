@@ -11,9 +11,12 @@ import { QuizZone } from './entities/quiz-zone.entity';
 import { IQuizZoneRepository } from './repository/quiz-zone.repository.interface';
 import { getRandomNickName, PLAYER_STATE, QUIZ_ZONE_STAGE } from '../common/constants';
 import { FindQuizZoneDto } from './dto/find-quiz-zone.dto';
+import { CreateQuizZoneDto } from './dto/create-quiz-zone.dto';
+import { QuizService } from '../quiz/quiz.service';
 
 const playTime = 30_000;
-const MAX_PLAYERS = 10;
+const INTERVAL_TIME = 3000;
+
 const quizzes: Quiz[] = [
     { question: '포도가 자기소개하면?', answer: '포도당', playTime },
     { question: '고양이를 싫어하는 동물은?', answer: '미어캣', playTime },
@@ -28,17 +31,20 @@ export class QuizZoneService {
     constructor(
         @Inject('QuizZoneRepository')
         private readonly repository: IQuizZoneRepository,
+        @Inject(QuizService)
+        private readonly quizService: QuizService,
     ) {}
 
     /**
      * 새로운 퀴즈 존을 생성합니다.
      *
-     * @param quizZoneId - 등록될 퀴즈존 ID
+     * @param createQuizZoneDto - 등록될 퀴즈존DTO
      * @param hostId
      * @returns 퀴즈 존을 생성하고 저장하는 비동기 작업
      * @throws(ConflictException) 이미 저장된 ID인 경우 예외 발생
      */
-    async create(quizZoneId: string, hostId: string): Promise<void> {
+    async create(createQuizZoneDto: CreateQuizZoneDto, hostId: string): Promise<void> {
+        const { quizZoneId, title, description, limitPlayerCount, quizSetId } = createQuizZoneDto;
         const hasQuizZone = await this.repository.has(quizZoneId);
 
         if (hasQuizZone) {
@@ -53,23 +59,25 @@ export class QuizZoneService {
             state: PLAYER_STATE.WAIT,
         };
 
-        const encodedQuizzes = quizzes.map((quiz) => ({
+        const quizSet = await this.quizService.getQuizzes(quizSetId);
+
+        const encodedQuizzes = quizSet.map((quiz) => ({
             ...quiz,
             question: Buffer.from(quiz.question).toString('base64'),
         }));
 
         const quizZone: QuizZone = {
             players: new Map<string, Player>([[hostId, player]]),
-            title: '넌센스 퀴즈',
-            description: '넌센스 퀴즈 입니다',
+            title,
+            description,
             hostId: hostId,
-            maxPlayers: MAX_PLAYERS,
+            maxPlayers: limitPlayerCount,
             quizzes: encodedQuizzes,
             stage: QUIZ_ZONE_STAGE.LOBBY,
             currentQuizIndex: -1,
             currentQuizStartTime: 0,
             currentQuizDeadlineTime: 0,
-            intervalTime: 3000,
+            intervalTime: INTERVAL_TIME,
         };
 
         await this.repository.set(quizZoneId, quizZone);
