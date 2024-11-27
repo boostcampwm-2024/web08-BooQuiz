@@ -75,54 +75,6 @@ export class QuizZoneService {
         await this.repository.set(quizZoneId, quizZone);
     }
 
-    async checkExistingQuizZoneParticipation(
-        clientId: string,
-        quizZoneId: string,
-        sessionQuizZoneId?: string,
-    ): Promise<CheckExistingQuizZoneDto> {
-        //처음 접속 할때
-        if (!sessionQuizZoneId) {
-            return {
-                isDuplicateConnection: false,
-                newQuizZoneId: quizZoneId,
-                existingQuizZoneId: undefined,
-            };
-        }
-        const sessionQuizZone = await this.repository.get(sessionQuizZoneId);
-
-        //이미 접속해있던 퀴즈존이랑 같을때
-        if (quizZoneId === sessionQuizZoneId) {
-            //이미 접속해있던 퀴즈존이 로비,진행 일때
-            if (sessionQuizZone.players.has(clientId)) {
-                return {
-                    isDuplicateConnection: false,
-                    newQuizZoneId: quizZoneId,
-                    existingQuizZoneId: sessionQuizZoneId,
-                };
-            }
-            return {
-                isDuplicateConnection: false,
-                newQuizZoneId: quizZoneId,
-                existingQuizZoneId: undefined,
-            };
-        }
-
-        //이미 접속해있던 퀴즈존이랑 다를때 && 이미 접속해있던 퀴즈존에 클라이언트가 있을때
-        if (quizZoneId !== sessionQuizZoneId && sessionQuizZone.players.has(clientId)) {
-            return {
-                isDuplicateConnection: true,
-                newQuizZoneId: quizZoneId,
-                existingQuizZoneId: sessionQuizZoneId,
-            };
-        }
-        // 세션에 남아있는 퀴즈존에 클라이언트가 없을때
-        return {
-            isDuplicateConnection: false,
-            newQuizZoneId: quizZoneId,
-            existingQuizZoneId: sessionQuizZoneId,
-        };
-    }
-
     async getQuizZoneInfo(clientId: string, quizZoneId: string, sessionQuizZoneId?: string) {
         const { isDuplicateConnection } = await this.checkExistingQuizZoneParticipation(
             clientId,
