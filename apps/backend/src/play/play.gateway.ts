@@ -16,6 +16,7 @@ import { ClientInfo } from './entities/client-info.entity';
 import { WebSocketWithSession } from '../core/SessionWsAdapter';
 import { RuntimeException } from '@nestjs/core/errors/exceptions';
 import { CLOSE_CODE } from '../common/constants';
+import { clearTimeout } from 'node:timers';
 
 /**
  * 퀴즈 게임에 대한 WebSocket 연결을 관리하는 Gateway입니다.
@@ -100,6 +101,13 @@ export class PlayGateway implements OnGatewayInit {
             nickname,
         }));
 
+        if (this.clients.has(sessionId)) {
+            this.clients.set(sessionId, { quizZoneId, socket: client });
+            return {
+                event: 'join',
+                data,
+            };
+        }
         this.clients.set(sessionId, { quizZoneId, socket: client });
 
         this.broadcast(playerIds, 'someone_join', { id, nickname });
