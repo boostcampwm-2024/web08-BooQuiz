@@ -6,7 +6,7 @@ export class QuizSet {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column()
+    @Column({type: 'varchar', length: 50})
     name: string;
 
     @OneToMany((type) => Quiz, (quiz) => quiz.quizSet)
