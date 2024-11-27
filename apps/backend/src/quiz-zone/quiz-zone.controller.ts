@@ -47,11 +47,8 @@ export class QuizZoneController {
         @Session() session: Record<string, any>,
         @Param('quizZoneId') quizZoneId: string,
     ) {
-        return this.quizZoneService.checkExistingQuizZoneParticipation(
-            session.id,
-            quizZoneId,
-            session.quizZoneId,
-        );
+        const sessionQuizZoneId = session.id;
+        return sessionQuizZoneId === undefined || sessionQuizZoneId === quizZoneId;
     }
 
     @Get(':quizZoneId')
