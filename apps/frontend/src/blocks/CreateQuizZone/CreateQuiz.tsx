@@ -21,8 +21,7 @@ const CreateQuiz = ({ handleCreateQuiz }: CreateQuizProps) => {
         30,
         validTime,
     );
-    const [quizType, typeInvalidMessage, setQuizType, isInvalidQuizType] =
-        useValidState<ProblemType>('SHORT', () => {});
+    const [quizType, _, __, isInvalidQuizType] = useValidState<ProblemType>('SHORT', () => {});
 
     const isInvalid = () =>
         isInvalidQuestion || isInvalidAnswer || isInvalidPlayTime || isInvalidQuizType;
@@ -58,15 +57,15 @@ const CreateQuiz = ({ handleCreateQuiz }: CreateQuizProps) => {
                             <Typography size="xs" color="red" text={typeInvalidMessage} />
                         )}
                     </div> */}
-                <div className={isInvalidTime ? 'invalid' : ''}>
+                <div className={isInvalidPlayTime ? 'invalid' : ''}>
                     <Input
                         type="number"
                         name="time"
                         label="풀이 시간"
                         min={1}
                         max={60}
-                        value={time}
-                        onChange={(e) => setTime(parseInt(e.target.value))}
+                        value={playTime}
+                        onChange={(e) => setPlayTime(parseInt(e.target.value))}
                         isBorder={true}
                     />
                     {isInvalidPlayTime && (
