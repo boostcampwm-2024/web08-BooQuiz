@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { QuizController } from './quiz.controller';
 import { QuizService } from './quiz.service';
-import { CreateQuizRequestDto } from './dto/create-quiz-request.dto';
-import { NotFoundException } from '@nestjs/common';
+import { UpdateQuizRequestDto } from './dto/update-quiz-request.dto';
+import { QUIZ_TYPE } from '../common/constants';
 
 describe('QuizController', () => {
     let quizController: QuizController;
@@ -12,6 +12,8 @@ describe('QuizController', () => {
         createQuizSet: jest.fn(),
         createQuizzes: jest.fn(),
         getQuizzes: jest.fn(),
+        deleteQuiz: jest.fn(),
+        updateQuiz: jest.fn(),
     };
 
     beforeEach(async () => {
@@ -29,63 +31,37 @@ describe('QuizController', () => {
         quizService = module.get<QuizService>(QuizService);
     });
 
+    it('updateQuiz', async () => {
+        //given
+        const quizId = 1;
+        const updateQuizRequestDto: UpdateQuizRequestDto = {
+            question: '업데이트 퀴즈 질문',
+            answer: '업데이트 퀴즈 정답',
+            playTime: 10,
+            quizType: QUIZ_TYPE.SHORT_ANSWER
+        }
 
-    describe('createQuiz', () => {
-        it('새로운 퀴즈를 생성한다.', async () => {
-            // given
-            const dto = {
-                quizSetName: "퀴즈셋 이름",
-                quizDetails:
-                    [
-                        {
-                            question: '지브리는 뭘로 돈 벌게요?',
-                            answer: '토토로',
-                            playTime: 30000,
-                            quizType: 'SHORT_ANSWER',
-                        },
-                    ]
-            } as CreateQuizRequestDto;
+        mockQuizService.updateQuiz.mockResolvedValue(undefined);
 
-            // when
-            await quizController.createQuizzes(dto);
+        //when
+        await quizController.updateQuiz(quizId, updateQuizRequestDto);
 
-            // then
-            expect(quizService.createQuizzes).toHaveBeenCalledWith(dto);
-        });
-    });
+        //then
+        expect(mockQuizService.updateQuiz).toHaveBeenCalled();
+        expect(mockQuizService.updateQuiz).toHaveBeenCalledWith(quizId, updateQuizRequestDto);
+    })
 
-    describe('findQuizzes', () => {
-        it('퀴즈셋의 퀴즈들을 성공적으로 반환한다.', async () => {
-            // given
-            const quizSetId = 1;
-            const quizzes = [
-                {
-                    id: 1,
-                    question: '퀴즈 질문',
-                    answer: '퀴즈 정답',
-                    playTime: 1000,
-                    quizType: 'SHORT_ANSWER',
-                },
-            ];
-            mockQuizService.getQuizzes.mockResolvedValue(quizzes);
+    it('deleteQuiz', async () => {
+        //given
+        const quizId = 1;
+        mockQuizService.deleteQuiz.mockResolvedValue(undefined);
 
-            // when
-            const result = await quizController.findQuizzes(quizSetId);
+        //when
+        await quizController.deleteQuiz(quizId);
 
-            // then
-            expect(quizService.getQuizzes).toHaveBeenCalledWith(quizSetId);
-            expect(result).toEqual(quizzes);
-        });
+        //then
+        expect(mockQuizService.deleteQuiz).toHaveBeenCalled();
+        expect(mockQuizService.deleteQuiz).toHaveBeenCalledWith(quizId);
+    })
 
-        it('존재하지 않는 퀴즈셋 ID인 경우 예외를 던진다.', async () => {
-            // given
-            const quizSetId = 2;
-            mockQuizService.getQuizzes.mockRejectedValue(
-                new NotFoundException(`해당 퀴즈셋을 찾을 수 없습니다.`),
-            );
-
-            // when & then
-            await expect(quizController.findQuizzes(quizSetId)).rejects.toThrow(NotFoundException);
-        });
-    });
 });
