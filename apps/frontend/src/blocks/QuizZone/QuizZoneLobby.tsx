@@ -122,6 +122,7 @@ const QuizZoneLobby = ({ quizZoneState, quizZoneId, startQuiz, exitQuiz }: QuizZ
                             </div>
                             <div className="flex-1 mt-4 min-h-0 overflow-y-auto">
                                 <PlayersGrid
+                                    currentPlayer={quizZoneState.currentPlayer}
                                     players={quizZoneState.players ?? []}
                                     hostId={quizZoneState.hostId}
                                     className="h-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 2xl:grid-cols-3 gap-4"
