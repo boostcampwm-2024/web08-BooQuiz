@@ -10,9 +10,8 @@ import { Quiz } from '../src/quiz/entity/quiz.entitiy';
 import { QuizSet } from '../src/quiz/entity/quiz-set.entity';
 import { initializeTransactionalContext } from 'typeorm-transactional';
 import { QUIZ_TYPE } from '../src/common/constants';
-import { CreateQuizRequestDto, QuizDetailsDto } from '../src/quiz/dto/create-quiz-request.dto';
+import { CreateQuizRequestDto } from '../src/quiz/dto/create-quiz-request.dto';
 import { UpdateQuizRequestDto } from '../src/quiz/dto/update-quiz-request.dto';
-import { beforeEach } from 'node:test';
 
 describe('QuizController (e2e)', () => {
     let app: INestApplication;
