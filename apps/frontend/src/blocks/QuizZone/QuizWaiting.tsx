@@ -36,33 +36,13 @@ const QuizWaiting = ({ playQuiz, startTime, currentQuizSummary }: QuizWaitingPro
     }, []);
 
     return (
-        <div className="w-full h-screen flex flex-col items-center justify-center gap-4">
-            <ContentBox className="w-4/5 md:w-[48rem] gap-8 flex flex-col items-center box-border">
-                {isVisibleSummary && (
-                    <div className="w-full flex flex-col items-center gap-2">
-                        <Typography size="2xl" color="blue" text="정답: " bold={true} />
-                        <Typography size="2xl" color="black" text={answer} bold={true} />
-                        <Typography
-                            size="2xl"
-                            color="gray"
-                            text={`정답률: ${(correctPlayerCount / totalPlayerCount) * 100}%`}
-                            bold={true}
-                        />
-                    </div>
-                )}
-
-                <div className="w-full flex flex-col items-center gap-2">
-                    <Typography
-                        size="2xl"
-                        color="gray"
-                        text="다음 퀴즈를 준비 중입니다."
-                        bold={true}
-                    />
-                    <Typography size="2xl" color="gray" text="잠시만 기다려주세요" bold={true} />
-                </div>
+        <div className="w-full h-full flex flex-col items-center justify-center gap-4">
+            <ContentBox className="w-full h-full flex flex-col justify-center items-center gap-4 min-h-10">
+                <Typography size="2xl" color="gray" text="다음 퀴즈를 준비 중입니다." bold={true} />
+                <Typography size="2xl" color="gray" text="잠시만 기다려주세요" bold={true} />
 
                 {time !== null && (
-                    <div className="w-full flex flex-row justify-center items-end">
+                    <div className="w-full flex flex-row justify-center items-center">
                         <Typography
                             size="3xl"
                             color="blue"
@@ -73,6 +53,18 @@ const QuizWaiting = ({ playQuiz, startTime, currentQuizSummary }: QuizWaitingPro
                     </div>
                 )}
             </ContentBox>
+            {isVisibleSummary && (
+                <ContentBox className="w-full h-full flex flex-col justify-center items-center gap-2">
+                    <Typography size="2xl" color="blue" text="정답: " bold={true} />
+                    <Typography size="2xl" color="black" text={answer} bold={true} />
+                    <Typography
+                        size="2xl"
+                        color="gray"
+                        text={`정답률: ${(correctPlayerCount / totalPlayerCount) * 100}%`}
+                        bold={true}
+                    />
+                </ContentBox>
+            )}
         </div>
     );
 };

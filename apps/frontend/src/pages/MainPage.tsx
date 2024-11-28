@@ -46,7 +46,7 @@ const MainPageContent = () => {
     };
 
     return (
-        <>
+        <div className="flex flex-col justify-center items-center gap-4 min-h-[calc(100vh-4rem)]">
             <TooltipWrapper content="BooQuiz - 실시간 퀴즈 플랫폼">
                 <img src="/BooQuizLogo.png" alt="BooQuiz Logo" />
             </TooltipWrapper>
@@ -58,7 +58,7 @@ const MainPageContent = () => {
                 bold={true}
             />
 
-            <ContentBox className="w-4/5 md:w-[48rem]">
+            <ContentBox className="w-4/5 md:w-[48rem] gap-2">
                 <Typography size="base" color="blue" text="퀴즈 참여하기" bold={true} />
 
                 <TooltipWrapper
@@ -107,7 +107,7 @@ const MainPageContent = () => {
                     />
                 </TooltipWrapper>
             </ContentBox>
-        </>
+        </div>
     );
 };
 

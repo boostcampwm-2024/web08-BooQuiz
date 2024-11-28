@@ -75,7 +75,13 @@ export class QuizZoneService {
         await this.repository.set(quizZoneId, quizZone);
     }
 
-    async getQuizZoneInfo(clientId: string, quizZoneId: string) {
+    async getQuizZoneInfo(clientId: string, quizZoneId: string, sessionQuizZoneId?: string) {
+        if (sessionQuizZoneId !== undefined && sessionQuizZoneId !== quizZoneId) {
+            if (await this.repository.has(sessionQuizZoneId)) {
+                await this.leave(sessionQuizZoneId, clientId);
+            }
+        }
+
         const quizZoneStage = await this.getQuizZoneStage(quizZoneId);
 
         if (quizZoneStage === QUIZ_ZONE_STAGE.LOBBY) {
@@ -237,7 +243,7 @@ export class QuizZoneService {
         return stage;
     }
 
-    async leave(quizZoneId: string, clientId: any) {
+    private async leave(quizZoneId: string, clientId: any) {
         const quizZone = await this.findOne(quizZoneId);
         quizZone.players.delete(clientId);
     }

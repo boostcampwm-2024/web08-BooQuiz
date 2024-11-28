@@ -14,21 +14,19 @@ export class Quiz {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column({type: 'varchar', length: 255})
+    @Column({ type: 'varchar', length: 255 })
     question: string;
 
-    @Column({type: 'varchar', length: 50})
+    @Column({ type: 'varchar', length: 50 })
     answer: string;
 
-    @Column({ type: 'int' })
+    @Column({ type: 'int', name: 'play_time' })
     playTime: number;
 
     @Column({ name: 'quiz_type', type: 'varchar', length: 20 })
     quizType: QUIZ_TYPE;
 
-    @ManyToOne((type) => QuizSet, (quizSet) => quizSet.quizzes, {
-        onDelete: 'CASCADE',
-    })
+    @ManyToOne((type) => QuizSet, (quizSet) => quizSet.quizzes)
     quizSet: QuizSet;
 
     constructor(
