@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 import { CurrentQuizResult } from '@/types/quizZone.types.ts';
 import PlayersGrid from '@/components/common/PlayersGrid.tsx';
 import { Player } from '@/types/quizZone.types';
+import PodiumPlayers from '@/components/common/\bPodiumPlayers';
 
 interface QuizCompletedProps {
     currentPlayer: Player;
@@ -67,10 +68,11 @@ const QuizCompleted = ({
                         text={`${submittedCount}명 제출 완료`}
                         bold={true}
                     />
-                    <PlayersGrid
+                    <PodiumPlayers
                         currentPlayer={currentPlayer}
                         players={fastestPlayers ?? []}
-                        hostId={'1234'}
+                        hostId="1234"
+                        className="mt-8"
                     />
                 </ContentBox>
             )}
