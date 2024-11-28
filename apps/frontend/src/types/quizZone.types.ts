@@ -53,6 +53,7 @@ export interface Quiz {
     question: string;
     answer: string;
     playTime: number;
+    quizType?: ProblemType;
 }
 
 export interface SubmittedQuiz {
@@ -90,6 +91,12 @@ export interface CurrentQuizResult {
 export interface NextQuizResponse {
     nextQuiz: CurrentQuiz;
     currentQuizResult: CurrentQuizResult;
+}
+
+export interface QuizSet {
+    quizSetId?: string;
+    quizSetName: string;
+    quizzes: Quiz[];
 }
 
 export interface ChatMessage {

@@ -111,7 +111,7 @@ describe('QuizService', () => {
                         question: '지브리는 뭘로 돈 벌게요?',
                         answer: '토토로',
                         playTime: 30000,
-                        quizType: 'SHORT_ANSWER',
+                        quizType: QUIZ_TYPE.SHORT_ANSWER,
                     },
                 ],
             } as CreateQuizRequestDto;
@@ -124,7 +124,7 @@ describe('QuizService', () => {
                 },
             };
 
-            mockQuizSetRepository.findOneBy.mockResolvedValue(quizSetId);
+            mockQuizSetRepository.save.mockResolvedValue({ quizSetId });
             dto.quizDetails[0].toEntity = jest.fn().mockReturnValue(quiz);
             mockQuizRepository.save.mockResolvedValue(quiz);
 
@@ -148,7 +148,7 @@ describe('QuizService', () => {
                         question: '지브리는 뭘로 돈 벌게요?',
                         answer: '토토로',
                         playTime: 30000,
-                        quizType: 'SHORT_ANSWER',
+                        quizType: QUIZ_TYPE.SHORT_ANSWER,
                     },
                 ],
             } as CreateQuizRequestDto;
@@ -170,7 +170,7 @@ describe('QuizService', () => {
                 },
             };
 
-            mockQuizSetRepository.findOneBy.mockResolvedValue(quizSetId);
+            mockQuizSetRepository.save.mockResolvedValue({ quizSetId });
             dto.quizDetails[0].toEntity = jest.fn().mockReturnValue(quiz1);
             mockQuizRepository.save.mockResolvedValue([quiz1]);
 
