@@ -7,6 +7,7 @@ import {
     CreateQuizZoneReducerActions,
     CreateQuizZoneStage,
 } from '@/types/create-quiz-zone.types.ts';
+import Typography from '@/components/common/Typogrpahy';
 
 const CreateQuizZoneReducer = (state: CreateQuizZone, action: CreateQuizZoneReducerAction) => {
     const { type, payload } = action;
@@ -72,10 +73,10 @@ const CreateQuizZonePage = () => {
     };
 
     return (
-        <>
-            <h2>퀴즈존 개설하기</h2>
+        <div className="flex flex-col justify-center items-center gap-4 min-h-[calc(100vh+2rem)] mt-16">
+            <Typography text="퀴즈존 생성하기" size="3xl" color="blue" bold={true} />
             {getCreateQuizZoneStageBlock(stage)}
-        </>
+        </div>
     );
 };
 
