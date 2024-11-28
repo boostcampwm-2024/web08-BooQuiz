@@ -7,7 +7,8 @@ import {
     HttpStatus,
     Param,
     Patch,
-    Post, Query,
+    Post,
+    Query,
 } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { QuizService } from './quiz.service';
@@ -24,11 +25,11 @@ export class QuizController {
 
     @Get()
     @HttpCode(HttpStatus.OK)
-    @ApiOperation({summary: '퀴즈셋 검색'})
+    @ApiOperation({ summary: '퀴즈셋 검색' })
     @ApiResponse({
         status: HttpStatus.OK,
         description: '퀴즈셋의 검색을 성공적으로 반환했습니다',
-        type: SearchQuizSetResponseDTO
+        type: SearchQuizSetResponseDTO,
     })
     async searchQuizSet(
         @Query() searchQuery: SearchQuizSetRequestDTO,
@@ -41,9 +42,7 @@ export class QuizController {
     @ApiOperation({ summary: '새로운 퀴즈 생성' })
     @ApiResponse({ status: HttpStatus.CREATED, description: '퀴즈가 성공적으로 생성되었습니다.' })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: '요청 데이터가 유효하지 않습니다' })
-    async createQuizzes(
-        @Body() createQuizDto: CreateQuizRequestDto
-    ): Promise<void> {
+    async createQuizzes(@Body() createQuizDto: CreateQuizRequestDto): Promise<number> {
         return this.quizService.createQuizzes(createQuizDto);
     }
 

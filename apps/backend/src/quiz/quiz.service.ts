@@ -24,6 +24,8 @@ export class QuizService {
         });
 
         await this.quizRepository.save(quizzes);
+
+        return quizSet.id;
     }
 
     async getQuizzes(quizSetId: number): Promise<FindQuizzesResponseDto[]> {
@@ -43,7 +45,7 @@ export class QuizService {
     }
 
     async deleteQuiz(quizId: number) {
-        const quiz = await this.findQuiz(quizId);
+        await this.findQuiz(quizId);
 
         // 퀴즈 존재하면 삭제
         await this.quizRepository.delete({ id: quizId });
