@@ -6,6 +6,7 @@ import { UpdateQuizRequestDto } from './dto/update-quiz-request.dto';
 import { QuizSetDetails } from './dto/search-quiz-set-response.dto';
 import { SearchQuizSetRequestDTO } from './dto/search-quiz-set-request.dto';
 import { FindQuizzesResponseDto } from './dto/find-quizzes-response.dto';
+import { Transactional } from 'typeorm-transactional';
 
 @Injectable()
 export class QuizService {
@@ -14,7 +15,7 @@ export class QuizService {
         private quizSetRepository: QuizSetRepository,
     ) {}
 
-
+    @Transactional()
     async createQuizzes(createQuizDto: CreateQuizRequestDto) {
         const quizSet = await this.quizSetRepository.save({ name: createQuizDto.quizSetName });
 
@@ -28,7 +29,6 @@ export class QuizService {
     async getQuizzes(quizSetId: number): Promise<FindQuizzesResponseDto[]> {
         const quizSet = await this.findQuizSet(quizSetId);
         return await this.quizRepository.findBy({ quizSet: quizSet });
-
     }
 
     async updateQuiz(quizId: number, updateQuizRequestDto: UpdateQuizRequestDto) {
@@ -68,15 +68,15 @@ export class QuizService {
     }
 
     async searchQuizSet(searchQuery: SearchQuizSetRequestDTO) {
-        const {name, page, size} = searchQuery;
+        const { name, page, size } = searchQuery;
         const [quizSets, count] = await Promise.all([
             this.quizSetRepository.searchByName(name, page, size),
-            this.quizSetRepository.countByName(name)
+            this.quizSetRepository.countByName(name),
         ]);
 
         const quizSetDetails = quizSets.map(QuizSetDetails.from);
-        const meta = {total: count, page: page};
+        const meta = { total: count, page: page };
 
-        return {quizSetDetails, meta}
+        return { quizSetDetails, meta };
     }
 }
