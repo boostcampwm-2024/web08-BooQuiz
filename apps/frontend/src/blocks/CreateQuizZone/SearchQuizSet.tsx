@@ -1,39 +1,11 @@
 import { ChangeEvent, useEffect, useState } from 'react';
 import SearchQuizSetResults from '@/blocks/CreateQuizZone/SearchQuizSetResults.tsx';
-
-export interface ResponseQuizSet {
-    id: string;
-    name: string;
-}
+import { requestSearchQuizSets } from '@/utils/requests.ts';
+import { ResponseQuizSet } from '@/types/create-quiz-zone.types.ts';
 
 interface SearchQuizSetProps {
     selectQuizSet: (quizSet: ResponseQuizSet) => void;
 }
-
-interface ResponseSearchQuizSets {
-    quizSetDetails: ResponseQuizSet[];
-    meta: { total: number; page: number };
-}
-
-const requestSearchQuizSets = async (params: Record<string, string>) => {
-    const searchParams = new URLSearchParams(params);
-    const url = `api/quiz?${searchParams.toString()}`;
-
-    const response = await fetch(url, {
-        method: 'GET',
-    });
-
-    if (!response.ok) {
-        console.log(response.status);
-    }
-
-    const { quizSetDetails, meta } = (await response.json()) as ResponseSearchQuizSets;
-
-    return {
-        quizSets: quizSetDetails,
-        totalQuizSetCount: meta.total,
-    };
-};
 
 const SearchQuizSet = ({ selectQuizSet }: SearchQuizSetProps) => {
     const [searchKeyword, setSearchKeyword] = useState('');

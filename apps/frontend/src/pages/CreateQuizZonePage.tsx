@@ -1,27 +1,12 @@
 import CreateQuizZoneBasic from '@/blocks/CreateQuizZone/CreateQuizZoneBasic.tsx';
 import CreateQuizSet from '@/blocks/CreateQuizZone/CreateQuizSet.tsx';
 import { useReducer, useState } from 'react';
-
-export type CreateQuizZoneStage = 'QUIZ_ZONE' | 'QUIZ_SET' | 'SUMMARY';
-
-export interface CreateQuizZone {
-    quizZoneId: string;
-    title: string;
-    description: string;
-    limitPlayerCount: number;
-    quizSetId: string;
-    quizSetName: string;
-}
-
-export type CreateQuizZoneReducerActions =
-    | 'QUIZ_ZONE_ID'
-    | 'TITLE'
-    | 'DESC'
-    | 'LIMIT'
-    | 'QUIZ_SET_ID'
-    | 'QUIZ_SET_NAME';
-
-export type CreateQuizZoneReducerAction = { type: CreateQuizZoneReducerActions; payload: string };
+import {
+    CreateQuizZone,
+    CreateQuizZoneReducerAction,
+    CreateQuizZoneReducerActions,
+    CreateQuizZoneStage,
+} from '@/types/create-quiz-zone.types.ts';
 
 const CreateQuizZoneReducer = (state: CreateQuizZone, action: CreateQuizZoneReducerAction) => {
     const { type, payload } = action;

@@ -1,12 +1,14 @@
 import ContentBox from '@/components/common/ContentBox.tsx';
+import { ChangeEvent } from 'react';
+import SearchQuizSet from '@/blocks/CreateQuizZone/SearchQuizSet.tsx';
+import { useNavigate } from 'react-router-dom';
+import { requestCreateQuizZone } from '@/utils/requests.ts';
 import {
     CreateQuizZone,
     CreateQuizZoneReducerActions,
     CreateQuizZoneStage,
-} from '@/pages/CreateQuizZonePage.tsx';
-import { ChangeEvent } from 'react';
-import SearchQuizSet, { ResponseQuizSet } from '@/blocks/CreateQuizZone/SearchQuizSet.tsx';
-import { useNavigate } from 'react-router-dom';
+    ResponseQuizSet,
+} from '@/types/create-quiz-zone.types.ts';
 
 interface CreateQuizZoneBasicProps {
     quizZone: CreateQuizZone;
@@ -14,26 +16,12 @@ interface CreateQuizZoneBasicProps {
     moveStage: (stage: CreateQuizZoneStage) => void;
 }
 
-const requestCreateQuizZone = async (quizZone: CreateQuizZone) => {
-    const response = await fetch('api/quiz-zone', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(quizZone),
-    });
-
-    if (!response.ok) {
-        throw new Error('퀴즈존 생성 처리중 오류가 발생하였습니다.');
-    }
-};
-
 const CreateQuizZoneBasic = ({
     quizZone,
     updateQuizZoneBasic,
     moveStage,
 }: CreateQuizZoneBasicProps) => {
-    const { quizZoneId, title, description, limitPlayerCount, quizSetId, quizSetName } = quizZone;
+    const { quizZoneId, title, description, limitPlayerCount, quizSetName } = quizZone;
     const navigate = useNavigate();
 
     const handleChangeQuizZoneBasic = (
@@ -45,7 +33,6 @@ const CreateQuizZoneBasic = ({
     };
 
     const selectQuizSet = (quizSet: ResponseQuizSet) => {
-        console.log(quizSet);
         updateQuizZoneBasic(quizSet.id, 'QUIZ_SET_ID');
         updateQuizZoneBasic(quizSet.name, 'QUIZ_SET_NAME');
     };
@@ -111,7 +98,6 @@ const CreateQuizZoneBasic = ({
                     />
                 </div>
                 <div className="">
-                    <input type="text" hidden={true} value={quizSetId} />
                     <div>
                         <span>선택된 퀴즈셋</span>
                         <div>{quizSetName}</div>

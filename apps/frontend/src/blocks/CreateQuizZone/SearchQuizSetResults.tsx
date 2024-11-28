@@ -1,4 +1,4 @@
-import { ResponseQuizSet } from '@/blocks/CreateQuizZone/SearchQuizSet.tsx';
+import { ResponseQuizSet } from '@/types/create-quiz-zone.types.ts';
 
 interface SearchQuizSetResultsProp {
     results: ResponseQuizSet[];
