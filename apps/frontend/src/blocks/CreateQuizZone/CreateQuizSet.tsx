@@ -58,6 +58,10 @@ const CreateQuizSet = ({ handlePrevStepButton, updateQuizSet }: CreateQuizZoneQu
         setQuizzes([...quizzes, quiz]);
     };
 
+    const removeQuiz = (quiz: Quiz) => {
+        setQuizzes([...quizzes].filter((q) => q !== quiz));
+    };
+
     return (
         <div>
             <div>
@@ -74,7 +78,7 @@ const CreateQuizSet = ({ handlePrevStepButton, updateQuizSet }: CreateQuizZoneQu
                     {validNameMessage && <span>{validNameMessage}</span>}
                 </div>
                 <div>
-                    <CandidateQuizzes quizzes={quizzes} />
+                    <CandidateQuizzes quizzes={quizzes} removeQuiz={removeQuiz} />
                     {validQuizzesMessage && <span>{validQuizzesMessage}</span>}
                 </div>
             </div>

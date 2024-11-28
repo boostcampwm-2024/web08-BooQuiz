@@ -2,9 +2,10 @@ import { Quiz } from '@/types/quizZone.types.ts';
 
 interface CandidateQuizProps {
     quizzes: Quiz[];
+    removeQuiz: (quiz: Quiz) => void;
 }
 
-const CandidateQuizzes = ({ quizzes }: CandidateQuizProps) => {
+const CandidateQuizzes = ({ quizzes, removeQuiz }: CandidateQuizProps) => {
     return (
         <ul>
             {quizzes.map((quiz, i) => (
