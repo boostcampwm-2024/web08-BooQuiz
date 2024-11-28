@@ -14,7 +14,7 @@ const Navbar = () => {
                             className="text-xl font-bold"
                             onClick={() => navigate('/')}
                         >
-                            <img className="w-[12rem]" src="/BooQuizLogo.png" alt="BooQuiz Logo" />
+                            <img className="w-[6rem]" src="/BooQuizLogo.png" alt="BooQuiz Logo" />
                         </Button>
                     </TooltipWrapper>
                 </div>
