@@ -44,7 +44,7 @@ const QuizZoneLobby = ({ quizZoneState, quizZoneId, startQuiz, exitQuiz }: QuizZ
 
     return (
         <div className="w-full h-full flex flex-col items-center justify-center gap-4">
-            <ContentBox className="w-full flex-1 min-h-0">
+            <ContentBox className="w-full flex-1 min-h-0 h-full">
                 {/* 모바일에서는 세로로, md 이상에서는 가로로 배치 */}
                 <div className="w-full min-h-0 h-full flex flex-col md:flex-row gap-4 items-stretch">
                     {/* 퀴즈 정보 섹션 - 모바일에서는 전체 너비, md 이상에서는 30% */}
