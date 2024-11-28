@@ -3,6 +3,9 @@
 /node_modules
 /build
 
+:booquiz
+:memory
+
 # Logs
 logs
 *.log

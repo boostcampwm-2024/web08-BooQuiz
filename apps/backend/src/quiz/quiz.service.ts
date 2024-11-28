@@ -6,6 +6,7 @@ import { UpdateQuizRequestDto } from './dto/update-quiz-request.dto';
 import { QuizSetDetails } from './dto/search-quiz-set-response.dto';
 import { SearchQuizSetRequestDTO } from './dto/search-quiz-set-request.dto';
 import { FindQuizzesResponseDto } from './dto/find-quizzes-response.dto';
+import { Transactional } from 'typeorm-transactional';
 
 @Injectable()
 export class QuizService {
@@ -14,6 +15,7 @@ export class QuizService {
         private quizSetRepository: QuizSetRepository,
     ) {}
 
+    @Transactional()
     async createQuizzes(createQuizDto: CreateQuizRequestDto) {
         const quizSet = await this.quizSetRepository.save({ name: createQuizDto.quizSetName });
 

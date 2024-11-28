@@ -11,5 +11,6 @@ import { QuizSetRepository } from './repository/quiz-set.repository';
     imports: [TypeOrmModule.forFeature([Quiz, QuizSet])],
     controllers: [QuizController],
     providers: [QuizService, QuizRepository, QuizSetRepository],
+    exports: [QuizService],
 })
 export class QuizModule {}
