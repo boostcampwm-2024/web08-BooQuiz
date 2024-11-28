@@ -4,7 +4,7 @@ import { QuizService } from './quiz.service';
 import { CreateQuizRequestDto } from './dto/create-quiz-request.dto';
 import { NotFoundException } from '@nestjs/common';
 import { QuizSetController } from './quiz-set.controller';
-import { QuizSet } from './entity/quiz-set.entity';
+import { QUIZ_TYPE } from '../common/constants';
 
 describe('QuizController', () => {
     let quizSetController: QuizSetController;
@@ -43,7 +43,7 @@ describe('QuizController', () => {
                             question: '지브리는 뭘로 돈 벌게요?',
                             answer: '토토로',
                             playTime: 30000,
-                            quizType: 'SHORT_ANSWER',
+                            quizType: QUIZ_TYPE.SHORT_ANSWER,
                         },
                     ]
             } as CreateQuizRequestDto;

@@ -32,7 +32,7 @@ export class QuizSetController {
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: '요청 데이터가 유효하지 않습니다' })
     async createQuizSet(
         @Body() createQuizDto: CreateQuizRequestDto
-    ): Promise<void> {
+    ) {
         return this.quizService.createQuizzes(createQuizDto);
     }
 

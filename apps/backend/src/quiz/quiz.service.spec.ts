@@ -194,14 +194,14 @@ describe('QuizService', () => {
                     question: '네명에서 오줌을 싸면?',
                     answer: '포뇨',
                     playTime: 30000,
-                    quizType: 'SHORT_ANSWER',
+                    quizType: QUIZ_TYPE.SHORT_ANSWER,
                 },
                 {
                     id: 2,
                     question: '지브리는 뭘로 돈 벌게요?',
                     answer: '토토로',
                     playTime: 30000,
-                    quizType: 'SHORT_ANSWER',
+                    quizType: QUIZ_TYPE.SHORT_ANSWER,
                 },
             ];
             const quizSetId = 1;
@@ -244,7 +244,7 @@ describe('QuizService', () => {
                 question: '네명에서 오줌을 싸면?',
                 answer: '포뇨',
                 playTime: 30000,
-                quizType: 'SHORT_ANSWER',
+                quizType: QUIZ_TYPE.SHORT_ANSWER,
             };
             const dto = {
                 question: '테스트 질문',
