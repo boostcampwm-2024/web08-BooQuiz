@@ -1,0 +1,30 @@
+config:
+  target: "https://booquiz.kro.kr"
+  plugins:
+    metrics-by-endpoint: {}
+  processor: "./function.cjs"
+  phases:
+    - duration: 30
+      arrivalRate: 5
+      rampTo: 20
+  http:
+    headers:
+      Content-Type: "application/json"
+    cookies:
+      connect.sid: "s%3AYvwmJO7-YMU4RKd0F1HH223sdNvTsdsd.DvxqWsXW8gHoL6lLVTv6wHv9mgTHBGhHDSROPQPRsdP"
+
+scenarios:
+  - name: "퀴즈존 API 테스트"
+    flow:
+      - function: "setQuizId"
+      - post:
+          url: "/api/quiz-zone"
+          json:
+            quizZoneId: "{{ quizId }}"
+          expect:
+            statusCode: 201
+      - think: 1
+      - get:
+          url: "/api/quiz-zone/{{ quizId }}"
+          expect:
+            statusCode: 200
