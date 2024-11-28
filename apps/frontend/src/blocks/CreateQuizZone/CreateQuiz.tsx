@@ -1,6 +1,10 @@
 import { ProblemType, Quiz } from '@/types/quizZone.types.ts';
 import useValidState from '@/hook/useValidInput.ts';
 import { validAnswer, validQuestion, validTime } from '@/utils/validators.ts';
+import ContentBox from '@/components/common/ContentBox';
+import Typography from '@/components/common/Typogrpahy';
+import Input from '@/components/common/Input';
+import CommonButton from '@/components/common/CommonButton';
 
 interface CreateQuizProps {
     handleCreateQuiz: (quiz: Quiz) => void;
@@ -39,59 +43,67 @@ const CreateQuiz = ({ handleCreateQuiz }: CreateQuizProps) => {
     };
 
     return (
-        <div>
-            <div>
-                <strong>퀴즈 유형</strong>
-                <div className={isInvalidPlayTime ? 'invalid' : ''}>
-                    <label className="">단답형</label>
-                    <input
-                        type="radio"
-                        name={'type'}
-                        value={'SHORT'}
-                        checked={quizType === 'SHORT'}
-                        onChange={(e) => setQuizType(e.target.value as ProblemType)}
+        <ContentBox className="flex flex-col gap-2">
+            <div className="flex flex-row gap-2 justify-between">
+                {/* <div className={isInvalidTime ? 'invalid' : ''}>
+                        <label className="">단답형</label>
+                        <input
+                            type="radio"
+                            name={'type'}
+                            value={'SHORT'}
+                            checked={type === 'SHORT'}
+                            onChange={(e) => setType(e.target.value as ProblemType)}
+                        />
+                        {isInvalidType && (
+                            <Typography size="xs" color="red" text={typeInvalidMessage} />
+                        )}
+                    </div> */}
+                <div className={isInvalidTime ? 'invalid' : ''}>
+                    <Input
+                        type="number"
+                        name="time"
+                        label="풀이 시간"
+                        min={1}
+                        max={60}
+                        value={time}
+                        onChange={(e) => setTime(parseInt(e.target.value))}
+                        isBorder={true}
                     />
-                    <span>{typeInvalidMessage}</span>
+                    {isInvalidPlayTime && (
+                        <Typography size="xs" color="red" text={timeInvalidMessage} />
+                    )}
                 </div>
             </div>
-            <div className={isInvalidPlayTime ? 'invalid' : ''}>
-                <label htmlFor="time">풀이 시간</label>
-                <input
-                    type="number"
-                    id="time"
-                    min={1}
-                    max={60}
-                    value={playTime}
-                    onChange={(e) => setPlayTime(parseInt(e.target.value))}
-                />
-                {isInvalidPlayTime && <span>{timeInvalidMessage}</span>}
-            </div>
             <div className={isInvalidQuestion ? 'invalid' : ''}>
-                <label htmlFor="question" className="">
-                    질문
-                </label>
-                <input
+                <Input
                     type="text"
-                    id="question"
+                    name="question"
+                    label="질문"
                     value={question}
                     onChange={(e) => setQuestion(e.target.value)}
+                    isBorder={true}
                 />
-                {isInvalidQuestion && <span>{questionInvalidMessage}</span>}
+                {isInvalidQuestion && (
+                    <Typography size="xs" color="red" text={questionInvalidMessage} />
+                )}
             </div>
             <div className={isInvalidAnswer ? 'invalid' : ''}>
-                <label htmlFor="answer">정답</label>
-                <input
+                <Input
                     type="text"
-                    id="answer"
+                    name="answer"
+                    label="정답"
                     value={answer}
                     onChange={(e) => setAnswer(e.target.value)}
+                    isBorder={true}
                 />
-                {isInvalidAnswer && <span>{answerInvalidMessage}</span>}
+                {isInvalidAnswer && (
+                    <Typography size="xs" color="red" text={answerInvalidMessage} />
+                )}
             </div>
-            <button onClick={() => handleComplete()} disabled={isInvalid()}>
-                완료
-            </button>
-        </div>
+            <CommonButton clickEvent={() => handleComplete()} disabled={isInvalid()}>
+                추가하기
+            </CommonButton>
+        </ContentBox>
     );
 };
 
