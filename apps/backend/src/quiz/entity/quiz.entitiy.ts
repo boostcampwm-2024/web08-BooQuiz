@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { QuizSet } from './quiz-set.entity';
 import { QUIZ_TYPE } from '../../common/constants';
 
@@ -14,21 +14,20 @@ export class Quiz {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column()
+    @Column({ type: 'varchar', length: 255 })
     question: string;
 
-    @Column()
+    @Column({ type: 'varchar', length: 50 })
     answer: string;
 
-    @Column()
+    @Column({ type: 'int', name: 'play_time' })
     playTime: number;
 
-    @Column({ name: 'quiz_type' })
+    @Column({ name: 'quiz_type', type: 'varchar', length: 20 })
     quizType: QUIZ_TYPE;
 
-    @ManyToOne((type) => QuizSet, (quizSet) => quizSet.quizzes, {
-        onDelete: 'CASCADE',
-    })
+    @ManyToOne((type) => QuizSet, (quizSet) => quizSet.quizzes)
+    @JoinColumn({ name: 'quiz_set_id', referencedColumnName: 'id' })
     quizSet: QuizSet;
 
     constructor(

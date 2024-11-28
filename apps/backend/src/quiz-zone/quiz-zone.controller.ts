@@ -26,12 +26,28 @@ export class QuizZoneController {
         @Body() createQuizZoneDto: CreateQuizZoneDto,
         @Session() session: Record<string, any>,
     ): Promise<void> {
-        const { quizZoneId } = createQuizZoneDto;
         if (!session || !session.id) {
             throw new BadRequestException('세션 정보가 없습니다.');
         }
         const hostId = session.id;
-        await this.quizZoneService.create(quizZoneId, hostId);
+        await this.quizZoneService.create(createQuizZoneDto, hostId);
+    }
+
+    @Get('check/:quizZoneId')
+    @HttpCode(200)
+    @ApiOperation({ summary: '사용자 참여중인 퀴즈존 정보 확인' })
+    @ApiParam({ name: 'id', description: '퀴즈존의 ID' })
+    @ApiResponse({
+        status: 200,
+        description: '기존 참여 정보가 성공적으로 반환되었습니다.',
+    })
+    @ApiResponse({ status: 400, description: '세션 정보가 없습니다.' })
+    async checkExistingQuizZoneParticipation(
+        @Session() session: Record<string, any>,
+        @Param('quizZoneId') quizZoneId: string,
+    ) {
+        const sessionQuizZoneId = session.id;
+        return sessionQuizZoneId === undefined || sessionQuizZoneId === quizZoneId;
     }
 
     @Get(':quizZoneId')
@@ -47,6 +63,12 @@ export class QuizZoneController {
         @Session() session: Record<string, any>,
         @Param('quizZoneId') quizZoneId: string,
     ) {
-        return this.quizZoneService.getQuizZoneInfo(session.id, quizZoneId);
+        const quizZoneInfo = this.quizZoneService.getQuizZoneInfo(
+            session.id,
+            quizZoneId,
+            session.quizZoneId,
+        );
+        session['quizZoneId'] = quizZoneId;
+        return quizZoneInfo;
     }
 }

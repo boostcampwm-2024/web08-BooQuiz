@@ -16,6 +16,7 @@ import { ClientInfo } from './entities/client-info.entity';
 import { WebSocketWithSession } from '../core/SessionWsAdapter';
 import { RuntimeException } from '@nestjs/core/errors/exceptions';
 import { CLOSE_CODE } from '../common/constants';
+import { clearTimeout } from 'node:timers';
 
 /**
  * 퀴즈 게임에 대한 WebSocket 연결을 관리하는 Gateway입니다.
@@ -100,6 +101,13 @@ export class PlayGateway implements OnGatewayInit {
             nickname,
         }));
 
+        if (this.clients.has(sessionId) && this.clients.get(sessionId).quizZoneId === quizZoneId) {
+            this.clients.set(sessionId, { quizZoneId, socket: client });
+            return {
+                event: 'join',
+                data,
+            };
+        }
         this.clients.set(sessionId, { quizZoneId, socket: client });
 
         this.broadcast(playerIds, 'someone_join', { id, nickname });
@@ -107,6 +115,28 @@ export class PlayGateway implements OnGatewayInit {
         return {
             event: 'join',
             data,
+        };
+    }
+
+    @SubscribeMessage('changeNickname')
+    async changeNickname(
+        @ConnectedSocket() client: WebSocketWithSession,
+        @MessageBody() changedNickname: string,
+    ): Promise<SendEventMessage<string>> {
+        const clientId = client.session.id;
+        const { quizZoneId } = this.getClientInfo(clientId);
+
+        const { playerIds } = await this.playService.changeNickname(
+            quizZoneId,
+            clientId,
+            changedNickname,
+        );
+
+        this.broadcast(playerIds, 'updateNickname', { clientId, changedNickname });
+
+        return {
+            event: 'changeNickname',
+            data: 'OK',
         };
     }
 
@@ -177,7 +207,7 @@ export class PlayGateway implements OnGatewayInit {
 
         const {
             isLastSubmit,
-            fastestPlayerIdList,
+            fastestPlayerIds,
             submittedCount,
             totalPlayerCount,
             otherSubmittedPlayerIds,
@@ -194,7 +224,7 @@ export class PlayGateway implements OnGatewayInit {
 
         return {
             event: 'submit',
-            data: { fastestPlayerIdList, submittedCount, totalPlayerCount },
+            data: { fastestPlayerIds, submittedCount, totalPlayerCount },
         };
     }
 
@@ -207,8 +237,8 @@ export class PlayGateway implements OnGatewayInit {
         const summaries = await this.playService.summaryQuizZone(quizZoneId);
 
         await Promise.all(
-            summaries.map(async ({ id, score, submits, quizzes }) => {
-                this.sendToClient(id, 'summary', { score, submits, quizzes });
+            summaries.map(async ({ id, score, submits, quizzes, ranks }) => {
+                this.sendToClient(id, 'summary', { score, submits, quizzes, ranks });
                 this.clearClient(id, 'finish');
             }),
         );
@@ -237,5 +267,14 @@ export class PlayGateway implements OnGatewayInit {
         }
 
         return { event: 'leave', data: 'OK' };
+    }
+
+    @SubscribeMessage('chat')
+    async chat(@ConnectedSocket() client: WebSocketWithSession, @MessageBody() message: string) {
+        const clientId = client.session.id;
+        const { quizZoneId } = this.getClientInfo(clientId);
+        const clientIds = await this.playService.chatQuizZone(clientId, quizZoneId);
+
+        this.broadcast(clientIds, 'chat', message);
     }
 }

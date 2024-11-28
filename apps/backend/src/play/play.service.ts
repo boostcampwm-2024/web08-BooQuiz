@@ -34,7 +34,7 @@ export class PlayService {
 
         return {
             currentPlayer: players.get(sessionId),
-            players: [...players.values()].filter((player) => player.id !== sessionId),
+            players: [...players.values()],
         };
     }
 
@@ -208,7 +208,7 @@ export class PlayService {
             (player) => player.state === PLAYER_STATE.SUBMIT,
         );
 
-        const fastestPlayerIdList = this.getFastestPlayerIdList(
+        const fastestPlayerIds = this.getFastestPlayerIds(
             submittedPlayers,
             quizZone.currentQuizIndex,
         );
@@ -221,7 +221,7 @@ export class PlayService {
 
         return {
             isLastSubmit,
-            fastestPlayerIdList,
+            fastestPlayerIds,
             submittedCount: submittedPlayers.length,
             totalPlayerCount: players.size,
             otherSubmittedPlayerIds: submittedPlayers
@@ -230,11 +230,7 @@ export class PlayService {
         };
     }
 
-    private getFastestPlayerIdList(
-        submittedPlayers: Player[],
-        currentQuizIndex: number,
-        count = 3,
-    ) {
+    private getFastestPlayerIds(submittedPlayers: Player[], currentQuizIndex: number, count = 3) {
         return submittedPlayers
             .sort(
                 (a, b) =>
@@ -295,13 +291,39 @@ export class PlayService {
         this.clearQuizZoneHandle(quizZoneId);
 
         await this.quizZoneService.clearQuizZone(quizZoneId);
+        const ranks = this.getRanking(players);
 
         return [...players.values()].map(({ id, score, submits }) => ({
             id,
             score,
             submits,
             quizzes,
+            ranks,
         }));
+    }
+
+    private getRanking(players: Map<string, Player>) {
+        const sortedPlayers = [...players.values()].sort((a, b) => b.score - a.score);
+        let currentRank = 1;
+        let currentScore = sortedPlayers[0]?.score;
+        let sameRankCount = -1; // 첫 번째 플레이어를 위해 -1로 시작
+
+        return sortedPlayers.map((player) => {
+            if (player.score < currentScore) {
+                currentRank = currentRank + sameRankCount + 1;
+                currentScore = player.score;
+                sameRankCount = 0;
+            } else {
+                sameRankCount++;
+            }
+
+            return {
+                id: player.id,
+                nickname: player.nickname,
+                score: player.score,
+                ranking: currentRank,
+            };
+        });
     }
 
     async leaveQuizZone(quizZoneId: string, clientId: string) {
@@ -326,6 +348,19 @@ export class PlayService {
         };
     }
 
+    async chatQuizZone(clientId: string, quizZoneId: string) {
+        const quizZone = await this.quizZoneService.findOne(quizZoneId);
+        const { players } = quizZone;
+
+        if (players.get(clientId).state === PLAYER_STATE.PLAY) {
+            throw new BadRequestException('채팅을 제출한 플레이어 상태가 PLAY입니다.');
+        }
+
+        return [...players.values()]
+            .filter((player) => player.state !== PLAYER_STATE.PLAY)
+            .map((player) => player.id);
+    }
+
     private setQuizZoneHandle(quizZoneId: string, handle: Function, time: number) {
         this.plays.set(
             quizZoneId,
@@ -338,5 +373,26 @@ export class PlayService {
 
         clearTimeout(submitHandle);
         this.plays.set(quizZoneId, undefined);
+    }
+
+    async changeNickname(quizZoneId: string, clientId: string, changedNickname: string) {
+        const quizZone = await this.quizZoneService.findOne(quizZoneId);
+        const { players } = quizZone;
+
+        if (!players.has(clientId)) {
+            throw new NotFoundException('사용자 정보를 찾을 수 없습니다.');
+        }
+
+        const player = players.get(clientId);
+
+        if (player.state !== PLAYER_STATE.WAIT || quizZone.stage !== QUIZ_ZONE_STAGE.LOBBY) {
+            throw new BadRequestException('현재 닉네임을 변경할 수 없습니다.');
+        }
+
+        player.nickname = changedNickname;
+
+        return {
+            playerIds: [...players.values()].map((player) => player.id),
+        };
     }
 }

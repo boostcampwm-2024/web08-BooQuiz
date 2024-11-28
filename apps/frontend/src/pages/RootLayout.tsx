@@ -3,9 +3,13 @@ import { Outlet } from 'react-router-dom';
 
 const RootLayout = () => {
     return (
-        <div className="min-h-screen min-w-full flex flex-col items-center justify-center gap-8">
+        <div className="min-h-screen flex flex-col">
             <Navbar />
-            <Outlet />
+            <main className="flex-1">
+                <div className="h-full container mx-auto px-4 sm:px-6 lg:px-8 py-4">
+                    <Outlet />
+                </div>
+            </main>
         </div>
     );
 };

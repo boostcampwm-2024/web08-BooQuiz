@@ -4,8 +4,9 @@ import { PlayService } from './play.service';
 import { QuizZoneService } from '../quiz-zone/quiz-zone.service';
 import { QuizZone } from '../quiz-zone/entities/quiz-zone.entity';
 import { SubmittedQuiz } from '../quiz-zone/entities/submitted-quiz.entity';
-import { PLAYER_STATE, QUIZ_ZONE_STAGE } from '../common/constants';
+import { PLAYER_STATE, QUIZ_TYPE, QUIZ_ZONE_STAGE } from '../common/constants';
 import { RuntimeException } from '@nestjs/core/errors/exceptions';
+import { describe } from 'node:test';
 
 describe('PlayService', () => {
     let service: PlayService;
@@ -31,8 +32,18 @@ describe('PlayService', () => {
         currentQuizStartTime: Date.now(),
         currentQuizDeadlineTime: Date.now() + 10000,
         quizzes: [
-            { question: '1번 문제입니다', answer: '정답1', playTime: 30000 },
-            { question: '2번 문제입니다', answer: '정답2', playTime: 30000 },
+            {
+                question: '1번 문제입니다',
+                answer: '정답1',
+                playTime: 30000,
+                quizType: QUIZ_TYPE.SHORT_ANSWER,
+            },
+            {
+                question: '2번 문제입니다',
+                answer: '정답2',
+                playTime: 30000,
+                quizType: QUIZ_TYPE.SHORT_ANSWER,
+            },
         ],
         players: new Map([['player-1', mockPlayer]]),
     };
@@ -78,7 +89,10 @@ describe('PlayService', () => {
 
             expect(result).toEqual({
                 currentPlayer: mockPlayer,
-                players: [{ ...mockPlayer, id: 'player-2', nickname: 'player2' }],
+                players: [
+                    { ...mockPlayer, id: 'player-1', nickname: 'player1' },
+                    { ...mockPlayer, id: 'player-2', nickname: 'player2' },
+                ],
             });
         });
 
@@ -247,7 +261,7 @@ describe('PlayService', () => {
 
             expect(result).toEqual({
                 isLastSubmit: true,
-                fastestPlayerIdList: ['player-1'],
+                fastestPlayerIds: ['player-1'],
                 submittedCount: 1,
                 totalPlayerCount: 1,
                 otherSubmittedPlayerIds: [],
@@ -283,7 +297,7 @@ describe('PlayService', () => {
 
             expect(result).toEqual({
                 isLastSubmit: true,
-                fastestPlayerIdList: ['player-2', 'player-1'],
+                fastestPlayerIds: ['player-2', 'player-1'],
                 submittedCount: 2,
                 totalPlayerCount: 2,
                 otherSubmittedPlayerIds: ['player-2'],
@@ -385,6 +399,7 @@ describe('PlayService', () => {
                 state: PLAYER_STATE.SUBMIT,
                 score: 2,
                 submits: mockSubmits,
+                nickname: 'player1',
             };
 
             const quizZoneWithResults = {
@@ -419,6 +434,10 @@ describe('PlayService', () => {
                     score: 2,
                     submits: mockSubmits,
                     quizzes: mockQuizZone.quizzes,
+                    ranks: [
+                        { id: 'player-1', nickname: 'player1', score: 2, ranking: 1 },
+                        { id: 'player-2', nickname: 'player2', score: 1, ranking: 2 },
+                    ],
                 },
                 {
                     id: 'player-2',
@@ -434,10 +453,67 @@ describe('PlayService', () => {
                         }),
                     ]),
                     quizzes: mockQuizZone.quizzes,
+                    ranks: [
+                        { id: 'player-1', nickname: 'player1', score: 2, ranking: 1 },
+                        { id: 'player-2', nickname: 'player2', score: 1, ranking: 2 },
+                    ],
                 },
             ]);
 
             expect(quizZoneService.clearQuizZone).toHaveBeenCalledWith('test-zone');
+        });
+
+        it('동점자가 있는 경우 동일한 순위가 부여되어야 합니다', async () => {
+            const quizZoneWithTiedScores = {
+                ...mockQuizZone,
+                stage: QUIZ_ZONE_STAGE.RESULT,
+                players: new Map([
+                    [
+                        'player-1',
+                        {
+                            ...mockPlayer,
+                            id: 'player-1',
+                            nickname: 'player1',
+                            score: 2,
+                            submits: [],
+                        },
+                    ],
+                    [
+                        'player-2',
+                        {
+                            ...mockPlayer,
+                            id: 'player-2',
+                            nickname: 'player2',
+                            score: 2,
+                            submits: [],
+                        },
+                    ],
+                    [
+                        'player-3',
+                        {
+                            ...mockPlayer,
+                            id: 'player-3',
+                            nickname: 'player3',
+                            score: 1,
+                            submits: [],
+                        },
+                    ],
+                ]),
+            };
+
+            quizZoneService.findOne.mockResolvedValue(quizZoneWithTiedScores);
+
+            const result = await service.summaryQuizZone('test-zone');
+
+            const expectedRanks = [
+                { id: 'player-1', nickname: 'player1', score: 2, ranking: 1 },
+                { id: 'player-2', nickname: 'player2', score: 2, ranking: 1 },
+                { id: 'player-3', nickname: 'player3', score: 1, ranking: 3 },
+            ];
+
+            expect(result[0].ranks).toEqual(expectedRanks);
+            expect(result[1].ranks).toEqual(expectedRanks);
+            expect(result[2].ranks).toEqual(expectedRanks);
         });
 
         it('플레이어가 없는 경우 빈 배열을 반환해야 합니다', async () => {
@@ -474,6 +550,8 @@ describe('PlayService', () => {
                         'player-1',
                         {
                             ...mockPlayer,
+                            id: 'player-1',
+                            nickname: 'player1',
                             score: 1,
                             submits: mockPlayer1Submits,
                         },
@@ -495,20 +573,106 @@ describe('PlayService', () => {
 
             const result = await service.summaryQuizZone('test-zone');
 
+            const expectedRanks = [
+                { id: 'player-1', nickname: 'player1', score: 1, ranking: 1 },
+                { id: 'player-2', nickname: 'player2', score: 1, ranking: 1 },
+            ];
+
             expect(result).toEqual([
                 {
                     id: 'player-1',
                     score: 1,
                     submits: mockPlayer1Submits,
                     quizzes: mockQuizZone.quizzes,
+                    ranks: expectedRanks,
                 },
                 {
                     id: 'player-2',
                     score: 1,
                     submits: mockPlayer2Submits,
                     quizzes: mockQuizZone.quizzes,
+                    ranks: expectedRanks,
                 },
             ]);
+        });
+    });
+
+    describe('chatQuizZone', () => {
+        it('플레이어가 플레이 상태일 때는 채팅을 제출할 수 없어야 합니다.', async () => {
+            const inPlayPlayer = {
+                ...mockPlayer,
+                state: PLAYER_STATE.PLAY,
+            };
+
+            const inPlayQuizZone = {
+                ...mockQuizZone,
+                players: new Map([['player-1', inPlayPlayer]]),
+            };
+
+            quizZoneService.findOne.mockResolvedValue(inPlayQuizZone);
+
+            await expect(service.chatQuizZone('player-1', 'test-zone')).rejects.toThrow(
+                new BadRequestException('채팅을 제출한 플레이어 상태가 PLAY입니다.'),
+            );
+        });
+
+        it('플레이어가 플레이 상태가 아닐 때는 채팅을 제출할 수 있어야 합니다.', async () => {
+            const inWaitPlayer = {
+                ...mockPlayer,
+                state: PLAYER_STATE.WAIT,
+            };
+
+            const inWaitQuizZone = {
+                ...mockQuizZone,
+                players: new Map([['player-1', inWaitPlayer]]),
+            };
+
+            quizZoneService.findOne.mockResolvedValue(inWaitQuizZone);
+
+            const result = await service.chatQuizZone('player-1', 'test-zone');
+
+            expect(result).toEqual(['player-1']);
+        });
+    });
+
+    describe('changeNickname', () => {
+        it('Lobby에 있는 wait상태의 참여자는 닉네임을 변경할 수 있다.', async () => {
+            const players = new Map([
+                ['player-1', mockPlayer],
+                ['player-2', { ...mockPlayer, id: 'player-2', nickname: 'player2' }],
+            ]);
+            const mockQuizZoneWithPlayers = {
+                ...mockQuizZone,
+                players: players,
+            };
+            quizZoneService.findOne.mockResolvedValue(mockQuizZoneWithPlayers);
+
+            const result = await service.changeNickname('test-zone', 'player-2', 'new-nickname');
+            expect(players.get('player-2').nickname).toEqual('new-nickname');
+        });
+
+        it('퀴즈존이 Lobby, 사용자는 Wait 상태에서만 닉네임을 변경할 수 있다.', async () => {
+            const mockQuizZoneWithPlayers = {
+                ...mockQuizZone,
+                stage: QUIZ_ZONE_STAGE.IN_PROGRESS,
+                players: new Map([
+                    ['player-1', mockPlayer],
+                    [
+                        'player-2',
+                        {
+                            ...mockPlayer,
+                            id: 'player-2',
+                            nickname: 'player2',
+                            state: PLAYER_STATE.WAIT,
+                        },
+                    ],
+                ]),
+            };
+            quizZoneService.findOne.mockResolvedValue(mockQuizZoneWithPlayers);
+
+            await expect(
+                service.changeNickname('test-zone', 'player-2', 'new-nickname'),
+            ).rejects.toThrow(new BadRequestException('현재 닉네임을 변경할 수 없습니다.'));
         });
     });
 

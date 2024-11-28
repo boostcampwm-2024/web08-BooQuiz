@@ -3,13 +3,13 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class FindQuizzesResponseDto {
     @ApiProperty({ description: '해당 퀴즈 질문' })
-    question: string;
+    readonly question: string;
     @ApiProperty({ description: '해당 퀴즈 정답' })
-    answer: string;
+    readonly answer: string;
     @ApiProperty({ description: '해당 퀴즈 시간' })
-    playTime: number;
+    readonly playTime: number;
     @ApiProperty({ description: '해당 퀴즈 타입' })
-    quizType: QUIZ_TYPE;
+    readonly quizType: QUIZ_TYPE;
     @ApiProperty({ description: '해당 퀴즈 id' })
-    id: number;
+    readonly id: number;
 }

@@ -24,11 +24,10 @@ interface ContentBoxProps {
 const ContentBox = ({ children, className }: ContentBoxProps) => {
     return (
         <div
-            className={`p-4 box-border rounded-[10px] border-2 border-gray-200 flex flex-col gap-4 ${className} `}
+            className={`p-4 box-border rounded-[10px] border-2 border-gray-200 flex flex-col ${className}`}
         >
             {children}
         </div>
     );
 };
-
 export default ContentBox;

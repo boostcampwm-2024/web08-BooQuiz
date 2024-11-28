@@ -9,12 +9,12 @@ import { APP_PIPE } from '@nestjs/core';
 import { WinstonModule } from 'nest-winston';
 import { winstonConfig } from './logger/winston.config';
 import { HttpLoggingMiddleware } from './logger/http-logger.middleware';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { QuizModule } from './quiz/quiz.module';
 import databaseConfig from '../config/database.config';
-import { addTransactionalDataSource } from 'typeorm-transactional';
-import { DataSource } from 'typeorm';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { TypeormConfig } from '../config/typeorm.config';
+import { DataSource } from 'typeorm';
+import { addTransactionalDataSource } from 'typeorm-transactional';
+import { QuizModule } from './quiz/quiz.module';
 
 @Module({
     imports: [

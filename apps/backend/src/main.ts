@@ -6,8 +6,8 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { Environment } from '../config/http.config';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
-import { initializeTransactionalContext } from 'typeorm-transactional';
 import { SessionWsAdapter } from './core/SessionWsAdapter';
+import { initializeTransactionalContext } from 'typeorm-transactional';
 
 async function bootstrap() {
     initializeTransactionalContext();
