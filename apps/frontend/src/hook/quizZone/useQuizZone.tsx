@@ -151,6 +151,7 @@ const quizZoneReducer: Reducer<QuizZone, QuizZoneAction> = (state, action) => {
                 score: payload.score,
                 submits: payload.submits,
                 quizzes: payload.quizzes,
+                ranks: payload.ranks,
             };
         case 'chat':
             return {
