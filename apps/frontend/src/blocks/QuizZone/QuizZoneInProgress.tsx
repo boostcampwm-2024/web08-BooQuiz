@@ -34,6 +34,7 @@ const QuizZoneInProgress = ({ quizZoneState, submitAnswer, playQuiz }: QuizZoneI
         case 'SUBMIT':
             return (
                 <QuizCompleted
+                    currentPlayer={currentPlayer}
                     isLastQuiz={quizZoneState.isLastQuiz ?? false}
                     deadlineTime={quizZoneState.currentQuiz?.deadlineTime ?? 0}
                     currentQuizResult={quizZoneState.currentQuizResult!}
