@@ -21,3 +21,28 @@ export const validTime = (time: number) => {
     if (time <= 0) return '제한시간은 0초 보다 커야합니다.';
     if (time > 60) return '제한시간은 60초를 초과할 수 없습니다.';
 };
+
+//QuizZone 생성 관련 유효성 검사
+
+//퀴즈존 이름 유효성 검사
+export const validateQuizZoneSetName = (name: string) => {
+    if (name.length <= 0) return '퀴즈존 이름을 입력해주세요.';
+    if (name.length > 100) return '퀴즈존 이름은 100자 이하로 입력해주세요.';
+};
+
+//퀴즈존 설명 유효성 검사
+export const validateQuizZoneSetDescription = (description: string) => {
+    if (description.length > 500) return '퀴즈존 설명은 500자 이하로 입력해주세요.';
+};
+
+//퀴즈존 입장 코드 유효성 검사
+export const validateQuizZoneSetCode = (code: string) => {
+    if (code.length < 5) return '퀴즈존 입장 코드를 5자 이상 입력해주세요.';
+    if (code.length > 10) return '퀴즈존 입장 코드는 10자 이하로 입력해주세요.';
+};
+
+//입장 인원 제한 유효성 검사
+export const validateQuizZoneSetLimit = (limit: number) => {
+    if (limit < 1) return '최소 1명 이상 지정해주세요.';
+    if (limit > 300) return '퀴즈존 최대 인원은 300명입니다.';
+};

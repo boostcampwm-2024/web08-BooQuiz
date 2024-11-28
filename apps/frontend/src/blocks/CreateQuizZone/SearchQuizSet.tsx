@@ -2,6 +2,9 @@ import { ChangeEvent, useEffect, useState } from 'react';
 import SearchQuizSetResults from '@/blocks/CreateQuizZone/SearchQuizSetResults.tsx';
 import { requestSearchQuizSets } from '@/utils/requests.ts';
 import { ResponseQuizSet } from '@/types/create-quiz-zone.types.ts';
+import Input from '@/components/common/Input';
+import { Search } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface SearchQuizSetProps {
     selectQuizSet: (quizSet: ResponseQuizSet) => void;
@@ -49,18 +52,27 @@ const SearchQuizSet = ({ selectQuizSet }: SearchQuizSetProps) => {
 
     return (
         <div className="search-quiz-set">
-            <label htmlFor="quiz-set-keyword" className="block">
-                퀴즈셋 검색
-            </label>
-            <input
-                type="text"
-                className="quiz-zone-text-input-large"
-                id="quiz-set-keyword"
-                value={searchKeyword}
-                placeholder="검색할 퀴즈셋의 이름을 입력하세요."
-                onChange={handleChangeSearchKeyword}
-            />
-            <button onClick={updateSearchQuizSet}>검색하기</button>
+            <div className="w-full flex flex-row gap-1 items-end">
+                <Input
+                    type="text"
+                    className="quiz-zone-text-input-large w-full"
+                    name="quiz-set-keyword"
+                    value={searchKeyword}
+                    placeholder="검색할 퀴즈셋의 이름을 입력하세요."
+                    onChange={handleChangeSearchKeyword}
+                    label="퀴즈셋 검색"
+                    isBorder={true}
+                />
+
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={updateSearchQuizSet}
+                    className="h-8 w-8 rounded-full hover:bg-primary/10"
+                >
+                    <Search className="h-4 w-4" />
+                </Button>
+            </div>
             {isLoading ? (
                 <div>Loading...</div>
             ) : (
