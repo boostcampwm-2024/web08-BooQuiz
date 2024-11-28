@@ -4,14 +4,21 @@ import { useTimer } from '@/hook/useTimer';
 import { useEffect } from 'react';
 import { CurrentQuizResult } from '@/types/quizZone.types.ts';
 import PlayersGrid from '@/components/common/PlayersGrid.tsx';
+import { Player } from '@/types/quizZone.types';
 
 interface QuizCompletedProps {
+    currentPlayer: Player;
     isLastQuiz: boolean;
     deadlineTime: number;
     currentQuizResult?: CurrentQuizResult;
 }
 
-const QuizCompleted = ({ isLastQuiz, deadlineTime, currentQuizResult }: QuizCompletedProps) => {
+const QuizCompleted = ({
+    currentPlayer,
+    isLastQuiz,
+    deadlineTime,
+    currentQuizResult,
+}: QuizCompletedProps) => {
     const currentTime = new Date().getTime();
     const remainingPrepTime = Math.max(0, deadlineTime - currentTime) / 1000;
 
@@ -60,7 +67,11 @@ const QuizCompleted = ({ isLastQuiz, deadlineTime, currentQuizResult }: QuizComp
                         text={`${submittedCount}명 제출 완료`}
                         bold={true}
                     />
-                    <PlayersGrid players={fastestPlayers ?? []} hostId={'1234'} />
+                    <PlayersGrid
+                        currentPlayer={currentPlayer}
+                        players={fastestPlayers ?? []}
+                        hostId={'1234'}
+                    />
                 </ContentBox>
             )}
         </div>
