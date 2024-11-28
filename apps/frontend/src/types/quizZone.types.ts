@@ -21,12 +21,12 @@ export interface QuizZone {
     score?: number;
     quizzes?: Quiz[];
     submits?: SubmittedQuiz[];
-    ranks?: QuizZoneSummaryRank[];
+    ranks?: Rank[];
     isLastQuiz?: boolean;
     chatMessages?: ChatMessage[];
 }
 
-export interface QuizZoneSummaryRank {
+export interface Rank {
     id: string;
     nickname: string;
     score: number;
@@ -75,6 +75,7 @@ export interface QuizZoneResultState {
     score: number;
     submits: SubmittedQuiz[];
     quizzes: Quiz[];
+    ranks: Rank[];
 }
 
 export interface SubmitResponse {
