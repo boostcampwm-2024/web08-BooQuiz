@@ -3,7 +3,6 @@ import Typography from '@/components/common/Typogrpahy';
 import { useTimer } from '@/hook/useTimer';
 import { useEffect } from 'react';
 import { CurrentQuizResult } from '@/types/quizZone.types.ts';
-import PlayersGrid from '@/components/common/PlayersGrid.tsx';
 import { Player } from '@/types/quizZone.types';
 import PodiumPlayers from '@/components/common/\bPodiumPlayers';
 
