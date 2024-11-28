@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { QuizSet } from './quiz-set.entity';
 import { QUIZ_TYPE } from '../../common/constants';
 
@@ -27,6 +27,7 @@ export class Quiz {
     quizType: QUIZ_TYPE;
 
     @ManyToOne((type) => QuizSet, (quizSet) => quizSet.quizzes)
+    @JoinColumn({ name: 'quiz_set_id', referencedColumnName: 'id' })
     quizSet: QuizSet;
 
     constructor(

@@ -9,11 +9,29 @@ import { BadRequestException } from '@nestjs/common';
 import { UpdateQuizRequestDto } from './dto/update-quiz-request.dto';
 import { describe } from 'node:test';
 import { SearchQuizSetRequestDTO } from './dto/search-quiz-set-request.dto';
+import { addTransactionalDataSource, initializeTransactionalContext } from 'typeorm-transactional';
+import { DataSource } from 'typeorm';
 
 describe('QuizService', () => {
     let service: QuizService;
     let quizRepository: QuizRepository;
     let quizSetRepository: QuizSetRepository;
+
+    beforeAll(async () => {
+        initializeTransactionalContext();
+
+        // 테스트용 데이터소스 설정
+        const dataSource = new DataSource({
+            type: 'sqlite',
+            database: ':memory:',
+            dropSchema: true,
+            entities: [], // 필요한 엔티티 추가
+            synchronize: true,
+            logging: false,
+        });
+        await dataSource.initialize();
+        addTransactionalDataSource(dataSource);
+    });
 
     const mockQuizRepository = {
         save: jest.fn(),
@@ -57,9 +75,9 @@ describe('QuizService', () => {
         it('퀴즈셋 정상적으로 검색', async () => {
             //given
             const dto = {
-                name: "퀴즈셋 검색",
+                name: '퀴즈셋 검색',
                 page: 1,
-                size: 10
+                size: 10,
             } as SearchQuizSetRequestDTO;
             const quizSets = [
                 { id: 1, name: '퀴즈셋 검색1' },
@@ -77,25 +95,24 @@ describe('QuizService', () => {
             expect(response).toEqual({
                 quizSetDetails: response.quizSetDetails,
                 meta: response.meta,
-            })
-        })
-    })
+            });
+        });
+    });
 
     describe('createQuiz', () => {
         it('새로운 퀴즈를 하나 생성한다', async () => {
             //given
             const quizSetId = 1;
             const dto = {
-                quizSetName: "퀴즈셋 이름",
-                quizDetails:
-                    [
-                        {
-                            question: '지브리는 뭘로 돈 벌게요?',
-                            answer: '토토로',
-                            playTime: 30000,
-                            quizType: 'SHORT_ANSWER',
-                        },
-                    ]
+                quizSetName: '퀴즈셋 이름',
+                quizDetails: [
+                    {
+                        question: '지브리는 뭘로 돈 벌게요?',
+                        answer: '토토로',
+                        playTime: 30000,
+                        quizType: 'SHORT_ANSWER',
+                    },
+                ],
             } as CreateQuizRequestDto;
             const quiz = {
                 ...dto[0],
@@ -124,16 +141,15 @@ describe('QuizService', () => {
             //given
             const quizSetId = 1;
             const dto = {
-                quizSetName: "퀴즈셋 이름",
-                quizDetails:
-                    [
-                        {
-                            question: '지브리는 뭘로 돈 벌게요?',
-                            answer: '토토로',
-                            playTime: 30000,
-                            quizType: 'SHORT_ANSWER',
-                        },
-                    ]
+                quizSetName: '퀴즈셋 이름',
+                quizDetails: [
+                    {
+                        question: '지브리는 뭘로 돈 벌게요?',
+                        answer: '토토로',
+                        playTime: 30000,
+                        quizType: 'SHORT_ANSWER',
+                    },
+                ],
             } as CreateQuizRequestDto;
 
             const quiz1 = {
@@ -166,7 +182,6 @@ describe('QuizService', () => {
             expect(mockQuizRepository.save).toHaveBeenCalledTimes(1);
             expect(mockQuizRepository.save).toHaveBeenCalledWith([quiz1]);
         });
-
     });
 
     describe('getQuizzes', () => {
