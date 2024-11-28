@@ -1,5 +1,6 @@
 import {
     IsInt,
+    IsNotEmpty,
     IsNumber,
     IsString,
     Length,
@@ -27,13 +28,11 @@ export class CreateQuizZoneDto {
     readonly quizZoneId: string;
 
     @IsString({ message: '제목이 없습니다.' })
-    @Length(5, 10, { message: '핀번호는 5글자 이상 10글자 이하로 입력해주세요.' })
-    @Matches(RegExp('^[가-힣a-zA-Z0-9]*$'), { message: '숫자와 알파벳 조합만 가능합니다.' })
+    @Length(1, 100, { message: '제목은 1글자 이상 100글자 이하로 입력해주세요.' })
     readonly title: string;
 
     @IsString({ message: '설명이 없습니다.' })
-    @Length(5, 10, { message: '핀번호는 5글자 이상 10글자 이하로 입력해주세요.' })
-    @Matches(RegExp('^[가-힣a-zA-Z0-9]*$'), { message: '숫자와 알파벳 조합만 가능합니다.' })
+    @Min(300, { message: '설명은 300글자 이하로 입력해주세요.' })
     readonly description: string;
 
     @IsInt({ message: '최대 플레이어 수가 없습니다.' })
@@ -41,7 +40,6 @@ export class CreateQuizZoneDto {
     @Max(300, { message: '최대 300명까지 가능합니다.' })
     readonly limitPlayerCount: number;
 
-    @IsInt({ message: '퀘즈셋 id가 없습니다.' })
-    @Min(1, { message: '퀘즈셋 id는 1이상 이어야 합니다..' })
-    readonly quizSetId: number;
+    @IsNotEmpty({ message: '퀴즈존을 선택해주세요.' })
+    quizSetId: number;
 }
