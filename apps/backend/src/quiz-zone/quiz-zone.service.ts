@@ -9,8 +9,7 @@ import { Quiz } from './entities/quiz.entity';
 import { Player } from './entities/player.entity';
 import { QuizZone } from './entities/quiz-zone.entity';
 import { IQuizZoneRepository } from './repository/quiz-zone.repository.interface';
-import { WaitingQuizZoneDto } from './dto/waiting-quiz-zone.dto';
-import { PLAYER_STATE, QUIZ_ZONE_STAGE } from '../common/constants';
+import { getRandomNickName, PLAYER_STATE, QUIZ_ZONE_STAGE } from '../common/constants';
 import { FindQuizZoneDto } from './dto/find-quiz-zone.dto';
 
 const playTime = 30_000;
@@ -22,119 +21,6 @@ const quizzes: Quiz[] = [
     { question: '오리를 생으로 먹으면?', answer: '회오리', playTime },
     { question: '네 사람이 동시에 오줌을 누면?', answer: '포뇨', playTime },
     { question: '지브리가 뭘로 돈 벌게요?', answer: '토토로', playTime },
-];
-
-const nickNames: string[] = [
-    '전설의고양이',
-    '피카츄꼬리',
-    '킹왕짱짱맨',
-    '용맹한기사단',
-    '무적의검사',
-    '그림자암살자',
-    '마법의마스터',
-    '불꽃의전사',
-    '어둠의기사',
-    '번개의제왕',
-    '달빛요정',
-    '하늘의용사',
-    '해적왕',
-    '폭풍의드래곤',
-    '빛나는영웅',
-    '얼음마법사',
-    '화염기사',
-    '바람술사',
-    '대지의수호자',
-    '시간여행자',
-    '은하수전사',
-    '우주탐험가',
-    '천상의기사',
-    '구름정령',
-    '빛의궁수',
-    '암흑마법사',
-    '번개도적',
-    '불사조기사',
-    '얼음여왕',
-    '바다의왕자',
-    '숲의요정',
-    '황금기사',
-    '천둥망치',
-    '붉은검사',
-    '달빛도둑',
-    '푸른드래곤',
-    '별의마법사',
-    '무지개전사',
-    '신비한현자',
-    '폭풍기사',
-    '자연의수호자',
-    '빙하의마법사',
-    '불꽃검사',
-    '바람의정령',
-    '대지의기사',
-    '시간의현자',
-    '우주의전사',
-    '천상의마법사',
-    '구름기사',
-    '빛의현자',
-    '어둠의검사',
-    '번개의마법사',
-    '불사조마법사',
-    '얼음기사',
-    '파도의전사',
-    '숲의현자',
-    '황금마법사',
-    '천둥기사',
-    '붉은마법사',
-    '달빛기사',
-    '푸른마법사',
-    '별의기사',
-    '무지개마법사',
-    '신비한기사',
-    '폭풍마법사',
-    '자연의기사',
-    '빙하의전사',
-    '불꽃마법사',
-    '바람의기사',
-    '대지의마법사',
-    '시간의기사',
-    '우주의마법사',
-    '천상의검사',
-    '구름마법사',
-    '빛의마법사',
-    '어둠의현자',
-    '번개의검사',
-    '불사조현자',
-    '얼음현자',
-    '파도의기사',
-    '숲의기사',
-    '황금현자',
-    '천둥현자',
-    '붉은현자',
-    '달빛현자',
-    '푸른현자',
-    '별의현자',
-    '무지개현자',
-    '신비한검사',
-    '폭풍현자',
-    '자연의현자',
-    '빙하의기사',
-    '불꽃현자',
-    '바람의현자',
-    '대지의현자',
-    '시간의검사',
-    '우주의현자',
-    '천상의현자',
-    '구름현자',
-    '빛의검사',
-    '어둠의드래곤',
-    '번개의현자',
-    '불사조검사',
-    '얼음드래곤',
-    '파도의현자',
-    '숲의마법사',
-    '황금검사',
-    '천둥검사',
-    '붉은드래곤',
-    '달빛마법사',
 ];
 
 @Injectable()
@@ -161,7 +47,7 @@ export class QuizZoneService {
 
         const player: Player = {
             id: hostId,
-            nickname: nickNames[Math.floor(Math.random() * nickNames.length)],
+            nickname: getRandomNickName(),
             score: 0,
             submits: [],
             state: PLAYER_STATE.WAIT,
@@ -184,13 +70,18 @@ export class QuizZoneService {
             currentQuizStartTime: 0,
             currentQuizDeadlineTime: 0,
             intervalTime: 3000,
-            submitCount: 0,
         };
 
         await this.repository.set(quizZoneId, quizZone);
     }
 
-    async getQuizZoneInfo(clientId: string, quizZoneId: string) {
+    async getQuizZoneInfo(clientId: string, quizZoneId: string, sessionQuizZoneId?: string) {
+        if (sessionQuizZoneId !== undefined && sessionQuizZoneId !== quizZoneId) {
+            if (await this.repository.has(sessionQuizZoneId)) {
+                await this.leave(sessionQuizZoneId, clientId);
+            }
+        }
+
         const quizZoneStage = await this.getQuizZoneStage(quizZoneId);
 
         if (quizZoneStage === QUIZ_ZONE_STAGE.LOBBY) {
@@ -250,7 +141,6 @@ export class QuizZoneService {
             hostId,
             title,
             description,
-            intervalTime,
         } = await this.findOne(quizZoneId);
         const { id, nickname, state } = players.get(clientId);
 
@@ -302,7 +192,7 @@ export class QuizZoneService {
 
         players.set(clientId, {
             id: clientId,
-            nickname: nickNames[Math.floor(Math.random() * nickNames.length)],
+            nickname: getRandomNickName(),
             score: 0,
             submits: [],
             state: PLAYER_STATE.WAIT,
@@ -333,6 +223,12 @@ export class QuizZoneService {
         await this.repository.delete(quizZoneId);
     }
 
+    /**
+     *
+     * @param quizZoneId - 대상 퀴즈 존 ID
+     * @param clientId - 제외시킬 클라이언트 ID
+     * @returns
+     */
     async findOthersInfo(quizZoneId: string, clientId: string) {
         const { players } = await this.findOne(quizZoneId);
 
@@ -347,8 +243,14 @@ export class QuizZoneService {
         return stage;
     }
 
-    async leave(quizZoneId: string, clientId: any) {
-        const quizZone = await this.repository.get(quizZoneId);
+    private async leave(quizZoneId: string, clientId: any) {
+        const quizZone = await this.findOne(quizZoneId);
         quizZone.players.delete(clientId);
+    }
+
+    async updateQuizZone(quizZoneId: string, quizZone: QuizZone) {
+        await this.repository.set(quizZoneId, {
+            ...quizZone,
+        });
     }
 }

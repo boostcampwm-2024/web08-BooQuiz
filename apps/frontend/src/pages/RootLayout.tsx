@@ -1,9 +1,15 @@
+import Navbar from '@/components/common/NavBar';
 import { Outlet } from 'react-router-dom';
 
 const RootLayout = () => {
     return (
-        <div className="min-h-screen min-w-full p-4 flex flex-col items-center justify-center gap-8">
-            <Outlet />
+        <div className="min-h-screen flex flex-col">
+            <Navbar />
+            <main className="flex-1">
+                <div className="h-full container mx-auto px-4 sm:px-6 lg:px-8 py-4">
+                    <Outlet />
+                </div>
+            </main>
         </div>
     );
 };

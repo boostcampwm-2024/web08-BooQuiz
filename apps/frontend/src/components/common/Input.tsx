@@ -1,4 +1,4 @@
-import { ChangeEvent } from 'react';
+import { forwardRef, ChangeEvent } from 'react';
 
 interface InputProps {
     type?: string;
@@ -12,8 +12,8 @@ interface InputProps {
     isUnderline?: boolean;
     onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
     isAutoFocus?: boolean;
+    className?: string;
 }
-
 /**
  * @description
  * Input 컴포넌트는 다양한 타입의 입력 필드를 렌더링합니다.
@@ -47,40 +47,50 @@ interface InputProps {
  *
  * @returns {JSX.Element} 렌더링된 Input 컴포넌트
  */
-const Input = ({
-    type = 'text',
-    label,
-    value,
-    onChange,
-    name,
-    placeholder,
-    disabled = false,
-    error = false,
-    isUnderline = false,
-    onKeyDown,
-    isAutoFocus = false,
-    ...rest
-}: InputProps) => {
-    return (
-        <div className="input-wrapper">
-            <label htmlFor={name}>{label}</label>
-            <input
-                autoFocus={isAutoFocus}
-                type={type}
-                id={name}
-                name={name}
-                value={value}
-                onChange={onChange}
-                placeholder={placeholder}
-                disabled={disabled}
-                className={`${error ? 'error' : ''} focus:outline-none w-full`}
-                onKeyDown={onKeyDown}
-                {...rest}
-            />
-            {error && <span className="error-message">{error}</span>}
-            {isUnderline && <div className="underline h-[2px] w-full bg-blue-600" />}
-        </div>
-    );
-};
+const Input = forwardRef<HTMLInputElement, InputProps>(
+    (
+        {
+            type = 'text',
+            label,
+            value,
+            onChange,
+            name,
+            placeholder,
+            disabled = false,
+            error = false,
+            isUnderline = false,
+            onKeyDown,
+            isAutoFocus = false,
+            className,
+            ...rest
+        },
+        ref,
+    ) => {
+        const classes = className ? `input-wrapper ${className}` : 'input-wrapper';
+        return (
+            <div className={classes}>
+                <label htmlFor={name}>{label}</label>
+                <input
+                    ref={ref}
+                    autoFocus={isAutoFocus}
+                    type={type}
+                    id={name}
+                    name={name}
+                    value={value}
+                    onChange={onChange}
+                    placeholder={placeholder}
+                    disabled={disabled}
+                    className={`${error ? 'error' : ''} focus:outline-none w-full`}
+                    onKeyDown={onKeyDown}
+                    {...rest}
+                />
+                {error && <span className="error-message">{error}</span>}
+                {isUnderline && <div className="underline h-[2px] w-full bg-blue-600" />}
+            </div>
+        );
+    },
+);
+
+Input.displayName = 'Input';
 
 export default Input;

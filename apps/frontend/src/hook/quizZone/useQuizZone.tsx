@@ -1,29 +1,38 @@
 import { useReducer } from 'react';
 import useWebSocket from '@/hook/useWebSocket.tsx';
-import { CurrentQuiz, Player, QuizZone, QuizZoneResultState } from '@/types/quizZone.types.ts';
+import {
+    NextQuizResponse,
+    Player,
+    QuizZone,
+    QuizZoneResultState,
+    SomeoneSubmitResponse,
+    SubmitResponse,
+    ChatMessage,
+} from '@/types/quizZone.types.ts';
+import atob from '@/utils/atob';
 
 export type QuizZoneAction =
     | { type: 'init'; payload: QuizZone }
-    | { type: 'join'; payload: { players: Player[] } }
+    | { type: 'join'; payload: Player[] }
+    | { type: 'someone_join'; payload: Player }
+    | { type: 'someone_leave'; payload: string }
     | { type: 'start'; payload: undefined }
-    | { type: 'submit'; payload: undefined }
-    | { type: 'nextQuiz'; payload: CurrentQuiz }
+    | { type: 'submit'; payload: SubmitResponse }
+    | { type: 'someone_submit'; payload: SomeoneSubmitResponse }
+    | { type: 'nextQuiz'; payload: NextQuizResponse }
     | { type: 'playQuiz'; payload: undefined }
     | { type: 'quizTimeout'; payload: undefined }
     | { type: 'finish'; payload: undefined }
-    | { type: 'summary'; payload: QuizZoneResultState };
+    | { type: 'summary'; payload: QuizZoneResultState }
+    | { type: 'chat'; payload: ChatMessage };
+
+export type chatAction = {
+    type: 'chat';
+    payload: ChatMessage;
+};
 
 type Reducer<S, A> = (state: S, action: A) => S;
 
-function atob(encodedString: string): string {
-    try {
-        // 브라우저 native atob 사용
-        return decodeURIComponent(escape(window.atob(encodedString)));
-    } catch (error) {
-        console.error('Base64 디코딩 실패:', error);
-        return encodedString; // 실패 시 원본 문자열 반환
-    }
-}
 const quizZoneReducer: Reducer<QuizZone, QuizZoneAction> = (state, action) => {
     const { type, payload } = action;
 
@@ -41,7 +50,18 @@ const quizZoneReducer: Reducer<QuizZone, QuizZoneAction> = (state, action) => {
                 players: [],
             };
         case 'join':
-            return { ...state, players: payload.players };
+            return { ...state, players: payload };
+        case 'someone_join':
+            const isPlayerExist = state.players?.some((player) => player.id === payload.id);
+            if (isPlayerExist) {
+                return state; // 이미 존재하는 플레이어라면 상태 변경 없음
+            }
+            return { ...state, players: [...(state.players ?? []), payload] };
+        case 'someone_leave':
+            return {
+                ...state,
+                players: state.players?.filter((player) => player.id !== payload) ?? [],
+            };
         case 'start':
             return {
                 ...state,
@@ -55,8 +75,30 @@ const quizZoneReducer: Reducer<QuizZone, QuizZoneAction> = (state, action) => {
                     ...state.currentPlayer,
                     state: 'SUBMIT',
                 },
+                currentQuizResult: {
+                    fastestPlayers: payload.fastestPlayerIds
+                        .map((id) => state.players?.find((p) => p.id === id))
+                        .filter((p) => !!p),
+                    submittedCount: payload.submittedCount,
+                    totalPlayerCount: payload.totalPlayerCount,
+                },
+            };
+        case 'someone_submit':
+            const { clientId, submittedCount } = payload;
+            const player = state.players?.find((p) => p.id === clientId);
+            const fastestPlayers = state.currentQuizResult?.fastestPlayers ?? [];
+
+            return {
+                ...state,
+                currentQuizResult: {
+                    ...state.currentQuizResult!,
+                    fastestPlayers: [...fastestPlayers, player].slice(0, 3).filter((p) => !!p),
+                    submittedCount,
+                },
             };
         case 'nextQuiz':
+            const { nextQuiz } = payload;
+
             return {
                 ...state,
                 stage: 'IN_PROGRESS',
@@ -66,12 +108,16 @@ const quizZoneReducer: Reducer<QuizZone, QuizZoneAction> = (state, action) => {
                 },
                 currentQuiz: {
                     ...state.currentQuiz,
-                    question: atob(payload.question),
-                    currentIndex: payload.currentIndex,
-                    playTime: payload.playTime,
-                    startTime: payload.startTime,
-                    deadlineTime: payload.deadlineTime,
+                    question: atob(nextQuiz.question),
+                    currentIndex: nextQuiz.currentIndex,
+                    playTime: nextQuiz.playTime,
+                    startTime: nextQuiz.startTime,
+                    deadlineTime: nextQuiz.deadlineTime,
                     type: 'SHORT',
+                },
+                currentQuizResult: {
+                    ...state.currentQuizResult,
+                    ...payload.currentQuizResult,
                 },
             };
         case 'playQuiz':
@@ -106,8 +152,24 @@ const quizZoneReducer: Reducer<QuizZone, QuizZoneAction> = (state, action) => {
                 submits: payload.submits,
                 quizzes: payload.quizzes,
             };
+        case 'chat':
+            return {
+                ...state,
+                chatMessages: [...(state.chatMessages || []), payload],
+            };
         default:
             return state;
+    }
+};
+
+export const chatMessagesReducer: Reducer<ChatMessage[], chatAction> = (chatMessages, action) => {
+    const { type, payload } = action;
+
+    switch (type) {
+        case 'chat':
+            return [...chatMessages, payload];
+        default:
+            return chatMessages;
     }
 };
 
@@ -159,23 +221,32 @@ const useQuizZone = () => {
         score: 0,
         submits: [],
         quizzes: [],
+        chatMessages: [],
     };
+
     const [quizZoneState, dispatch] = useReducer(quizZoneReducer, initialQuizZoneState);
+    // const [chatMessages, setChatMessages] = useReducer(chatMessagesReducer, []);
 
     const messageHandler = (event: MessageEvent) => {
         const { event: QuizZoneEvent, data } = JSON.parse(event.data);
+        // if (QuizZoneEvent === 'chat') {
+        //     setChatMessages({ type: 'chat', payload: data });
+        //     return;
+        // }
+
         dispatch({
             type: QuizZoneEvent,
             payload: data,
         });
     };
-    const wsUrl = import.meta.env.VITE_WS_URL;
 
-    const { sendMessage, closeConnection } = useWebSocket(`${wsUrl}/play`, messageHandler);
+    const wsUrl = `${import.meta.env.VITE_WS_URL}/play`;
+    const { beginConnection, sendMessage, closeConnection } = useWebSocket(wsUrl, messageHandler);
 
     //initialize QuizZOne
     const initQuizZoneData = (initialData: any) => {
         dispatch({ type: 'init', payload: initialData });
+        beginConnection();
     };
 
     //퀴즈 시작 함수
@@ -212,6 +283,10 @@ const useQuizZone = () => {
         sendMessage(message);
     };
 
+    const sendChat = (chatMessage: any) => {
+        sendMessage(JSON.stringify({ event: 'chat', data: chatMessage }));
+    };
+
     return {
         quizZoneState,
         initQuizZoneData,
@@ -221,6 +296,7 @@ const useQuizZone = () => {
         closeConnection,
         exitQuiz,
         joinQuizZone,
+        sendChat,
     };
 };
 

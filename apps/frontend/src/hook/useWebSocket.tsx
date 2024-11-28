@@ -1,11 +1,15 @@
 import { useRef } from 'react';
 
-const useWebSocket = (url: string, messageHandler: (event: MessageEvent) => void) => {
+const useWebSocket = (wsUrl: string, messageHandler: (event: MessageEvent) => void) => {
     const ws = useRef<WebSocket | null>(null);
     const messageQueue = useRef<string[]>([]);
 
-    if (ws.current === null) {
-        ws.current = new WebSocket(url);
+    const beginConnection = () => {
+        if (ws.current !== null) {
+            return;
+        }
+
+        ws.current = new WebSocket(wsUrl);
 
         ws.current.onopen = () => {
             while (messageQueue.current.length > 0) {
@@ -27,7 +31,7 @@ const useWebSocket = (url: string, messageHandler: (event: MessageEvent) => void
         };
 
         ws.current.onmessage = messageHandler;
-    }
+    };
 
     const sendMessage = (message: string) => {
         if (ws.current?.readyState === WebSocket.OPEN) {
@@ -42,7 +46,7 @@ const useWebSocket = (url: string, messageHandler: (event: MessageEvent) => void
         ws.current?.close();
     };
 
-    return { sendMessage, closeConnection };
+    return { beginConnection, sendMessage, closeConnection };
 };
 
 export default useWebSocket;
