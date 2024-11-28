@@ -17,7 +17,10 @@ export class QuizService {
 
     @Transactional()
     async createQuizzes(createQuizDto: CreateQuizRequestDto) {
-        const quizSet = await this.quizSetRepository.save({ name: createQuizDto.quizSetName });
+        const quizSet = await this.quizSetRepository.save({
+            name: createQuizDto.quizSetName,
+            recommended: createQuizDto.recommended
+        });
 
         const quizzes = createQuizDto.quizDetails.map((dto) => {
             return dto.toEntity(quizSet);
@@ -30,7 +33,7 @@ export class QuizService {
 
     async getQuizzes(quizSetId: number): Promise<FindQuizzesResponseDto[]> {
         const quizSet = await this.findQuizSet(quizSetId);
-        return await this.quizRepository.findBy({ quizSet: quizSet });
+        return  await this.quizRepository.findBy({ quizSet: {id: quizSetId} });
     }
 
     async updateQuiz(quizId: number, updateQuizRequestDto: UpdateQuizRequestDto) {
@@ -47,8 +50,13 @@ export class QuizService {
     async deleteQuiz(quizId: number) {
         await this.findQuiz(quizId);
 
-        // 퀴즈 존재하면 삭제
         await this.quizRepository.delete({ id: quizId });
+    }
+
+    async deleteQuizSet(quizSetId: number) {
+        const quiz = await this.findQuizSet(quizSetId);
+
+        await this.quizSetRepository.delete({ id: quizSetId });
     }
 
     async findQuizSet(quizSetId: number) {
@@ -77,8 +85,6 @@ export class QuizService {
         ]);
 
         const quizSetDetails = quizSets.map(QuizSetDetails.from);
-        const meta = { total: count, page: page };
-
-        return { quizSetDetails, meta };
+        return { quizSetDetails, total: count, currentPage: page};
     }
 }
