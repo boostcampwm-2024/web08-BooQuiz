@@ -199,7 +199,3 @@ pnpm test src/quiz/quiz.service.spec.ts
 2. feature/[기능명] 브랜치 생성
 3. 개발 및 테스트 완료
 4. PR 생성 및 리뷰 요청
-
-## ⚖️ 라이선스
-
-이 프로젝트는 MIT 라이선스를 따릅니다.
