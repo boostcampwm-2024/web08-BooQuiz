@@ -7,15 +7,15 @@ import { QUIZ_TYPE } from '../common/constants';
 import { CreateQuizRequestDto } from './dto/create-quiz-request.dto';
 import { BadRequestException } from '@nestjs/common';
 import { UpdateQuizRequestDto } from './dto/update-quiz-request.dto';
-import { describe } from 'node:test';
 import { SearchQuizSetRequestDTO } from './dto/search-quiz-set-request.dto';
-import { addTransactionalDataSource, initializeTransactionalContext } from 'typeorm-transactional';
 import { DataSource } from 'typeorm';
+import { addTransactionalDataSource, initializeTransactionalContext } from 'typeorm-transactional';
 
 describe('QuizService', () => {
     let service: QuizService;
     let quizRepository: QuizRepository;
     let quizSetRepository: QuizSetRepository;
+
 
     beforeAll(async () => {
         initializeTransactionalContext();
@@ -94,7 +94,8 @@ describe('QuizService', () => {
             //then
             expect(response).toEqual({
                 quizSetDetails: response.quizSetDetails,
-                meta: response.meta,
+                total: response.total,
+                currentPage: 1,
             });
         });
     });
@@ -204,7 +205,7 @@ describe('QuizService', () => {
                 },
             ];
             const quizSetId = 1;
-            const quizSet: QuizSet = { id: quizSetId, name: '퀴즈셋 이름' };
+            const quizSet = { id: quizSetId, name: '퀴즈셋 이름' } as QuizSet;
 
             mockQuizSetRepository.findOneBy.mockResolvedValue(quizSet);
             mockQuizRepository.findBy.mockResolvedValue(quizList);
