@@ -1,66 +1,35 @@
 config:
-  target: "http://test.booquiz.kro.kr" # 서버의 기본 URL
+  target: "http://test.booquiz.kro.kr"
+  plugins:
+   # ensuer: {}
+   # apdex: {}
+    metrics-by-endpoint: {}  # 각 API 엔드포인트별 성능 측정
+  #ensure:
+  #  p95: 200    # 95%의 요청이 200ms 이내 응답
+  #  maxErrorRate: 1  # 최대 에러율 1%
+
   phases:
-    - duration: 1 # 테스트 지속 시간 (초)
-      arrivalRate: 5 # 초당 요청 수
+    - duration: 80
+      arrivalRate: 600
   http:
     headers:
-      Content-Type: "application/json" # 모든 요청의 공통 헤더
+      Content-Type: "application/json"
+    cookies:
+      connect.sid: "s%3AYvwmJO7-YMU4RKd0F1HH223sdNvTsdsd.DvxqWsXW8gHoL6lLVTv6wHv9mgTHBGhHDSROPQPRsdP"
+  processor: "./function.cjs"
+
 scenarios:
-  - name: Create and Get Quiz Zone
+  - name: "퀴즈 게임 플레이 시나리오"
     flow:
-      - function: generateQuizZoneId
-      - function: generateSessionId # 세션 ID 생성
+      - function: "setQuizId"
+      - capture:
+          as: "quizId"
+          json: "$.quizZoneId"
+
       - post:
-          url: "/api/quiz-zone" # 퀴즈존 생성 API
-          headers:
-            Cookie: "sessionId={{ sessionId }}" # 세션 ID를 헤더로 포함
+          url: "/api/quiz-zone"
           json:
-            quizZoneId: "{{ quizZoneId }}" # 퀴즈존 ID를 요청 데이터에 포함
+            quizZoneId: "{{ quizId }}"
 
-
-processors:
-  generateQuizZoneId:
-    - function: |
-        (context, events, done) => {
-          // 랜덤 숫자와 알파벳 문자열 생성
-          const length = 8; // 원하는 길이
-          const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-          let result = '';
-          for (let i = 0; i < length; i++) {
-            result += characters.charAt(Math.floor(Math.random() * characters.length));
-          }
-          context.vars.quizZoneId = result; // 변수 저장
-          return done();
-        }
-  generateSessionId:
-    - function: |
-        (context, events, done) => {
-          const randomBase64 = () => {
-            const length = 32; // 랜덤 문자열 길이
-            const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-            let result = '';
-            for (let i = 0; i < length; i++) {
-              result += characters.charAt(Math.floor(Math.random() * characters.length));
-            }
-            return result;
-          };
-        
-          const randomSignature = () => {
-            const length = 64; // 서명 문자열 길이
-            const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789%';
-            let result = '';
-            for (let i = 0; i < length; i++) {
-              result += characters.charAt(Math.floor(Math.random() * characters.length));
-            }
-            return result;
-          };
-        
-          // 세션 ID 형식: s%3A[랜덤 값].[랜덤 서명 값]
-          const base64Part = randomBase64();
-          const signaturePart = randomSignature();
-          const sessionId = `s%3A${base64Part}.${signaturePart}`;
-        
-          context.vars.sessionId = sessionId; // 세션 ID 저장
-          return done();
-        }
+      - get:
+          url: "/api/quiz-zone/{{ quizId }}"
