@@ -28,7 +28,7 @@ const QuizZoneLobby = ({ quizZoneState, quizZoneId, startQuiz, exitQuiz }: QuizZ
     const isHost = quizZoneState.hostId === currentPlayer.id;
 
     // 공통으로 사용되는 스타일 정의
-    const contentBoxStyle = 'min-h-0 md:h-full';
+    const contentBoxStyle = 'min-h-0';
     const flexColumnGap = 'flex flex-col gap-1';
 
     const renderInfoItem = (
@@ -44,7 +44,7 @@ const QuizZoneLobby = ({ quizZoneState, quizZoneId, startQuiz, exitQuiz }: QuizZ
 
     return (
         <div className="w-full h-full flex flex-col items-center justify-center gap-4">
-            <ContentBox className="w-full min-h-0 h-full">
+            <ContentBox className="w-full flex-1 min-h-0">
                 {/* 모바일에서는 세로로, md 이상에서는 가로로 배치 */}
                 <div className="w-full min-h-0 h-full flex flex-col md:flex-row gap-4 items-stretch">
                     {/* 퀴즈 정보 섹션 - 모바일에서는 전체 너비, md 이상에서는 30% */}
@@ -105,8 +105,13 @@ const QuizZoneLobby = ({ quizZoneState, quizZoneId, startQuiz, exitQuiz }: QuizZ
                     </ContentBox>
 
                     {/* 참가자 목록 섹션 - 모바일에서는 전체 너비, md 이상에서는 70% */}
-                    <ContentBox className={cn('w-full md:w-3/5', contentBoxStyle)}>
-                        <div className="flex flex-col min-h-80">
+                    <ContentBox
+                        className={cn(
+                            'w-full md:w-3/5 p-4 flex flex-col justify-between flex-1',
+                            contentBoxStyle,
+                        )}
+                    >
+                        <div className="flex flex-col min-h-80 flex-1">
                             <div className={flexColumnGap}>
                                 <Typography
                                     text="참가자 목록"
@@ -120,7 +125,7 @@ const QuizZoneLobby = ({ quizZoneState, quizZoneId, startQuiz, exitQuiz }: QuizZ
                                     color="gray"
                                 />
                             </div>
-                            <div className="flex-1 mt-4 min-h-0 overflow-y-auto">
+                            <div className="flex-1 mt-4 h-full min-h-0 overflow-y-auto">
                                 <PlayersGrid
                                     currentPlayer={quizZoneState.currentPlayer}
                                     players={quizZoneState.players ?? []}
