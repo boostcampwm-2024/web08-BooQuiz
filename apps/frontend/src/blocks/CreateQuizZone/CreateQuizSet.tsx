@@ -6,6 +6,10 @@ import useValidState from '@/hook/useValidInput.ts';
 import { requestCreateQuizSet } from '@/utils/requests.ts';
 import { validQuizSetName, validQuizzes } from '@/utils/validators.ts';
 import { QUIZ_LIMIT_COUNT } from '@/constants/quiz-set.constants.ts';
+import Input from '@/components/common/Input';
+import ContentBox from '@/components/common/ContentBox';
+import Typography from '@/components/common/Typogrpahy';
+import CommonButton from '@/components/common/CommonButton';
 
 interface CreateQuizZoneQuizSetProps {
     handlePrevStepButton?: () => void;
@@ -63,34 +67,33 @@ const CreateQuizSet = ({ handlePrevStepButton, updateQuizSet }: CreateQuizZoneQu
     };
 
     return (
-        <div>
-            <div>
-                <div className="">
-                    <label htmlFor="quiz-zone-id" className="">
-                        퀴즈셋 이름
-                    </label>
-                    <input
-                        type="text"
-                        id="quiz-zone-id"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                    />
-                    {validNameMessage && <span>{validNameMessage}</span>}
-                </div>
-                <div>
-                    <CandidateQuizzes quizzes={quizzes} removeQuiz={removeQuiz} />
-                    {validQuizzesMessage && <span>{validQuizzesMessage}</span>}
-                </div>
-            </div>
-            <CreateQuiz handleCreateQuiz={addQuiz} />
-            <div>
-                {handlePrevStepButton && (
-                    <button onClick={() => handlePrevStepButton()}>돌아가기</button>
-                )}
-                <button onClick={() => createQuizSet()} disabled={isInvalid()}>
+        <div className="w-full h-full flex flex-col justify-center items-center gap-4">
+            <ContentBox className="gap-2 xs:max-w-xs md:max-w-md w-full">
+                <Input
+                    label="퀴즈셋 이름"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    name="quiz-zone-id"
+                    isBorder={true}
+                />
+                {validNameMessage && <Typography text={validNameMessage} size="xs" color="red" />}
+                <CandidateQuizzes quizzes={quizzes} removeQuiz={removeQuiz} />
+                {validQuizzesMessage && <span>{validQuizzesMessage}</span>}
+                <CreateQuiz handleCreateQuiz={addQuiz} />
+
+                <CommonButton
+                    isFilled={true}
+                    clickEvent={() => createQuizSet()}
+                    disabled={isInvalid()}
+                >
                     퀴즈셋 만들기
-                </button>
-            </div>
+                </CommonButton>
+            </ContentBox>
+            {handlePrevStepButton && (
+                <CommonButton className="min-w-[15rem]" clickEvent={() => handlePrevStepButton()}>
+                    돌아가기
+                </CommonButton>
+            )}
         </div>
     );
 };
