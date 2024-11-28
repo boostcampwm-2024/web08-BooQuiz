@@ -17,7 +17,7 @@ export const requestCreateQuizZone = async (quizZone: CreateQuizZone) => {
 export const requestCreateQuizSet = async (quizSet: QuizSet) => {
     const { quizSetName, quizzes } = quizSet;
 
-    const response = await fetch('api/quiz', {
+    const response = await fetch('api/quiz-set', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -35,7 +35,7 @@ export const requestCreateQuizSet = async (quizSet: QuizSet) => {
 
 export const requestSearchQuizSets = async (params: Record<string, string>) => {
     const searchParams = new URLSearchParams(params);
-    const url = `api/quiz?${searchParams.toString()}`;
+    const url = `api/quiz-set?${searchParams.toString()}`;
 
     const response = await fetch(url, {
         method: 'GET',
@@ -45,10 +45,12 @@ export const requestSearchQuizSets = async (params: Record<string, string>) => {
         console.log(response.status);
     }
 
-    const { quizSetDetails, meta } = (await response.json()) as ResponseSearchQuizSets;
+    const { quizSetDetails, total, currentPage } =
+        (await response.json()) as ResponseSearchQuizSets;
 
     return {
         quizSets: quizSetDetails,
-        totalQuizSetCount: meta.total,
+        totalQuizSetCount: total,
+        currentPage: currentPage,
     };
 };

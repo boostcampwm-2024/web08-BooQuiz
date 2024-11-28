@@ -53,7 +53,7 @@ export interface Quiz {
     question: string;
     answer: string;
     playTime: number;
-    type?: ProblemType;
+    quizType?: ProblemType;
 }
 
 export interface SubmittedQuiz {

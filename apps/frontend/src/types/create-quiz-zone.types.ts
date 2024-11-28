@@ -26,5 +26,6 @@ export interface ResponseQuizSet {
 
 export interface ResponseSearchQuizSets {
     quizSetDetails: ResponseQuizSet[];
-    meta: { total: number; page: number };
+    currentPage: number;
+    total: number;
 }

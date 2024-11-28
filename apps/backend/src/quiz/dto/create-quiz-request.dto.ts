@@ -24,10 +24,10 @@ export class QuizDetailsDto {
 
     @ApiProperty({ description: '퀴즈 타입' })
     @IsEnum(QUIZ_TYPE, { message: '정해진 퀴즈 타입이 아닙니다.' })
-    readonly type: QUIZ_TYPE;
+    readonly quizType: QUIZ_TYPE;
 
     toEntity(quizSet: QuizSet) {
-        return new Quiz(this.question, this.answer, this.playTime, this.type, quizSet);
+        return new Quiz(this.question, this.answer, this.playTime, this.quizType, quizSet);
     }
 }
 

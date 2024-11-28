@@ -3,6 +3,7 @@ import { QuizController } from './quiz.controller';
 import { QuizService } from './quiz.service';
 import { CreateQuizRequestDto } from './dto/create-quiz-request.dto';
 import { NotFoundException } from '@nestjs/common';
+import { QUIZ_TYPE } from '../common/constants';
 
 describe('QuizController', () => {
     let quizController: QuizController;
@@ -29,21 +30,19 @@ describe('QuizController', () => {
         quizService = module.get<QuizService>(QuizService);
     });
 
-
     describe('createQuiz', () => {
         it('새로운 퀴즈를 생성한다.', async () => {
             // given
             const dto = {
-                quizSetName: "퀴즈셋 이름",
-                quizDetails:
-                    [
-                        {
-                            question: '지브리는 뭘로 돈 벌게요?',
-                            answer: '토토로',
-                            playTime: 30000,
-                            quizType: 'SHORT_ANSWER',
-                        },
-                    ]
+                quizSetName: '퀴즈셋 이름',
+                quizDetails: [
+                    {
+                        question: '지브리는 뭘로 돈 벌게요?',
+                        answer: '토토로',
+                        playTime: 30000,
+                        quizType: QUIZ_TYPE.SHORT_ANSWER,
+                    },
+                ],
             } as CreateQuizRequestDto;
 
             // when
