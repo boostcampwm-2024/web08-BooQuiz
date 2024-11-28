@@ -7,6 +7,7 @@ import {
     QuizZoneResultState,
     SomeoneSubmitResponse,
     SubmitResponse,
+    ChatMessage,
 } from '@/types/quizZone.types.ts';
 import atob from '@/utils/atob';
 
@@ -22,7 +23,13 @@ export type QuizZoneAction =
     | { type: 'playQuiz'; payload: undefined }
     | { type: 'quizTimeout'; payload: undefined }
     | { type: 'finish'; payload: undefined }
-    | { type: 'summary'; payload: QuizZoneResultState };
+    | { type: 'summary'; payload: QuizZoneResultState }
+    | { type: 'chat'; payload: ChatMessage };
+
+export type chatAction = {
+    type: 'chat';
+    payload: ChatMessage;
+};
 
 type Reducer<S, A> = (state: S, action: A) => S;
 
@@ -45,6 +52,10 @@ const quizZoneReducer: Reducer<QuizZone, QuizZoneAction> = (state, action) => {
         case 'join':
             return { ...state, players: payload };
         case 'someone_join':
+            const isPlayerExist = state.players?.some((player) => player.id === payload.id);
+            if (isPlayerExist) {
+                return state; // 이미 존재하는 플레이어라면 상태 변경 없음
+            }
             return { ...state, players: [...(state.players ?? []), payload] };
         case 'someone_leave':
             return {
@@ -141,8 +152,24 @@ const quizZoneReducer: Reducer<QuizZone, QuizZoneAction> = (state, action) => {
                 submits: payload.submits,
                 quizzes: payload.quizzes,
             };
+        case 'chat':
+            return {
+                ...state,
+                chatMessages: [...(state.chatMessages || []), payload],
+            };
         default:
             return state;
+    }
+};
+
+export const chatMessagesReducer: Reducer<ChatMessage[], chatAction> = (chatMessages, action) => {
+    const { type, payload } = action;
+
+    switch (type) {
+        case 'chat':
+            return [...chatMessages, payload];
+        default:
+            return chatMessages;
     }
 };
 
@@ -194,11 +221,19 @@ const useQuizZone = () => {
         score: 0,
         submits: [],
         quizzes: [],
+        chatMessages: [],
     };
+
     const [quizZoneState, dispatch] = useReducer(quizZoneReducer, initialQuizZoneState);
+    // const [chatMessages, setChatMessages] = useReducer(chatMessagesReducer, []);
 
     const messageHandler = (event: MessageEvent) => {
         const { event: QuizZoneEvent, data } = JSON.parse(event.data);
+        // if (QuizZoneEvent === 'chat') {
+        //     setChatMessages({ type: 'chat', payload: data });
+        //     return;
+        // }
+
         dispatch({
             type: QuizZoneEvent,
             payload: data,
@@ -248,6 +283,10 @@ const useQuizZone = () => {
         sendMessage(message);
     };
 
+    const sendChat = (chatMessage: any) => {
+        sendMessage(JSON.stringify({ event: 'chat', data: chatMessage }));
+    };
+
     return {
         quizZoneState,
         initQuizZoneData,
@@ -257,6 +296,7 @@ const useQuizZone = () => {
         closeConnection,
         exitQuiz,
         joinQuizZone,
+        sendChat,
     };
 };
 

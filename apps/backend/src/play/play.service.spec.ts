@@ -597,6 +597,44 @@ describe('PlayService', () => {
         });
     });
 
+    describe('chatQuizZone', () => {
+        it('플레이어가 플레이 상태일 때는 채팅을 제출할 수 없어야 합니다.', async () => {
+            const inPlayPlayer = {
+                ...mockPlayer,
+                state: PLAYER_STATE.PLAY,
+            };
+
+            const inPlayQuizZone = {
+                ...mockQuizZone,
+                players: new Map([['player-1', inPlayPlayer]]),
+            };
+
+            quizZoneService.findOne.mockResolvedValue(inPlayQuizZone);
+
+            await expect(service.chatQuizZone('player-1', 'test-zone')).rejects.toThrow(
+                new BadRequestException('채팅을 제출한 플레이어 상태가 PLAY입니다.'),
+            );
+        });
+
+        it('플레이어가 플레이 상태가 아닐 때는 채팅을 제출할 수 있어야 합니다.', async () => {
+            const inWaitPlayer = {
+                ...mockPlayer,
+                state: PLAYER_STATE.WAIT,
+            };
+
+            const inWaitQuizZone = {
+                ...mockQuizZone,
+                players: new Map([['player-1', inWaitPlayer]]),
+            };
+
+            quizZoneService.findOne.mockResolvedValue(inWaitQuizZone);
+
+            const result = await service.chatQuizZone('player-1', 'test-zone');
+
+            expect(result).toEqual(['player-1']);
+        });
+    });
+
     describe('changeNickname', () => {
         it('Lobby에 있는 wait상태의 참여자는 닉네임을 변경할 수 있다.', async () => {
             const players = new Map([

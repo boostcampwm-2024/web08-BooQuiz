@@ -268,4 +268,13 @@ export class PlayGateway implements OnGatewayInit {
 
         return { event: 'leave', data: 'OK' };
     }
+
+    @SubscribeMessage('chat')
+    async chat(@ConnectedSocket() client: WebSocketWithSession, @MessageBody() message: string) {
+        const clientId = client.session.id;
+        const { quizZoneId } = this.getClientInfo(clientId);
+        const clientIds = await this.playService.chatQuizZone(clientId, quizZoneId);
+
+        this.broadcast(clientIds, 'chat', message);
+    }
 }
