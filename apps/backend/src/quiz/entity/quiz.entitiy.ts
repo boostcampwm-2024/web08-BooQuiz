@@ -20,15 +20,13 @@ export class Quiz {
     @Column()
     answer: string;
 
-    @Column()
+    @Column({ name: 'play_time' })
     playTime: number;
 
     @Column({ name: 'quiz_type' })
     quizType: QUIZ_TYPE;
 
-    @ManyToOne((type) => QuizSet, (quizSet) => quizSet.quizzes, {
-        onDelete: 'CASCADE',
-    })
+    @ManyToOne((type) => QuizSet, (quizSet) => quizSet.quizzes)
     quizSet: QuizSet;
 
     constructor(
