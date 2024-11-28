@@ -80,7 +80,7 @@ describe('QuizZoneController', () => {
             const result = await controller.findQuizZoneInfo(session, quizZoneId);
 
             // then
-            expect(service.getQuizZoneInfo).toHaveBeenCalledWith(session.id, quizZoneId);
+            expect(service.getQuizZoneInfo).toHaveBeenCalledWith(session.id, quizZoneId, undefined);
             expect(result).toEqual(mockQuizZoneInfo);
         });
 

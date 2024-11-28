@@ -50,10 +50,10 @@ const QuizZoneResult = ({ quizZoneState }: QuizZoneResultProps) => {
     };
 
     return (
-        <div className="w-full h-screen flex flex-col items-center justify-center gap-4">
+        <div className="w-full h-full flex flex-col items-center justify-center gap-4">
             {/* 상단 요약 정보 */}
-            <ContentBox className="w-full md:w-[40rem] p-6">
-                <div className="flex flex-col items-center gap-4">
+            <ContentBox className="w-full h-full p-6">
+                <div className="w-full flex flex-col items-center gap-4">
                     <Typography size="lg" color="blue" text="퀴즈 결과" bold={true} />
                     <div className="flex items-baseline gap-2">
                         <Typography
@@ -94,14 +94,8 @@ const QuizZoneResult = ({ quizZoneState }: QuizZoneResultProps) => {
 
             {/* 문제별 결과 */}
             {quizResults.length > 0 && (
-                <ContentBox className="w-4/5 md:w-[40rem] p-6">
-                    <Typography
-                        size="lg"
-                        color="black"
-                        text="문제별 결과"
-                        bold={true}
-                        // className="mb-4"
-                    />
+                <ContentBox className="w-full p-6 gap-2">
+                    <Typography size="lg" color="black" text="문제별 결과" bold={true} />
                     <div className="max-h-[400px] overflow-y-auto pr-2 space-y-3 w-full">
                         {quizResults.map((result, index) => (
                             <ContentBox
