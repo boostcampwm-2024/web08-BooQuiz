@@ -99,7 +99,6 @@ const quizZoneReducer: Reducer<QuizZone, QuizZoneAction> = (state, action) => {
         case 'nextQuiz':
             const { nextQuiz } = payload;
 
-            // console.log('nextQuiz', atob(payload.question), payload.question);
             return {
                 ...state,
                 stage: 'IN_PROGRESS',

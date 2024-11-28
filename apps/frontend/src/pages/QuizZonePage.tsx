@@ -57,7 +57,7 @@ const QuizZoneContent = () => {
     if (isLoading) {
         return <div className="flex justify-center items-center h-screen">로딩 중...</div>;
     }
-    console.log('quizZoneState:', quizZoneState.currentPlayer.state, quizZoneState.stage);
+
     const renderQuizZone = () => {
         switch (quizZoneState.stage) {
             case 'LOBBY':
