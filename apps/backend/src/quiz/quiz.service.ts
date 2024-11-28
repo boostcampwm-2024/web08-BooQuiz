@@ -1,9 +1,11 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateQuizRequestDto } from './dto/create-quiz-request.dto';
-import { CreateQuizSetResponseDto } from './dto/create-quiz-set-response.dto';
 import { QuizRepository } from './repository/quiz.repository';
 import { QuizSetRepository } from './repository/quiz-set.repository';
 import { UpdateQuizRequestDto } from './dto/update-quiz-request.dto';
+import { QuizSetDetails } from './dto/search-quiz-set-response.dto';
+import { SearchQuizSetRequestDTO } from './dto/search-quiz-set-request.dto';
+import { FindQuizzesResponseDto } from './dto/find-quizzes-response.dto';
 
 @Injectable()
 export class QuizService {
@@ -23,11 +25,10 @@ export class QuizService {
         await this.quizRepository.save(quizzes);
     }
 
-    async getQuizzes(quizSetId: number) {
+    async getQuizzes(quizSetId: number): Promise<FindQuizzesResponseDto[]> {
         const quizSet = await this.findQuizSet(quizSetId);
+        return await this.quizRepository.findBy({ quizSet: quizSet });
 
-        const quizzes = await this.quizRepository.findBy({ quizSet: quizSet });
-        return quizzes.map((quiz) => ({ ...quiz }));
     }
 
     async updateQuiz(quizId: number, updateQuizRequestDto: UpdateQuizRequestDto) {
@@ -64,5 +65,18 @@ export class QuizService {
         }
 
         return quiz;
+    }
+
+    async searchQuizSet(searchQuery: SearchQuizSetRequestDTO) {
+        const {name, page, size} = searchQuery;
+        const [quizSets, count] = await Promise.all([
+            this.quizSetRepository.searchByName(name, page, size),
+            this.quizSetRepository.countByName(name)
+        ]);
+
+        const quizSetDetails = quizSets.map(QuizSetDetails.from);
+        const meta = {total: count, page: page};
+
+        return {quizSetDetails, meta}
     }
 }
