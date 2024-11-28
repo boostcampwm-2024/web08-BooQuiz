@@ -11,7 +11,7 @@ const CandidateQuizzes = ({ quizzes, removeQuiz }: CandidateQuizProps) => {
             {quizzes.map((quiz, i) => (
                 <li key={i}>
                     <div>
-                        <span>{quiz.type}</span>
+                        <span>{quiz.quizType}</span>
                         <span>{quiz.playTime}</span>
                     </div>
                     <div>{quiz.question}</div>

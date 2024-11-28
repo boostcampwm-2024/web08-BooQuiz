@@ -13,13 +13,15 @@ const CreateQuiz = ({ handleCreateQuiz }: CreateQuizProps) => {
         '',
         validAnswer,
     );
-    const [time, timeInvalidMessage, setTime, isInvalidTime] = useValidState<number>(30, validTime);
-    const [type, typeInvalidMessage, setType, isInvalidType] = useValidState<ProblemType>(
-        'SHORT',
-        () => {},
+    const [playTime, timeInvalidMessage, setPlayTime, isInvalidPlayTime] = useValidState<number>(
+        30,
+        validTime,
     );
+    const [quizType, typeInvalidMessage, setQuizType, isInvalidQuizType] =
+        useValidState<ProblemType>('SHORT', () => {});
 
-    const isInvalid = () => isInvalidQuestion || isInvalidAnswer || isInvalidTime || isInvalidType;
+    const isInvalid = () =>
+        isInvalidQuestion || isInvalidAnswer || isInvalidPlayTime || isInvalidQuizType;
 
     const handleComplete = () => {
         if (isInvalid()) {
@@ -29,10 +31,10 @@ const CreateQuiz = ({ handleCreateQuiz }: CreateQuizProps) => {
         }
 
         handleCreateQuiz({
-            question: question,
-            answer: answer,
-            type: type,
-            playTime: time,
+            question,
+            answer,
+            quizType,
+            playTime,
         });
     };
 
@@ -40,29 +42,29 @@ const CreateQuiz = ({ handleCreateQuiz }: CreateQuizProps) => {
         <div>
             <div>
                 <strong>퀴즈 유형</strong>
-                <div className={isInvalidTime ? 'invalid' : ''}>
+                <div className={isInvalidPlayTime ? 'invalid' : ''}>
                     <label className="">단답형</label>
                     <input
                         type="radio"
                         name={'type'}
                         value={'SHORT'}
-                        checked={type === 'SHORT'}
-                        onChange={(e) => setType(e.target.value as ProblemType)}
+                        checked={quizType === 'SHORT'}
+                        onChange={(e) => setQuizType(e.target.value as ProblemType)}
                     />
                     <span>{typeInvalidMessage}</span>
                 </div>
             </div>
-            <div className={isInvalidTime ? 'invalid' : ''}>
+            <div className={isInvalidPlayTime ? 'invalid' : ''}>
                 <label htmlFor="time">풀이 시간</label>
                 <input
                     type="number"
                     id="time"
                     min={1}
                     max={60}
-                    value={time}
-                    onChange={(e) => setTime(parseInt(e.target.value))}
+                    value={playTime}
+                    onChange={(e) => setPlayTime(parseInt(e.target.value))}
                 />
-                {isInvalidTime && <span>{timeInvalidMessage}</span>}
+                {isInvalidPlayTime && <span>{timeInvalidMessage}</span>}
             </div>
             <div className={isInvalidQuestion ? 'invalid' : ''}>
                 <label htmlFor="question" className="">
