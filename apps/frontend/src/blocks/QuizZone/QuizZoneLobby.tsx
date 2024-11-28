@@ -55,7 +55,12 @@ const QuizZoneLobby = ({ quizZoneState, quizZoneId, startQuiz, exitQuiz }: QuizZ
                         )}
                     >
                         <div className={flexColumnGap}>
-                            <Typography text="퀴즈정보" size="2xl" color="black" bold={true} />
+                            <Typography
+                                text={`${quizZoneState.title}`}
+                                size="3xl"
+                                color="black"
+                                bold={true}
+                            />
                             <Typography
                                 text={quizZoneState.description}
                                 size="xs"
