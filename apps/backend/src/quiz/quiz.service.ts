@@ -17,7 +17,10 @@ export class QuizService {
 
     @Transactional()
     async createQuizzes(createQuizDto: CreateQuizRequestDto) {
-        const quizSet = await this.quizSetRepository.save({ name: createQuizDto.quizSetName });
+        const quizSet = await this.quizSetRepository.save({
+            name: createQuizDto.quizSetName,
+            recommended: createQuizDto.recommended
+        });
 
         const quizzes = createQuizDto.quizDetails.map((dto) => {
             return dto.toEntity(quizSet);

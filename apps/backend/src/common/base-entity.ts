@@ -11,12 +11,14 @@ export abstract class BaseEntity {
     @CreateDateColumn({
         type: 'datetime',
         default: () => 'CURRENT_TIMESTAMP',
+        name: 'created_at',
     })
     createAt: Date;
 
     @UpdateDateColumn({
         type: 'datetime',
         default: () => 'CURRENT_TIMESTAMP',
+        name: 'updated_at',
     })
     updateAt: Date;
 
