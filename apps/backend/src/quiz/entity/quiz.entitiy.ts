@@ -1,6 +1,7 @@
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { QuizSet } from './quiz-set.entity';
 import { QUIZ_TYPE } from '../../common/constants';
+import { BaseEntity } from '../../common/base-entity';
 
 /**
  * 퀴즈 엔티티
@@ -10,7 +11,7 @@ import { QUIZ_TYPE } from '../../common/constants';
  * @property playTime: 퀴즈의 플레이 시간
  */
 @Entity()
-export class Quiz {
+export class Quiz extends BaseEntity {
     @PrimaryGeneratedColumn()
     id: number;
 
@@ -37,6 +38,7 @@ export class Quiz {
         quizType: QUIZ_TYPE,
         quizSet: QuizSet,
     ) {
+        super();
         this.question = question;
         this.answer = answer;
         this.playTime = playTime;

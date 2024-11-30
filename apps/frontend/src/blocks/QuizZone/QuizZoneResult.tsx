@@ -41,11 +41,9 @@ const QuizZoneResult = ({ quizZoneState }: QuizZoneResultProps) => {
 
     const stats = {
         totalCorrect: quizResults.filter((r) => r.isCorrect).length,
-        avgResponseTime:
-            quizResults.reduce(
-                (acc, curr) => (curr.responseTime ? acc + curr.responseTime : acc),
-                0,
-            ) / (quizResults.filter((r) => r.responseTime !== null).length || 1),
+        currentPlayerRank:
+            quizZoneState.ranks?.find((r) => r.id === quizZoneState.currentPlayer.id)?.ranking ?? 0,
+
         totalQuestions: quizResults.length,
     };
 
@@ -59,32 +57,32 @@ const QuizZoneResult = ({ quizZoneState }: QuizZoneResultProps) => {
                         <Typography
                             size="4xl"
                             color="blue"
-                            text={`${quizZoneState.score ?? 0}`}
+                            text={`${stats.currentPlayerRank}위`}
                             bold={true}
                         />
                         <Typography
-                            size="lg"
+                            size="xl"
                             color="gray"
-                            text={`/ ${quizZoneState.quizCount ?? 0}점`}
+                            text={`/ ${quizZoneState.ranks?.length ?? 1} 명`}
                             bold={true}
                         />
                     </div>
                     <div className="w-full grid grid-cols-2 gap-4 mt-2">
+                        <div className="flex flex-col items-center">
+                            <Typography size="base" color="gray" text="풀이 결과" />
+                            <Typography
+                                size="xl"
+                                color="black"
+                                text={`${quizZoneState.score ?? 0} / ${quizZoneState.quizCount ?? 0}점`}
+                                bold={true}
+                            />
+                        </div>
                         <div className="flex flex-col items-center">
                             <Typography size="base" color="gray" text="정답률" />
                             <Typography
                                 size="xl"
                                 color="black"
                                 text={`${((stats.totalCorrect / stats.totalQuestions) * 100).toFixed(1)}%`}
-                                bold={true}
-                            />
-                        </div>
-                        <div className="flex flex-col items-center">
-                            <Typography size="base" color="gray" text="평균 응답 시간" />
-                            <Typography
-                                size="xl"
-                                color="black"
-                                text={`${stats.avgResponseTime.toFixed(1)}초`}
                                 bold={true}
                             />
                         </div>

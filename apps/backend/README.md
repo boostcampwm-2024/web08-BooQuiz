@@ -1,99 +1,201 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# BooQuiz Backend
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+실시간 대규모 참여형 퀴즈 플랫폼 BooQuiz의 백엔드 레포지토리입니다.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## 🎯 프로젝트 개요
 
-## Description
+BooQuiz 백엔드는 NestJS 기반의 서버로, 실시간 퀴즈 진행을 위한 WebSocket 통신과 퀴즈 관리를 위한 RESTful API를 제공합니다.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+### 주요 기능
 
-## Project setup
+-   WebSocket 기반 실시간 퀴즈 진행
+-   퀴즈/퀴즈셋 CRUD
+-   실시간 답안 제출 및 채점
+-   세션 기반 퀴즈존 관리
+-   300명 이상 동시 접속 지원
 
-```bash
-$ npm install
+## 🛠 기술 스택
+
+### 핵심 기술
+
+-   **Framework:** NestJS 10.0.0
+-   **Language:** TypeScript 5.1.3
+-   **Runtime:** Node.js
+-   **WebSocket:** ws 8.18.0, @nestjs/websockets
+-   **Database:**
+    -   MySQL 2 (Production)
+    -   SQLite3 (Development)
+    -   TypeORM
+
+### 주요 라이브러리
+
+-   **설정 관리:** @nestjs/config
+-   **API 문서화:** @nestjs/swagger 8.0.5
+-   **ORM:**
+    -   TypeORM 0.3.20
+    -   typeorm-transactional
+-   **Validation:**
+    -   class-validator
+    -   class-transformer
+-   **로깅:**
+    -   winston
+    -   nest-winston
+
+### 개발 도구
+
+-   **테스트:**
+    -   Jest
+    -   supertest
+    -   superwstest
+-   **코드 품질:**
+    -   ESLint
+    -   Prettier
+-   **빌드 도구:** @nestjs/cli
+
+## 🏗 프로젝트 구조
+
+```
+src/
+├── common/              # 공통 유틸리티 및 상수
+├── core/               # 핵심 기능 (WebSocket 어댑터 등)
+├── logger/             # 로깅 설정
+├── play/               # 실시간 퀴즈 진행 관련
+│   ├── dto/           # 데이터 전송 객체
+│   ├── entities/      # 엔티티 정의
+│   └── gateway/       # WebSocket 게이트웨이
+├── quiz/               # 퀴즈 관리
+│   ├── dto/           # 데이터 전송 객체
+│   ├── entity/        # 엔티티 정의
+│   └── repository/    # 리포지토리 계층
+└── quiz-zone/          # 퀴즈존 관리
+    ├── dto/           # 데이터 전송 객체
+    ├── entities/      # 엔티티 정의
+    └── repository/    # 리포지토리 계층
 ```
 
-## Compile and run the project
+## 🚀 시작하기
+
+1. 프로젝트 클론
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+git clone https://github.com/boostcampwm-2024/web08-BooQuiz.git
 ```
 
-## Run tests
+2. pnpm 설치 (없는 경우)
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+npm install -g pnpm
 ```
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+3. 의존성 설치
 
 ```bash
-$ npm install -g mau
-$ mau deploy
+pnpm install
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+4. 환경 변수 설정
 
-## Resources
+```bash
+cp .env.example .env
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+5. 개발 서버 실행
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+```bash
+pnpm start:dev
+```
 
-## Support
+## 📦 스크립트
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+```bash
+# 개발 서버 실행
+pnpm start:dev
 
-## Stay in touch
+# 프로덕션 빌드
+pnpm build
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+# 프로덕션 실행
+pnpm start:prod
 
-## License
+# 테스트 실행
+pnpm test           # 단위 테스트
+pnpm test:e2e      # E2E 테스트
+pnpm test:cov      # 테스트 커버리지
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+# 린트 및 포맷팅
+pnpm lint
+pnpm format
+```
+
+## 📡 API 문서
+
+### REST API
+
+-   Swagger UI: `http://localhost:3000/api`
+-   API 문서: `http://localhost:3000/api-json`
+
+### WebSocket 이벤트
+
+#### 클라이언트 → 서버
+
+-   `join`: 퀴즈존 입장
+-   `start`: 퀴즈 시작
+-   `submit`: 답안 제출
+-   `leave`: 퀴즈존 퇴장
+
+#### 서버 → 클라이언트
+
+-   `nextQuiz`: 다음 문제 정보
+-   `result`: 제출 결과
+-   `summary`: 최종 결과
+-   `finish`: 퀴즈 종료
+
+## 🧪 테스트
+
+프로젝트는 Jest를 사용하여 단위 테스트와 E2E 테스트를 지원합니다.
+
+```bash
+# 단위 테스트
+pnpm test
+
+# E2E 테스트
+pnpm test:e2e
+
+# 특정 파일 테스트
+pnpm test src/quiz/quiz.service.spec.ts
+```
+
+## 📝 개발 가이드라인
+
+### 아키텍처
+
+-   계층형 아키텍처 (Controller → Service → Repository)
+-   도메인 주도 설계 원칙 준수
+-   SOLID 원칙 적용
+
+### 코드 스타일
+
+-   ESLint/Prettier 설정 준수
+-   NestJS 코딩 컨벤션 따르기
+-   명확한 타입 정의
+
+### WebSocket 통신
+
+-   세션 기반 연결 관리
+-   실시간 이벤트 처리
+-   연결 끊김 대응
+
+## 🔐 보안 고려사항
+
+-   세션 기반 인증
+-   WebSocket 연결 검증
+-   입력값 검증
+-   SQL Injection 방지
+-   Rate Limiting
+
+## 🤝 기여하기
+
+1. 이슈 생성 또는 기존 이슈 확인
+2. feature/[기능명] 브랜치 생성
+3. 개발 및 테스트 완료
+4. PR 생성 및 리뷰 요청

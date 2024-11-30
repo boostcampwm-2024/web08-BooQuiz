@@ -7,15 +7,15 @@ import { QUIZ_TYPE } from '../common/constants';
 import { CreateQuizRequestDto } from './dto/create-quiz-request.dto';
 import { BadRequestException } from '@nestjs/common';
 import { UpdateQuizRequestDto } from './dto/update-quiz-request.dto';
-import { describe } from 'node:test';
 import { SearchQuizSetRequestDTO } from './dto/search-quiz-set-request.dto';
-import { addTransactionalDataSource, initializeTransactionalContext } from 'typeorm-transactional';
 import { DataSource } from 'typeorm';
+import { addTransactionalDataSource, initializeTransactionalContext } from 'typeorm-transactional';
 
 describe('QuizService', () => {
     let service: QuizService;
     let quizRepository: QuizRepository;
     let quizSetRepository: QuizSetRepository;
+
 
     beforeAll(async () => {
         initializeTransactionalContext();
@@ -94,7 +94,8 @@ describe('QuizService', () => {
             //then
             expect(response).toEqual({
                 quizSetDetails: response.quizSetDetails,
-                meta: response.meta,
+                total: response.total,
+                currentPage: 1,
             });
         });
     });
@@ -110,7 +111,7 @@ describe('QuizService', () => {
                         question: '지브리는 뭘로 돈 벌게요?',
                         answer: '토토로',
                         playTime: 30000,
-                        quizType: 'SHORT_ANSWER',
+                        quizType: QUIZ_TYPE.SHORT_ANSWER,
                     },
                 ],
             } as CreateQuizRequestDto;
@@ -123,7 +124,7 @@ describe('QuizService', () => {
                 },
             };
 
-            mockQuizSetRepository.findOneBy.mockResolvedValue(quizSetId);
+            mockQuizSetRepository.save.mockResolvedValue({ quizSetId });
             dto.quizDetails[0].toEntity = jest.fn().mockReturnValue(quiz);
             mockQuizRepository.save.mockResolvedValue(quiz);
 
@@ -147,7 +148,7 @@ describe('QuizService', () => {
                         question: '지브리는 뭘로 돈 벌게요?',
                         answer: '토토로',
                         playTime: 30000,
-                        quizType: 'SHORT_ANSWER',
+                        quizType: QUIZ_TYPE.SHORT_ANSWER,
                     },
                 ],
             } as CreateQuizRequestDto;
@@ -169,7 +170,7 @@ describe('QuizService', () => {
                 },
             };
 
-            mockQuizSetRepository.findOneBy.mockResolvedValue(quizSetId);
+            mockQuizSetRepository.save.mockResolvedValue({ quizSetId });
             dto.quizDetails[0].toEntity = jest.fn().mockReturnValue(quiz1);
             mockQuizRepository.save.mockResolvedValue([quiz1]);
 
@@ -193,18 +194,18 @@ describe('QuizService', () => {
                     question: '네명에서 오줌을 싸면?',
                     answer: '포뇨',
                     playTime: 30000,
-                    quizType: 'SHORT_ANSWER',
+                    quizType: QUIZ_TYPE.SHORT_ANSWER,
                 },
                 {
                     id: 2,
                     question: '지브리는 뭘로 돈 벌게요?',
                     answer: '토토로',
                     playTime: 30000,
-                    quizType: 'SHORT_ANSWER',
+                    quizType: QUIZ_TYPE.SHORT_ANSWER,
                 },
             ];
             const quizSetId = 1;
-            const quizSet: QuizSet = { id: quizSetId, name: '퀴즈셋 이름' };
+            const quizSet = { id: quizSetId, name: '퀴즈셋 이름' } as QuizSet;
 
             mockQuizSetRepository.findOneBy.mockResolvedValue(quizSet);
             mockQuizRepository.findBy.mockResolvedValue(quizList);
@@ -243,7 +244,7 @@ describe('QuizService', () => {
                 question: '네명에서 오줌을 싸면?',
                 answer: '포뇨',
                 playTime: 30000,
-                quizType: 'SHORT_ANSWER',
+                quizType: QUIZ_TYPE.SHORT_ANSWER,
             };
             const dto = {
                 question: '테스트 질문',

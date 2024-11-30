@@ -1,13 +1,13 @@
 import { useReducer } from 'react';
 import useWebSocket from '@/hook/useWebSocket.tsx';
 import {
+    ChatMessage,
     NextQuizResponse,
     Player,
     QuizZone,
     QuizZoneResultState,
     SomeoneSubmitResponse,
     SubmitResponse,
-    ChatMessage,
 } from '@/types/quizZone.types.ts';
 import atob from '@/utils/atob';
 
@@ -113,7 +113,7 @@ const quizZoneReducer: Reducer<QuizZone, QuizZoneAction> = (state, action) => {
                     playTime: nextQuiz.playTime,
                     startTime: nextQuiz.startTime,
                     deadlineTime: nextQuiz.deadlineTime,
-                    type: 'SHORT',
+                    quizType: 'SHORT',
                 },
                 currentQuizResult: {
                     ...state.currentQuizResult,
@@ -151,6 +151,7 @@ const quizZoneReducer: Reducer<QuizZone, QuizZoneAction> = (state, action) => {
                 score: payload.score,
                 submits: payload.submits,
                 quizzes: payload.quizzes,
+                ranks: payload.ranks,
             };
         case 'chat':
             return {

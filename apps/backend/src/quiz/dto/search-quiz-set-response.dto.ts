@@ -3,7 +3,8 @@ import { QuizSet } from '../entity/quiz-set.entity';
 export class SearchQuizSetResponseDTO {
 
     readonly quizSetDetails: QuizSetDetails[];
-    readonly meta: Page;
+    readonly total: number;
+    readonly currentPage: number;
 }
 
 export class QuizSetDetails {
@@ -16,9 +17,4 @@ export class QuizSetDetails {
             name: quizSet.name,
         };
     }
-}
-
-export class Page {
-    readonly total: number;
-    readonly page: number;
 }

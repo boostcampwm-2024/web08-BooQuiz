@@ -1,17 +1,4 @@
-import {
-    IsInt,
-    IsNotEmpty,
-    IsNumber,
-    IsString,
-    Length,
-    Matches,
-    Max,
-    MaxDate,
-    MaxLength,
-    Min,
-    min,
-    MinLength,
-} from 'class-validator';
+import { IsInt, IsNotEmpty, IsString, Length, Matches, Max, Min } from 'class-validator';
 
 /**
  * 퀴즈존을 생성할 때 사용하는 DTO 클래스
@@ -32,7 +19,7 @@ export class CreateQuizZoneDto {
     readonly title: string;
 
     @IsString({ message: '설명이 없습니다.' })
-    @Min(300, { message: '설명은 300글자 이하로 입력해주세요.' })
+    @Length(1, 300, { message: '설명은 300글자 이하로 입력해주세요.' })
     readonly description: string;
 
     @IsInt({ message: '최대 플레이어 수가 없습니다.' })
