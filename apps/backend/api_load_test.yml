@@ -1,11 +1,11 @@
 config:
-  target: "https://booquiz.kro.kr"
+  target: "http://test.booquiz.kro.kr"
   plugins:
     metrics-by-endpoint: {}
   processor: "./function.cjs"
   phases:
     - duration: 3
-      arrivalCount: 299
+      arrivalCount: 10
   http:
     headers:
       Content-Type: "application/json"

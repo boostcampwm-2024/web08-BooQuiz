@@ -1,11 +1,11 @@
 config:
-  target: "wss://booquiz.kro.kr/api/play"
+  target: "ws://localhost:3000/play"
   plugins:
     metrics-by-endpoint: {}
   processor: "./function.cjs"
   phases:
-    - duration: 10
-      arrivalCount: 299
+    - duration: 3
+      arrivalCount: 10
 
 scenarios:
   - name: "WebSocket 테스트"
@@ -15,6 +15,7 @@ scenarios:
       - connect:
           headers:
             Cookie: "connect.sid={{ sessionId }}"
+
       - send:
           type: "join"
           data:

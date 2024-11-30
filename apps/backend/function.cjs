@@ -20,15 +20,15 @@ function generateRandomString(length) {
     return crypto
         .randomBytes(length)
         .toString('base64')
-        .replace(/[^a-zA-Z0-9]/g, '')
+        .replace(/\//g, '_') // '/'를 '_'로 변경
+        .replace(/\+/g, '-') // '+'를 '-'로 변경
         .slice(0, length);
 }
 
 module.exports = {
-    // HTTP 테스트에서 세션 생성 및 저장
     generateAndSaveSession: function (userContext, events, done) {
         const sessionData = generateRandomString(24);
-        const signature = generateRandomString(32);
+        const signature = encodeURIComponent(generateRandomString(32)); // URL 인코딩 적용
         const sessionId = `s%3A${sessionData}.${signature}`;
 
         // 세션 저장
