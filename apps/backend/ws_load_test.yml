@@ -2,45 +2,20 @@ config:
   target: "wss://booquiz.kro.kr/api/play"
   plugins:
     metrics-by-endpoint: {}
+  processor: "./function.cjs"
   phases:
-    # 1단계: 200명
-    - duration: 30
-      arrivalCount: 200
-    # 2단계: 400명
-    - duration: 30
-      arrivalCount: 200
-    # 3단계: 600명
-    - duration: 30
-      arrivalCount: 200
-    # 4단계: 800명
-    - duration: 30
-      arrivalCount: 200
-    # 5단계: 부하 상태에서 안정성 확인
-    - duration: 60
-      arrivalCount: 0
+    - duration: 10
+      arrivalCount: 299
 
 scenarios:
-  - name: "퀴즈존 실시간 게임 테스트"
+  - name: "WebSocket 테스트"
     engine: "ws"
     flow:
+      - function: "getStoredSession"
+      - connect:
+          headers:
+            Cookie: "connect.sid={{ sessionId }}"
       - send:
           type: "join"
           data:
-            quizZoneId: "wsloadtest"
-          wait: 1000
-
-      # 답안 제출
-      - think: 5
-      # 여러 문제 풀이
-      - loop:
-          - send:
-              type: "submit"
-              data:
-                index: "{{ $loopIndex }}"
-                answer: "포도당"
-                submittedAt: "{{ $timestamp }}"
-              wait: 1000
-          - think: 3
-        count: 3  # 3문제 풀이 시뮬레이션
-
-      - think: 5
+            quizZoneId: "loadtest"
