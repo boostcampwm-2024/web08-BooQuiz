@@ -1,21 +1,6 @@
 import http from 'k6/http';
 import ws from 'k6/ws';
 import { check, sleep } from 'k6';
-import crypto from 'k6/crypto';
-import encoding from 'k6/encoding';
-
-// 세션 ID 생성 함수
-function generateRandomString(length) {
-    const bytes = crypto.randomBytes(length);
-    return encoding.b64encode(bytes).replace(/\//g, '_').replace(/\+/g, '-').slice(0, length);
-}
-
-// 세션 ID 생성
-function createSessionId() {
-    const sessionData = generateRandomString(32);
-    const signature = encodeURIComponent(generateRandomString(32));
-    return `s%3A${sessionData}.${signature}`;
-}
 
 // HTTP 요청 후 WebSocket 연결하는 통합 테스트
 export default function () {
