@@ -19,7 +19,7 @@ export class CreateQuizZoneDto {
     readonly title: string;
 
     @IsString({ message: '설명이 없습니다.' })
-    @Length(1, 300, { message: '설명은 300글자 이하로 입력해주세요.' })
+    @Length(0, 300, { message: '설명은 300글자 이하로 입력해주세요.' })
     readonly description: string;
 
     @IsInt({ message: '최대 플레이어 수가 없습니다.' })
