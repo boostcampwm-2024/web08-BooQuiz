@@ -70,6 +70,7 @@ export interface SubmittedQuiz {
     answer: string;
     submittedAt: number;
     receivedAt: number;
+    submitRank?: number;
 }
 
 export interface QuizZoneResultState {

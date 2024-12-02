@@ -14,7 +14,7 @@ interface QuizResult {
     correctAnswer: string;
     userAnswer: string;
     isCorrect: boolean;
-    responseTime: number | null;
+    submitRank: number | null;
     timeLimit: number;
 }
 
@@ -23,18 +23,13 @@ const QuizZoneResult = ({ quizZoneState }: QuizZoneResultProps) => {
 
     const quizResults: QuizResult[] = (quizZoneState.quizzes ?? []).map((quiz, index) => {
         const submission = quizZoneState.submits?.[index];
-        const isCorrect = submission?.answer === quiz?.answer;
-        const responseTime =
-            submission?.submittedAt && submission?.receivedAt
-                ? (submission.receivedAt - submission.submittedAt) / 1000
-                : null;
-
+        const isCorrect = submission?.answer.replace(/\s/g, '') === quiz?.answer.replace(/\s/g, '');
         return {
             question: quiz?.question ? atob(quiz.question) : '문제 정보 없음',
             correctAnswer: quiz?.answer ?? '정답 정보 없음',
             userAnswer: submission?.answer ?? '미제출',
             isCorrect: !!isCorrect,
-            responseTime,
+            submitRank: submission?.submitRank ?? null,
             timeLimit: (quiz?.playTime ?? 30000) / 1000,
         };
     });
@@ -142,17 +137,17 @@ const QuizZoneResult = ({ quizZoneState }: QuizZoneResultProps) => {
                                                 // className="break-all"
                                             />
                                         </div>
-                                        {result.responseTime !== null && (
+                                        {result.submitRank !== null && (
                                             <div className="col-span-2">
                                                 <Typography
                                                     size="xs"
                                                     color="gray"
-                                                    text="응답 시간"
+                                                    text="제출 순위"
                                                 />
                                                 <Typography
                                                     size="sm"
                                                     color="blue"
-                                                    text={`${result.responseTime.toFixed(1)}초`}
+                                                    text={`${result.submitRank}등`}
                                                 />
                                             </div>
                                         )}

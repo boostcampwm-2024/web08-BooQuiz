@@ -16,6 +16,7 @@ import { RuntimeException } from '@nestjs/core/errors/exceptions';
 import { clearTimeout } from 'node:timers';
 import { Player } from '../quiz-zone/entities/player.entity';
 import { CurrentQuizResultDto } from './dto/current-quiz-result.dto';
+import { Quiz } from '../quiz-zone/entities/quiz.entity';
 
 @Injectable()
 export class PlayService {
@@ -191,10 +192,10 @@ export class PlayService {
      * 특정 퀴즈 존에서 현재 퀴즈에 대한 답변을 제출합니다.
      * @param quizZoneId - 퀴즈 존 ID
      * @param clientId - 플레이어 ID
-     * @param submitQuiz - 제출된 퀴즈의 답변과 메타데이터
+     * @param submittedQuiz - 제출된 퀴즈의 답변과 메타데이터
      * @throws {BadRequestException} 답변을 제출할 수 없는 경우 예외가 발생합니다.
      */
-    async submit(quizZoneId: string, clientId: string, submitQuiz: SubmittedQuiz) {
+    async submit(quizZoneId: string, clientId: string, submittedQuiz: SubmittedQuiz) {
         const quizZone = await this.quizZoneService.findOne(quizZoneId);
         const { stage, players } = quizZone;
 
@@ -202,7 +203,13 @@ export class PlayService {
             throw new BadRequestException('퀴즈를 제출할 수 없습니다.');
         }
 
-        this.submitQuiz(quizZone, clientId, submitQuiz);
+        const submittedCount = [...players.values()].filter(
+            (player) => player.state === PLAYER_STATE.SUBMIT,
+        ).length;
+
+        submittedQuiz.submitRank = submittedCount + 1;
+
+        this.submitQuiz(quizZone, clientId, submittedQuiz);
 
         const submittedPlayers = [...players.values()].filter(
             (player) => player.state === PLAYER_STATE.SUBMIT,
@@ -264,13 +271,14 @@ export class PlayService {
             answer: undefined,
             submittedAt: now,
             receivedAt: now,
+            submitRank: players.size,
             ...submitQuiz,
         };
 
         player.submits.push(submittedQuiz);
 
         if (
-            quiz.answer === submittedQuiz.answer &&
+            quiz.answer.replace(/\s/g, '') === submittedQuiz.answer.replace(/\s/g, '') &&
             submittedQuiz.submittedAt <= currentQuizDeadlineTime
         ) {
             player.score++;
@@ -291,7 +299,10 @@ export class PlayService {
         this.clearQuizZoneHandle(quizZoneId);
 
         await this.quizZoneService.clearQuizZone(quizZoneId);
-        const ranks = this.getRanking(players);
+        const ranks = this.getRanking(
+            players,
+            quizzes.map((quiz) => quiz.answer),
+        );
 
         return [...players.values()].map(({ id, score, submits }) => ({
             id,
@@ -302,19 +313,105 @@ export class PlayService {
         }));
     }
 
-    private getRanking(players: Map<string, Player>) {
-        const sortedPlayers = [...players.values()].sort((a, b) => b.score - a.score);
-        let currentRank = 1;
-        let currentScore = sortedPlayers[0]?.score;
-        let sameRankCount = -1; // 첫 번째 플레이어를 위해 -1로 시작
+    private calculateQuizRanks(
+        players: Map<string, Player>,
+        quizAnswers: string[],
+    ): Map<number, string[]> {
+        const quizRanks = new Map<number, string[]>();
+        quizAnswers.forEach((answer, quizIndex) => {
+            const sortedCorrectPlayerIds = [...players.values()]
+                .filter((player) => player.submits[quizIndex]?.answer === answer)
+                .sort((a, b) => a.submits[quizIndex].submitRank - b.submits[quizIndex].submitRank)
+                .map((player) => player.id);
 
-        return sortedPlayers.map((player) => {
-            if (player.score < currentScore) {
-                currentRank = currentRank + sameRankCount + 1;
-                currentScore = player.score;
-                sameRankCount = 0;
-            } else {
-                sameRankCount++;
+            quizRanks.set(quizIndex, sortedCorrectPlayerIds);
+        });
+
+        return quizRanks;
+    }
+    private getPlayersCorrectRankCount(
+        players: Map<string, Player>,
+        quizRanks: Map<number, string[]>,
+    ) {
+        return new Map(
+            [...players.keys()].map((playerId) => {
+                const rankCounts = new Map<number, number>();
+
+                quizRanks.forEach((correctPlayers) => {
+                    const rank = correctPlayers.indexOf(playerId) + 1;
+                    if (rank > 0) {
+                        rankCounts.set(rank, (rankCounts.get(rank) || 0) + 1);
+                    }
+                });
+
+                return [playerId, rankCounts];
+            }),
+        );
+    }
+
+    private compareRankCounts(
+        playerARankCount: Map<number, number>,
+        playerBRankCount: Map<number, number>,
+    ): number {
+        const maxRank = Math.max(...[...playerARankCount.keys()], ...[...playerBRankCount.keys()]);
+
+        for (let rank = 1; rank <= maxRank; rank++) {
+            const aCount = playerARankCount.get(rank) || 0;
+            const bCount = playerBRankCount.get(rank) || 0;
+            if (aCount !== bCount) {
+                return bCount - aCount;
+            }
+        }
+        return 0;
+    }
+
+    private compareRanks(
+        currentPlayer: Player,
+        prevPlayer: Player,
+        currentRankCount: Map<number, number>,
+        prevRankCount: Map<number, number>,
+    ): boolean {
+        if (currentPlayer.score !== prevPlayer.score) {
+            return true;
+        }
+        return this.compareRankCounts(currentRankCount, prevRankCount) !== 0;
+    }
+
+    private getRanking(players: Map<string, Player>, quizAnswers: string[]) {
+        const quizRanks = this.calculateQuizRanks(players, quizAnswers);
+
+        const playersCorrectRankCount = this.getPlayersCorrectRankCount(players, quizRanks);
+
+        const sortedPlayers = [...players.values()].sort((playerA, playerB) => {
+            if (playerB.score !== playerA.score) {
+                return playerB.score - playerA.score;
+            }
+
+            return this.compareRankCounts(
+                playersCorrectRankCount.get(playerA.id),
+                playersCorrectRankCount.get(playerB.id),
+            );
+        });
+
+        let currentRank = 1;
+        let sameRankCount = 0;
+
+        return sortedPlayers.map((player, index) => {
+            if (index > 0) {
+                const prevPlayer = sortedPlayers[index - 1];
+                if (
+                    this.compareRanks(
+                        player,
+                        prevPlayer,
+                        playersCorrectRankCount.get(player.id),
+                        playersCorrectRankCount.get(prevPlayer.id),
+                    )
+                ) {
+                    currentRank += sameRankCount + 1;
+                    sameRankCount = 0;
+                } else {
+                    sameRankCount++;
+                }
             }
 
             return {
