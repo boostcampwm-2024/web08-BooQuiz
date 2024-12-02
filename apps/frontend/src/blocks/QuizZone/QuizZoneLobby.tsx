@@ -12,12 +12,19 @@ import { cn } from '@/lib/utils';
 interface QuizZoneLobbyProps {
     quizZoneState: QuizZone;
     quizZoneId: string;
+    maxPlayers: number;
     sendChat: (chatMessage: ChatMessage) => void;
     startQuiz: () => void;
     exitQuiz: () => void;
 }
 
-const QuizZoneLobby = ({ quizZoneState, quizZoneId, startQuiz, exitQuiz }: QuizZoneLobbyProps) => {
+const QuizZoneLobby = ({
+    quizZoneState,
+    quizZoneId,
+    maxPlayers,
+    startQuiz,
+    exitQuiz,
+}: QuizZoneLobbyProps) => {
     const navigate = useNavigate();
     const handleLeave = () => {
         exitQuiz();
@@ -78,8 +85,8 @@ const QuizZoneLobby = ({ quizZoneState, quizZoneId, startQuiz, exitQuiz }: QuizZ
                             </div>
                             {renderInfoItem('퀴즈 개수', `${quizZoneState.quizCount ?? '?'}문제`)}
                             {renderInfoItem(
-                                '퀴즈존 참가자수',
-                                `${quizZoneState.players?.length ?? '?'} 명`,
+                                '현재 참여자',
+                                `${quizZoneState.players?.length ?? '?'} / ${maxPlayers ?? '?'} 명`,
                             )}
                         </div>
 

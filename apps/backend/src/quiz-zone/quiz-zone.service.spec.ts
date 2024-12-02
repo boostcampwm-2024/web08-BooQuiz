@@ -6,6 +6,7 @@ import { IQuizZoneRepository } from './repository/quiz-zone.repository.interface
 import { Quiz } from './entities/quiz.entity';
 import { PLAYER_STATE, QUIZ_TYPE, QUIZ_ZONE_STAGE } from '../common/constants';
 import { QuizService } from '../quiz/quiz.service';
+import { max } from 'class-validator';
 
 const nickNames: string[] = [
     '전설의고양이',
@@ -111,8 +112,9 @@ describe('QuizZoneService', () => {
                 quizZoneId: 'test123',
                 title: '테스트 퀴즈',
                 description: '테스트용 퀴즈입니다',
-                limitPlayerCount: 100,
+                limitPlayerCount: 10,
                 quizSetId: 1,
+                maxPlayers: 10,
             };
             const adminId = 'adminId';
             const mockQuizzes = [
@@ -143,12 +145,12 @@ describe('QuizZoneService', () => {
                     hostId: adminId,
                     title: createQuizZoneDto.title,
                     description: createQuizZoneDto.description,
-                    maxPlayers: createQuizZoneDto.limitPlayerCount,
+                    maxPlayers: 10,
                     stage: QUIZ_ZONE_STAGE.LOBBY,
                     currentQuizIndex: -1,
                     currentQuizStartTime: 0,
                     currentQuizDeadlineTime: 0,
-                    intervalTime: 3000,
+                    intervalTime: 5000,
                     players: expect.any(Map),
                     quizzes: mockQuizzes.map((quiz) => ({
                         ...quiz,
@@ -187,9 +189,9 @@ describe('QuizZoneService', () => {
             const mockQuizZone: QuizZone = {
                 players: new Map(),
                 hostId: 'adminId',
-                maxPlayers: 10,
                 title: '테스트 퀴즈',
                 description: '테스트 퀴즈입니다',
+                maxPlayers: 10,
                 quizzes: quizzes.map((quiz) => ({
                     ...quiz,
                     question: Buffer.from(quiz.question).toString('base64'),
@@ -309,10 +311,10 @@ describe('QuizZoneService', () => {
             const newQuizZone: QuizZone = {
                 players: new Map(),
                 hostId: 'adminId',
-                maxPlayers: 10,
                 title: '새로운 퀴즈',
                 description: '새로운 퀴즈입니다',
                 quizzes: quizzes,
+                maxPlayers: 10,
                 stage: QUIZ_ZONE_STAGE.LOBBY,
                 currentQuizIndex: -1,
                 currentQuizStartTime: 0,
@@ -387,6 +389,7 @@ describe('QuizZoneService', () => {
                     state: PLAYER_STATE.WAIT,
                 },
                 title: '테스트 퀴즈',
+                maxPlayers: 10,
                 description: '테스트 퀴즈입니다',
                 quizCount: quizzes.length,
                 stage: QUIZ_ZONE_STAGE.LOBBY,
@@ -516,6 +519,7 @@ describe('QuizZoneService', () => {
                 quizCount: quizzes.length,
                 stage: QUIZ_ZONE_STAGE.IN_PROGRESS,
                 hostId: 'adminId',
+                maxPlayers: 10,
                 currentQuiz: {
                     currentIndex: 1,
                     startTime: mockQuizZone.currentQuizStartTime,
@@ -572,6 +576,7 @@ describe('QuizZoneService', () => {
                 description: '테스트 퀴즈입니다',
                 quizCount: quizzes.length,
                 stage: QUIZ_ZONE_STAGE.RESULT,
+                maxPlayers: 10,
                 hostId: 'adminId',
             });
         });
