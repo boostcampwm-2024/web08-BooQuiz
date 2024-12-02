@@ -44,6 +44,8 @@ const QuizInProgress = ({ currentQuiz, submitAnswer }: QuizInProgressProps) => {
                             handleSubmitAnswer();
                         }
                     }}
+                    height="h-14"
+                    isBorder={true}
                 />
 
                 <CommonButton
