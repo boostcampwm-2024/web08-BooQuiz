@@ -8,6 +8,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAsyncError } from '@/hook/useAsyncError';
 import { ValidationError } from '@/types/error.types';
+import Logo from '@/components/common/Logo';
 
 const MainPageContent = () => {
     const [input, setInput] = useState('');
@@ -48,7 +49,7 @@ const MainPageContent = () => {
     return (
         <div className="flex flex-col justify-center items-center gap-4 min-h-[calc(100vh-4rem)]">
             <TooltipWrapper content="BooQuiz - 실시간 퀴즈 플랫폼">
-                <img src="/BooQuizLogo.png" alt="BooQuiz Logo" />
+                <Logo color="#2563eb" className="max-h-40" />
             </TooltipWrapper>
 
             <Typography
