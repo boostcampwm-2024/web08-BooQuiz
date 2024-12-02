@@ -4,7 +4,7 @@ import { QuizRepository } from './repository/quiz.repository';
 import { QuizSetRepository } from './repository/quiz-set.repository';
 import { QuizSet } from './entity/quiz-set.entity';
 import { QUIZ_TYPE } from '../common/constants';
-import { CreateQuizRequestDto } from './dto/create-quiz-request.dto';
+import { CreateQuizSetRequestDto } from './dto/create-quiz-set-request.dto';
 import { BadRequestException } from '@nestjs/common';
 import { UpdateQuizRequestDto } from './dto/update-quiz-request.dto';
 import { SearchQuizSetRequestDTO } from './dto/search-quiz-set-request.dto';
@@ -94,7 +94,7 @@ describe('QuizService', () => {
             //then
             expect(response).toEqual({
                 quizSetDetails: response.quizSetDetails,
-                total: response.total,
+                total: count,
                 currentPage: 1,
             });
         });
@@ -114,7 +114,7 @@ describe('QuizService', () => {
                         quizType: QUIZ_TYPE.SHORT_ANSWER,
                     },
                 ],
-            } as CreateQuizRequestDto;
+            } as CreateQuizSetRequestDto;
             const quiz = {
                 ...dto[0],
                 id: 1,
@@ -151,7 +151,7 @@ describe('QuizService', () => {
                         quizType: QUIZ_TYPE.SHORT_ANSWER,
                     },
                 ],
-            } as CreateQuizRequestDto;
+            } as CreateQuizSetRequestDto;
 
             const quiz1 = {
                 ...dto[0],
