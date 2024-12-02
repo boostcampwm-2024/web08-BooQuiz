@@ -26,6 +26,7 @@ export interface QuizZone {
     isLastQuiz?: boolean;
     chatMessages?: ChatMessage[];
     isQuizZoneEnd?: boolean;
+    endSocketTime?: number;
 }
 
 export interface Rank {
@@ -79,6 +80,7 @@ export interface QuizZoneResultState {
     submits: SubmittedQuiz[];
     quizzes: Quiz[];
     ranks: Rank[];
+    endSocketTime: number;
 }
 
 export interface SubmitResponse {
