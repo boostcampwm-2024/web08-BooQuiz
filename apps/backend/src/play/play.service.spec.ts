@@ -437,6 +437,7 @@ describe('PlayService', () => {
                         { id: 'player-1', nickname: 'player1', score: 2, ranking: 1 },
                         { id: 'player-2', nickname: 'player2', score: 1, ranking: 2 },
                     ],
+                    endSocketTime: expect.any(Number),
                 },
                 {
                     id: 'player-2',
@@ -456,6 +457,7 @@ describe('PlayService', () => {
                         { id: 'player-1', nickname: 'player1', score: 2, ranking: 1 },
                         { id: 'player-2', nickname: 'player2', score: 1, ranking: 2 },
                     ],
+                    endSocketTime: expect.any(Number),
                 },
             ]);
 
@@ -582,6 +584,7 @@ describe('PlayService', () => {
                     submits: mockPlayer1Submits,
                     quizzes: mockQuizZone.quizzes,
                     ranks: expectedRanks,
+                    endSocketTime: expect.any(Number),
                 },
                 {
                     id: 'player-2',
@@ -589,6 +592,7 @@ describe('PlayService', () => {
                     submits: mockPlayer2Submits,
                     quizzes: mockQuizZone.quizzes,
                     ranks: expectedRanks,
+                    endSocketTime: expect.any(Number),
                 },
             ]);
         });
