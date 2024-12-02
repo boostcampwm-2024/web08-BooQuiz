@@ -25,6 +25,7 @@ export interface QuizZone {
     ranks?: Rank[];
     isLastQuiz?: boolean;
     chatMessages?: ChatMessage[];
+    isQuizZoneEnd?: boolean;
 }
 
 export interface Rank {
