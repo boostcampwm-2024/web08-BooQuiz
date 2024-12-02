@@ -65,6 +65,7 @@ const QuizZoneContent = () => {
                     <QuizZoneLobby
                         quizZoneState={quizZoneState}
                         quizZoneId={quizZoneId ?? ''}
+                        maxPlayers={quizZoneState.maxPlayers ?? 0}
                         startQuiz={startQuiz}
                         exitQuiz={exitQuiz}
                         sendChat={sendChat}
@@ -98,7 +99,7 @@ const QuizZoneContent = () => {
                             clientId={quizZoneState.currentPlayer.id}
                             nickname={quizZoneState.currentPlayer.nickname}
                             sendHandler={sendChat}
-                            className="lg:h-[60vh] flex flex-col"
+                            className="lg:h-[60vh] h-[40vh]"
                         />
                     </div>
                 )}

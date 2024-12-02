@@ -53,6 +53,7 @@ const quizZoneReducer: Reducer<QuizZone, QuizZoneAction> = (state, action) => {
                               question: atob(payload.currentQuiz?.question ?? ''),
                           }
                         : undefined,
+                maxPlayers: payload.maxPlayers,
                 players: [],
             };
         case 'join':
@@ -229,6 +230,7 @@ const useQuizZone = () => {
         submits: [],
         quizzes: [],
         chatMessages: [],
+        maxPlayers: 0,
     };
 
     const [quizZoneState, dispatch] = useReducer(quizZoneReducer, initialQuizZoneState);

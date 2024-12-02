@@ -16,6 +16,7 @@ export interface QuizZone {
     hostId: string;
     quizCount: number;
     players?: Player[];
+    maxPlayers?: number;
     currentQuiz?: CurrentQuiz;
     currentQuizResult?: CurrentQuizResult;
     score?: number;
