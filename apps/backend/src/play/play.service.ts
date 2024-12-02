@@ -306,6 +306,9 @@ export class PlayService {
         const now = Date.now();
         const endSocketTime = now + socketConnectTime;
 
+        const now = Date.now();
+        const endSocketTime = now + socketConnectTime;
+
         return [...players.values()].map(({ id, score, submits }) => ({
             id,
             score,
