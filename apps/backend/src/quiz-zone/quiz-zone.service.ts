@@ -14,7 +14,7 @@ import { FindQuizZoneDto } from './dto/find-quiz-zone.dto';
 import { CreateQuizZoneDto } from './dto/create-quiz-zone.dto';
 import { QuizService } from '../quiz/quiz.service';
 
-const INTERVAL_TIME = 3000;
+const INTERVAL_TIME = 5000;
 
 @Injectable()
 export class QuizZoneService {
@@ -115,7 +115,7 @@ export class QuizZoneService {
     }
 
     private async getLobbyInfo(clinetId: string, quizZoneId: string): Promise<FindQuizZoneDto> {
-        const { players, title, description, quizzes, stage, hostId } =
+        const { players, title, description, quizzes, stage, hostId, maxPlayers } =
             await this.findOne(quizZoneId);
         const { id, nickname, state } = players.get(clinetId);
 
@@ -124,6 +124,7 @@ export class QuizZoneService {
             title: title,
             description: description,
             quizCount: quizzes.length,
+            maxPlayers: maxPlayers,
             stage: stage,
             hostId: hostId,
         };
