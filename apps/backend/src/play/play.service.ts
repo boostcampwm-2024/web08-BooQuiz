@@ -278,7 +278,7 @@ export class PlayService {
         player.submits.push(submittedQuiz);
 
         if (
-            quiz.answer === submittedQuiz.answer &&
+            quiz.answer.replace(/\s/g, '') === submittedQuiz.answer.replace(/\s/g, '') &&
             submittedQuiz.submittedAt <= currentQuizDeadlineTime
         ) {
             player.score++;
