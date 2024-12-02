@@ -16,6 +16,7 @@ import { RuntimeException } from '@nestjs/core/errors/exceptions';
 import { clearTimeout } from 'node:timers';
 import { Player } from '../quiz-zone/entities/player.entity';
 import { CurrentQuizResultDto } from './dto/current-quiz-result.dto';
+import { Quiz } from '../quiz-zone/entities/quiz.entity';
 
 @Injectable()
 export class PlayService {
@@ -191,10 +192,10 @@ export class PlayService {
      * 특정 퀴즈 존에서 현재 퀴즈에 대한 답변을 제출합니다.
      * @param quizZoneId - 퀴즈 존 ID
      * @param clientId - 플레이어 ID
-     * @param submitQuiz - 제출된 퀴즈의 답변과 메타데이터
+     * @param submittedQuiz - 제출된 퀴즈의 답변과 메타데이터
      * @throws {BadRequestException} 답변을 제출할 수 없는 경우 예외가 발생합니다.
      */
-    async submit(quizZoneId: string, clientId: string, submitQuiz: SubmittedQuiz) {
+    async submit(quizZoneId: string, clientId: string, submittedQuiz: SubmittedQuiz) {
         const quizZone = await this.quizZoneService.findOne(quizZoneId);
         const { stage, players } = quizZone;
 
@@ -202,7 +203,13 @@ export class PlayService {
             throw new BadRequestException('퀴즈를 제출할 수 없습니다.');
         }
 
-        this.submitQuiz(quizZone, clientId, submitQuiz);
+        const submittedCount = [...players.values()].filter(
+            (player) => player.state === PLAYER_STATE.SUBMIT,
+        ).length;
+
+        submittedQuiz.submitRank = submittedCount + 1;
+
+        this.submitQuiz(quizZone, clientId, submittedQuiz);
 
         const submittedPlayers = [...players.values()].filter(
             (player) => player.state === PLAYER_STATE.SUBMIT,
@@ -264,6 +271,7 @@ export class PlayService {
             answer: undefined,
             submittedAt: now,
             receivedAt: now,
+            submitRank: players.size,
             ...submitQuiz,
         };
 
@@ -291,7 +299,10 @@ export class PlayService {
         this.clearQuizZoneHandle(quizZoneId);
 
         await this.quizZoneService.clearQuizZone(quizZoneId);
-        const ranks = this.getRanking(players);
+        const ranks = this.getRanking(
+            players,
+            quizzes.map((quiz) => quiz.answer),
+        );
 
         return [...players.values()].map(({ id, score, submits }) => ({
             id,
@@ -302,28 +313,97 @@ export class PlayService {
         }));
     }
 
-    private getRanking(players: Map<string, Player>) {
-        const sortedPlayers = [...players.values()].sort((a, b) => b.score - a.score);
-        let currentRank = 1;
-        let currentScore = sortedPlayers[0]?.score;
-        let sameRankCount = -1; // 첫 번째 플레이어를 위해 -1로 시작
+    private getCorrectRankCount(
+        submits: SubmittedQuiz[],
+        players: Map<string, Player>,
+        quizAnswers: string[],
+    ): Map<number, number> {
+        const correctRanks: number[] = [];
 
-        return sortedPlayers.map((player) => {
-            if (player.score < currentScore) {
-                currentRank = currentRank + sameRankCount + 1;
-                currentScore = player.score;
-                sameRankCount = 0;
-            } else {
-                sameRankCount++;
+        submits.forEach((submit, quizIndex) => {
+            if (submit.answer === quizAnswers[quizIndex]) {
+                const sortedCorrectPlayers = [...players.values()]
+                    .filter((play) => play.submits[quizIndex].answer === quizAnswers[quizIndex])
+                    .sort(
+                        (a, b) => a.submits[quizIndex].submitRank - b.submits[quizIndex].submitRank,
+                    );
+
+                const rank =
+                    sortedCorrectPlayers.findIndex(
+                        (play) => play.submits[quizIndex].submitRank === submit.submitRank,
+                    ) + 1;
+
+                correctRanks.push(rank);
+            }
+        });
+
+        return correctRanks.reduce((acc, rank) => {
+            return acc.set(rank, (acc.get(rank) || 0) + 1);
+        }, new Map<number, number>());
+    }
+
+    private SortPlayers(
+        playerA: Player,
+        playerB: Player,
+        players: Map<string, Player>,
+        quizAnswers: string[],
+    ): number {
+        if (playerB.score !== playerA.score) {
+            return playerB.score - playerA.score;
+        }
+
+        // 동점일 경우
+        const aCorrectRankCount = this.getCorrectRankCount(playerA.submits, players, quizAnswers);
+        const bCorrectRankCount = this.getCorrectRankCount(playerB.submits, players, quizAnswers);
+
+        const maxRank = Math.max(
+            ...[...aCorrectRankCount.keys()],
+            ...[...bCorrectRankCount.keys()],
+        );
+
+        for (let rank = 1; rank <= maxRank; rank++) {
+            const aCount = aCorrectRankCount.get(rank) || 0;
+            const bCount = bCorrectRankCount.get(rank) || 0;
+            if (aCount !== bCount) {
+                return bCount - aCount;
+            }
+        }
+        return 0;
+    }
+
+    private handleTiedRanks(
+        sortedPlayers: Player[],
+        quizAnswers: string[],
+        players: Map<string, Player>,
+    ) {
+        let ranking = 1;
+        let sameCount = 0;
+
+        return sortedPlayers.map((player, index) => {
+            if (index > 0) {
+                const prevPlayer = sortedPlayers[index - 1];
+                if (this.SortPlayers(player, prevPlayer, players, quizAnswers) === 0) {
+                    sameCount++;
+                } else {
+                    ranking += sameCount + 1;
+                    sameCount = 0;
+                }
             }
 
             return {
                 id: player.id,
                 nickname: player.nickname,
                 score: player.score,
-                ranking: currentRank,
+                ranking,
             };
         });
+    }
+
+    private getRanking(players: Map<string, Player>, quizAnswers: string[]) {
+        const sortedPlayers = [...players.values()].sort((a, b) => {
+            return this.SortPlayers(a, b, players, quizAnswers);
+        });
+        return this.handleTiedRanks(sortedPlayers, quizAnswers, players);
     }
 
     async leaveQuizZone(quizZoneId: string, clientId: string) {
