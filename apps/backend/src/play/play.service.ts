@@ -118,14 +118,12 @@ export class PlayService {
             currentQuizResult['answer'] = undefined;
             currentQuizResult['totalPlayerCount'] = 0;
             currentQuizResult['correctPlayerCount'] = 0;
-        }
-
-        if (currentQuizIndex >= 0) {
-            const answer: string = quizZone.quizzes.at(currentQuizIndex).answer;
+        } else if (currentQuizIndex >= 0) {
+            const answer: string = quizZone.quizzes.at(currentQuizIndex).answer.replace(/\s/g, '');
             currentQuizResult['answer'] = answer;
             currentQuizResult['totalPlayerCount'] = players.size;
             currentQuizResult['correctPlayerCount'] = [...players.values()].filter(
-                (player) => player.submits[currentQuizIndex]?.answer === answer,
+                (player) => player.submits[currentQuizIndex]?.answer.replace(/\s/g, '') === answer,
             ).length;
         }
         return currentQuizResult;
@@ -268,7 +266,7 @@ export class PlayService {
 
         const submittedQuiz = {
             index: currentQuizIndex,
-            answer: undefined,
+            answer: '',
             submittedAt: now,
             receivedAt: now,
             submitRank: players.size,

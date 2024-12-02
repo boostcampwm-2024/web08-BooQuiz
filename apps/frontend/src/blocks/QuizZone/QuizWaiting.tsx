@@ -60,7 +60,7 @@ const QuizWaiting = ({ playQuiz, startTime, currentQuizSummary }: QuizWaitingPro
                     <Typography
                         size="2xl"
                         color="gray"
-                        text={`정답률: ${(correctPlayerCount / totalPlayerCount) * 100}%`}
+                        text={`정답률: ${((correctPlayerCount / totalPlayerCount) * 100).toFixed(1)}%`}
                         bold={true}
                     />
                 </ContentBox>
