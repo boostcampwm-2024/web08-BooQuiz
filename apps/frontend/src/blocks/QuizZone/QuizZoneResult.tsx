@@ -23,7 +23,7 @@ const QuizZoneResult = ({ quizZoneState }: QuizZoneResultProps) => {
 
     const quizResults: QuizResult[] = (quizZoneState.quizzes ?? []).map((quiz, index) => {
         const submission = quizZoneState.submits?.[index];
-        const isCorrect = submission?.answer === quiz?.answer;
+        const isCorrect = submission?.answer.replace(/\s/g, '') === quiz?.answer.replace(/\s/g, '');
         return {
             question: quiz?.question ? atob(quiz.question) : '문제 정보 없음',
             correctAnswer: quiz?.answer ?? '정답 정보 없음',
