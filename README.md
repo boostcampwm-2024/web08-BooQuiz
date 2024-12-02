@@ -12,11 +12,9 @@ BooQuiz는 300명 이상의 사용자가 로그인 없이 동시에 참여할 �
 
 ## 핵심 기능
 
----
-
 ### 🎯 입장 코드를 통한 간편한 퀴즈 참여
 
-https://github.com/user-attachments/assets/a1fa1ac7-f521-41a1-b9a8-446271286662
+![](https://github.com/user-attachments/assets/a1fa1ac7-f521-41a1-b9a8-446271286662)
 
 ### ⚡ 300명 이상 동시 접속 지원
 
@@ -38,11 +36,6 @@ https://github.com/user-attachments/assets/a1fa1ac7-f521-41a1-b9a8-446271286662
 
 ![이미지3](https://github.com/user-attachments/assets/9c5d5821-28b0-47a6-9332-af3db645cd14)
 
-## 🛠 기술 스택
-
-협업 , 인프라
-
-```markdown
 ## 🛠 기술 스택
 
 ### Frontend
@@ -87,7 +80,6 @@ https://github.com/user-attachments/assets/a1fa1ac7-f521-41a1-b9a8-446271286662
 | 화상회의      | ![Zoom](https://img.shields.io/badge/Zoom-5.17.0-2D8CFF?style=flat-square&logo=zoom&logoColor=white)                                                                                                                           |
 | 형상관리      | ![Git](https://img.shields.io/badge/Git-2.42.0-F05032?style=flat-square&logo=git&logoColor=white) ![GitHub](https://img.shields.io/badge/GitHub-latest-181717?style=flat-square&logo=github&logoColor=white)                   |
 | 프로젝트 관리 | ![GitHub Projects](https://img.shields.io/badge/GitHub%20Projects-latest-181717?style=flat-square&logo=github&logoColor=white)                                                                                                 |
-```
 
 ## 🏗 시스템 아키텍처
 
