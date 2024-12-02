@@ -282,9 +282,10 @@ export class PlayService {
     /**
      * 퀴즈 존에서 사용자의 퀴즈 진행 요약 결과를 제공합니다.
      * @param quizZoneId - 퀴즈 존 ID
+     * @param socketConnectTime - 퀴즈 결과 시간 socket 연결 시간
      * @returns 퀴즈 결과 요약 DTO를 포함한 Promise
      */
-    async summaryQuizZone(quizZoneId: string) {
+    async summaryQuizZone(quizZoneId: string, socketConnectTime: number = 30 * 1000) {
         const quizZone = await this.quizZoneService.findOne(quizZoneId);
         const { players, quizzes } = quizZone;
 
@@ -292,12 +293,16 @@ export class PlayService {
 
         const ranks = this.getRanking(players);
 
+        const now = Date.now();
+        const endSocketTime = now + socketConnectTime;
+
         return [...players.values()].map(({ id, score, submits }) => ({
             id,
             score,
             submits,
             quizzes,
             ranks,
+            endSocketTime
         }));
     }
 

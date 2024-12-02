@@ -16,7 +16,6 @@ import { ClientInfo } from './entities/client-info.entity';
 import { WebSocketWithSession } from '../core/SessionWsAdapter';
 import { RuntimeException } from '@nestjs/core/errors/exceptions';
 import { CLOSE_CODE } from '../common/constants';
-import { clearTimeout } from 'node:timers';
 
 /**
  * 퀴즈 게임에 대한 WebSocket 연결을 관리하는 Gateway입니다.
@@ -235,15 +234,15 @@ export class PlayGateway implements OnGatewayInit {
      */
     private async summary(quizZoneId: string) {
         const summaries = await this.playService.summaryQuizZone(quizZoneId);
+        const endSocketTime = summaries[0].endSocketTime;
 
-        summaries.map(async ({ id, score, submits, quizzes, ranks }) => {
-            this.sendToClient(id, 'summary', { score, submits, quizzes, ranks });
+        summaries.map(async ({ id, score, submits, quizzes, ranks, endSocketTime }) => {
+            this.sendToClient(id, 'summary', { score, submits, quizzes, ranks, endSocketTime });
         });
 
         const clientsIds = summaries.map(({ id }) => id);
 
-        this.clearQuizZone(clientsIds, quizZoneId);
-
+        this.clearQuizZone(clientsIds, quizZoneId, endSocketTime);
     }
 
     /**
@@ -253,15 +252,15 @@ export class PlayGateway implements OnGatewayInit {
      * - 일반 플레이어가 나가면 퀴즈 존에서 나가고 다른 플레이어에게 나갔다고 알립니다.
      * @param clientIds - 퀴즈존에 참여하고 있는 클라이언트 id 리스트
      * @param quizZoneId - 퀴즈가 끝난 퀴즈존 id
-     * @param time - 퀴즈 결과 페이지에서 채팅이 지속되는 시간
+     * @param endSocketTime - 소켓 연결 종료 시간 종료 시간
      */
-    private clearQuizZone(clientIds: string[], quizZoneId: string, time: number = 30 * 1000) {
+    private clearQuizZone(clientIds: string[], quizZoneId: string, endSocketTime: number) {
         setTimeout(() => {
             clientIds.forEach((id) => {
                 this.clearClient(id, 'finish');
             });
             this.playService.clearQuizZone(quizZoneId);
-        }, time);
+        }, endSocketTime - Date.now());
     }
 
     /**
