@@ -9,6 +9,7 @@ interface CustomAlertDialogProps {
     onConfirm: () => void;
     onCancel?: () => void;
     confirmText?: string;
+    cancelText?: string;
 }
 
 const CustomAlertDialog = ({
@@ -19,6 +20,7 @@ const CustomAlertDialog = ({
     title,
     description,
     confirmText = '확인',
+    cancelText = '취소',
 }: CustomAlertDialogProps) => {
     return (
         <AlertDialog open={showError} onOpenChange={setShowError}>
@@ -29,6 +31,7 @@ const CustomAlertDialog = ({
                 confirmText={confirmText}
                 handleConfirm={onConfirm}
                 handleCancel={onCancel}
+                cancelText={cancelText}
             />
         </AlertDialog>
     );
