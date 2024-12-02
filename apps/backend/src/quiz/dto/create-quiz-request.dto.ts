@@ -2,7 +2,18 @@ import { ApiProperty } from '@nestjs/swagger';
 import { QUIZ_TYPE } from '../../common/constants';
 import { Quiz } from '../entity/quiz.entitiy';
 import { QuizSet } from '../entity/quiz-set.entity';
-import { IsBoolean, IsEnum, IsNumber, IsString, Length, Max, Min, ValidateNested } from 'class-validator';
+import {
+    ArrayMaxSize,
+    ArrayMinSize,
+    IsBoolean,
+    IsEnum,
+    IsNumber,
+    IsString,
+    Length,
+    Max,
+    Min,
+    ValidateNested,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class QuizDetailsDto {
@@ -37,12 +48,14 @@ export class CreateQuizRequestDto {
     @Length(1, 30, { message: '퀴즈셋의 이름은 1~30자 이어야 합니다.' })
     readonly quizSetName: string;
 
-    @ApiProperty({description: '퀴즈셋이 기본으로 보일지 결정하는 flag입니다'})
-    @IsBoolean({ message: '값이 boolean이어야 합니다.'})
+    @ApiProperty({ description: '퀴즈셋이 기본으로 보일지 결정하는 flag입니다' })
+    @IsBoolean({ message: '값이 boolean이어야 합니다.' })
     readonly recommended?: boolean = false;
 
     @ApiProperty({ type: [QuizDetailsDto], description: '퀴즈 세부 정보' })
     @ValidateNested({ each: true })
+    @ArrayMinSize(1, { message: '퀴즈가 한개 이상 포함되어야합니다.' })
+    @ArrayMaxSize(10, { message: '퀴즈는 최대 10개만 생성할 수 있습니다.' })
     @Type(() => QuizDetailsDto)
     readonly quizDetails: QuizDetailsDto[];
 }

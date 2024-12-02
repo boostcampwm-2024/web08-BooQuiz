@@ -8,9 +8,12 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAsyncError } from '@/hook/useAsyncError';
 import { ValidationError } from '@/types/error.types';
+import CustomAlertDialogContent from '@/components/common/CustomAlertDialogContent.tsx';
+import { AlertDialog } from '@radix-ui/react-alert-dialog';
 
 const MainPageContent = () => {
     const [input, setInput] = useState('');
+    const [alertIsOpen, setAlertIsOpen] = useState(false);
     const navigate = useNavigate();
     const throwError = useAsyncError();
 
@@ -31,18 +34,34 @@ const MainPageContent = () => {
         }
     };
 
-    const handleMoveToQuizZoneLobby = async () => {
+    const handleClickJoin = async () => {
         try {
             validateInput(input);
-            const response = await fetch(`/api/quiz-zone/${input}`, { method: 'GET' });
-            if (!response.ok) {
-                throwError(response);
-                return;
+
+            const isEntered = await requestCheckEnteredQuizZone(input);
+
+            if (isEntered) {
+                moveQuizZoneLobby(input);
+            } else {
+                setAlertIsOpen(true);
             }
-            navigate(`/${input}`);
-        } catch (error) {
-            throwError(error);
+        } catch (e) {
+            throwError(e);
         }
+    };
+
+    const requestCheckEnteredQuizZone = async (enterCode: string) => {
+        const response = await fetch(`/api/quiz-zone/check/${enterCode}`);
+
+        if (!response.ok) {
+            throw throwError(response);
+        }
+
+        return (await response.json()) as boolean;
+    };
+
+    const moveQuizZoneLobby = (enterCode: string) => {
+        navigate(`/${enterCode}`);
     };
 
     return (
@@ -90,7 +109,7 @@ const MainPageContent = () => {
                     <CommonButton
                         text="퀴즈존 참여하기"
                         isFilled={true}
-                        clickEvent={handleMoveToQuizZoneLobby}
+                        clickEvent={handleClickJoin}
                         className="w-full"
                     />
                 </TooltipWrapper>
@@ -107,6 +126,19 @@ const MainPageContent = () => {
                     />
                 </TooltipWrapper>
             </ContentBox>
+            <AlertDialog open={alertIsOpen}>
+                <CustomAlertDialogContent
+                    title={'퀴즈존 입장'}
+                    description={
+                        '이미 참여중인 퀴즈존이 있습니다. 새로운 퀴즈존에 입장하시겠습니까?'
+                    }
+                    type={'warning'}
+                    confirmText={'입장하기'}
+                    cancelText={'취소'}
+                    handleCancel={() => setAlertIsOpen(false)}
+                    handleConfirm={() => moveQuizZoneLobby(input)}
+                />
+            </AlertDialog>
         </div>
     );
 };

@@ -46,7 +46,13 @@ const quizZoneReducer: Reducer<QuizZone, QuizZoneAction> = (state, action) => {
                 quizCount: payload.quizCount,
                 hostId: payload.hostId,
                 currentPlayer: payload.currentPlayer,
-                currentQuiz: payload.currentQuiz,
+                currentQuiz:
+                    payload.currentQuiz !== undefined
+                        ? {
+                              ...payload.currentQuiz,
+                              question: atob(payload.currentQuiz?.question ?? ''),
+                          }
+                        : undefined,
                 players: [],
             };
         case 'join':
