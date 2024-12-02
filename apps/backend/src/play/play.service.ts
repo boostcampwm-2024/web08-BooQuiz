@@ -290,7 +290,6 @@ export class PlayService {
 
         this.clearQuizZoneHandle(quizZoneId);
 
-        await this.quizZoneService.clearQuizZone(quizZoneId);
         const ranks = this.getRanking(players);
 
         return [...players.values()].map(({ id, score, submits }) => ({
@@ -300,6 +299,10 @@ export class PlayService {
             quizzes,
             ranks,
         }));
+    }
+
+    public clearQuizZone(quizZoneId: string) {
+        this.quizZoneService.clearQuizZone(quizZoneId);
     }
 
     private getRanking(players: Map<string, Player>) {
