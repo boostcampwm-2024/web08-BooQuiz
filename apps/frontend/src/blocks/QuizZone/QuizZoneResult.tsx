@@ -1,5 +1,6 @@
 import ContentBox from '@/components/common/ContentBox';
 import CustomAlert from '@/components/common/CustomAlert';
+import CustomAlertDialog from '@/components/common/CustomAlertDialog';
 import Typography from '@/components/common/Typogrpahy';
 import { QuizZone } from '@/types/quizZone.types';
 import atob from '@/utils/atob';
@@ -178,6 +179,13 @@ const QuizZoneResult = ({ quizZoneState }: QuizZoneResultProps) => {
                 onConfirm={() => navigate('/')}
                 onCancel={() => {}}
                 className="w-4/5 md:w-[40rem]"
+            />
+            {/* isQuizZoneEnd가 true면 메인페이지로 나갈 것인지 판단할 수 있게  */}
+            <CustomAlertDialog
+                showError={quizZoneState.isQuizZoneEnd ?? false}
+                setShowError={() => {}}
+                title="메인페이지로 나가시겠습니까?"
+                onConfirm={() => navigate('/')}
             />
         </div>
     );
