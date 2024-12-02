@@ -134,6 +134,7 @@ export class QuizZoneService {
         const {
             players,
             stage,
+            maxPlayers,
             currentQuizIndex,
             currentQuizStartTime,
             currentQuizDeadlineTime,
@@ -150,6 +151,7 @@ export class QuizZoneService {
             description,
             quizCount: quizzes.length,
             stage,
+            maxPlayers: maxPlayers,
             hostId: hostId,
             currentQuiz: {
                 currentIndex: currentQuizIndex,
@@ -163,7 +165,7 @@ export class QuizZoneService {
     }
 
     private async getResultInfo(clientId: string, quizZoneId: string): Promise<FindQuizZoneDto> {
-        const { players, stage, title, description, hostId, quizzes } =
+        const { players, stage, title, description, hostId, quizzes, maxPlayers } =
             await this.findOne(quizZoneId);
         const { id, nickname, state, submits, score } = players.get(clientId);
 
@@ -171,6 +173,7 @@ export class QuizZoneService {
             currentPlayer: { id, nickname, state, score, submits },
             title,
             description,
+            maxPlayers: maxPlayers,
             quizCount: quizzes.length,
             stage: stage,
             hostId,

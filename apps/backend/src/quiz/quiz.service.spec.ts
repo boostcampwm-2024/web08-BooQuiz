@@ -16,7 +16,6 @@ describe('QuizService', () => {
     let quizRepository: QuizRepository;
     let quizSetRepository: QuizSetRepository;
 
-
     beforeAll(async () => {
         initializeTransactionalContext();
 
