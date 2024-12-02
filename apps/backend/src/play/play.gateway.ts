@@ -236,12 +236,32 @@ export class PlayGateway implements OnGatewayInit {
     private async summary(quizZoneId: string) {
         const summaries = await this.playService.summaryQuizZone(quizZoneId);
 
-        await Promise.all(
-            summaries.map(async ({ id, score, submits, quizzes, ranks }) => {
-                this.sendToClient(id, 'summary', { score, submits, quizzes, ranks });
+        summaries.map(async ({ id, score, submits, quizzes, ranks }) => {
+            this.sendToClient(id, 'summary', { score, submits, quizzes, ranks });
+        });
+
+        const clientsIds = summaries.map(({ id }) => id);
+
+        this.clearQuizZone(clientsIds, quizZoneId);
+
+    }
+
+    /**
+     * 퀴즈 방을 나갔다는 메시지를 클라이언트로 전송합니다.
+     *
+     * - 방장이 나가면 퀴즈 존을 삭제하고 모든 플레이어에게 방장이 나갔다고 알립니다.
+     * - 일반 플레이어가 나가면 퀴즈 존에서 나가고 다른 플레이어에게 나갔다고 알립니다.
+     * @param clientIds - 퀴즈존에 참여하고 있는 클라이언트 id 리스트
+     * @param quizZoneId - 퀴즈가 끝난 퀴즈존 id
+     * @param time - 퀴즈 결과 페이지에서 채팅이 지속되는 시간
+     */
+    private clearQuizZone(clientIds: string[], quizZoneId: string, time: number = 30 * 1000) {
+        setTimeout(() => {
+            clientIds.forEach((id) => {
                 this.clearClient(id, 'finish');
-            }),
-        );
+            });
+            this.playService.clearQuizZone(quizZoneId);
+        }, time);
     }
 
     /**
