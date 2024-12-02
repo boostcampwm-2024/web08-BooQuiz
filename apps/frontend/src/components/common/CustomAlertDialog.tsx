@@ -1,13 +1,5 @@
-import { AlertCircle } from 'lucide-react';
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from '../ui/alert-dialog';
+import { AlertDialog } from '../ui/alert-dialog';
+import CustomAlertDialogContent from './CustomAlertDialogContent';
 
 interface CustomAlertDialogProps {
     showError: boolean;
@@ -15,6 +7,7 @@ interface CustomAlertDialogProps {
     title: string;
     description?: string;
     onConfirm: () => void;
+    onCancel?: () => void;
     confirmText?: string;
 }
 
@@ -22,24 +15,21 @@ const CustomAlertDialog = ({
     showError,
     setShowError,
     onConfirm,
+    onCancel = () => {},
     title,
     description,
     confirmText = '확인',
 }: CustomAlertDialogProps) => {
     return (
         <AlertDialog open={showError} onOpenChange={setShowError}>
-            <AlertDialogContent className="border-2 border-[#ef4444]/20">
-                <AlertDialogHeader className="gap-4">
-                    <div className="flex items-center gap-2">
-                        <AlertCircle className="h-6 w-6 text-[#ef4444]" />
-                        <AlertDialogTitle>{title}</AlertDialogTitle>
-                    </div>
-                    <AlertDialogDescription>{description}</AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                    <AlertDialogAction onClick={onConfirm}>{confirmText}</AlertDialogAction>
-                </AlertDialogFooter>
-            </AlertDialogContent>
+            <CustomAlertDialogContent
+                title={title}
+                description={description}
+                type="error"
+                confirmText={confirmText}
+                handleConfirm={onConfirm}
+                handleCancel={onCancel}
+            />
         </AlertDialog>
     );
 };

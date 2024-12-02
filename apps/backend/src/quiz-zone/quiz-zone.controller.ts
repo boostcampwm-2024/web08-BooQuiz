@@ -46,7 +46,7 @@ export class QuizZoneController {
         @Session() session: Record<string, any>,
         @Param('quizZoneId') quizZoneId: string,
     ) {
-        const sessionQuizZoneId = session.id;
+        const sessionQuizZoneId = session.quizZoneId;
         return sessionQuizZoneId === undefined || sessionQuizZoneId === quizZoneId;
     }
 

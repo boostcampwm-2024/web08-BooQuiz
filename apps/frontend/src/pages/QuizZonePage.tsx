@@ -98,6 +98,7 @@ const QuizZoneContent = () => {
                             nickname={quizZoneState.currentPlayer.nickname}
                             sendHandler={sendChat}
                             className="lg:h-[60vh] flex flex-col"
+                            disabled={quizZoneState.isQuizZoneEnd ?? false}
                         />
                     </div>
                 )}
