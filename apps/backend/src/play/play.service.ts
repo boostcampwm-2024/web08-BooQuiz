@@ -312,57 +312,144 @@ export class PlayService {
             ranks,
         }));
     }
+    //
+    // private getCorrectRankCount(
+    //     submits: SubmittedQuiz[],
+    //     players: Map<string, Player>,
+    //     quizAnswers: string[],
+    // ): Map<number, number> {
+    //     const correctRanks: number[] = [];
+    //
+    //     submits.forEach((submit, quizIndex) => {
+    //         if (submit.answer === quizAnswers[quizIndex]) {
+    //             const sortedCorrectPlayers = [...players.values()]
+    //                 .filter((play) => play.submits[quizIndex].answer === quizAnswers[quizIndex])
+    //                 .sort(
+    //                     (a, b) => a.submits[quizIndex].submitRank - b.submits[quizIndex].submitRank,
+    //                 );
+    //
+    //             const rank =
+    //                 sortedCorrectPlayers.findIndex(
+    //                     (play) => play.submits[quizIndex].submitRank === submit.submitRank,
+    //                 ) + 1;
+    //
+    //             correctRanks.push(rank);
+    //         }
+    //     });
+    //
+    //     return correctRanks.reduce((acc, rank) => {
+    //         return acc.set(rank, (acc.get(rank) || 0) + 1);
+    //     }, new Map<number, number>());
+    // }
+    //
+    // private sortPlayers(
+    //     playerA: Player,
+    //     playerB: Player,
+    //     players: Map<string, Player>,
+    //     quizAnswers: string[],
+    // ): number {
+    //     if (playerB.score !== playerA.score) {
+    //         return playerB.score - playerA.score;
+    //     }
+    //
+    //     const aCorrectRankCount = this.getCorrectRankCount(playerA.submits, players, quizAnswers);
+    //     const bCorrectRankCount = this.getCorrectRankCount(playerB.submits, players, quizAnswers);
+    //
+    //     const maxRank = Math.max(
+    //         ...[...aCorrectRankCount.keys()],
+    //         ...[...bCorrectRankCount.keys()],
+    //     );
+    //
+    //     for (let rank = 1; rank <= maxRank; rank++) {
+    //         const aCount = aCorrectRankCount.get(rank) || 0;
+    //         const bCount = bCorrectRankCount.get(rank) || 0;
+    //         if (aCount !== bCount) {
+    //             return bCount - aCount;
+    //         }
+    //     }
+    //     return 0;
+    // }
+    //
+    // private handleTiedRanks(
+    //     sortedPlayers: Player[],
+    //     quizAnswers: string[],
+    //     players: Map<string, Player>,
+    // ) {
+    //     let ranking = 1;
+    //     let sameCount = 0;
+    //
+    //     return sortedPlayers.map((player, index) => {
+    //         if (index > 0) {
+    //             const prevPlayer = sortedPlayers[index - 1];
+    //             if (this.sortPlayers(player, prevPlayer, players, quizAnswers) === 0) {
+    //                 sameCount++;
+    //             } else {
+    //                 ranking += sameCount + 1;
+    //                 sameCount = 0;
+    //             }
+    //         }
+    //
+    //         return {
+    //             id: player.id,
+    //             nickname: player.nickname,
+    //             score: player.score,
+    //             ranking,
+    //         };
+    //     });
+    // }
+    //
+    // private getRanking(players: Map<string, Player>, quizAnswers: string[]) {
+    //     const sortedPlayers = [...players.values()].sort((a, b) => {
+    //         return this.sortPlayers(a, b, players, quizAnswers);
+    //     });
+    //     return this.handleTiedRanks(sortedPlayers, quizAnswers, players);
+    // }
 
-    private getCorrectRankCount(
-        submits: SubmittedQuiz[],
+    private calculateQuizRanks(
         players: Map<string, Player>,
         quizAnswers: string[],
-    ): Map<number, number> {
-        const correctRanks: number[] = [];
+    ): Map<number, string[]> {
+        const quizRanks = new Map<number, string[]>();
+        quizAnswers.forEach((answer, quizIndex) => {
+            const sortedCorrectPlayerIds = [...players.values()]
+                .filter((player) => player.submits[quizIndex]?.answer === answer)
+                .sort((a, b) => a.submits[quizIndex].submitRank - b.submits[quizIndex].submitRank)
+                .map((player) => player.id);
 
-        submits.forEach((submit, quizIndex) => {
-            if (submit.answer === quizAnswers[quizIndex]) {
-                const sortedCorrectPlayers = [...players.values()]
-                    .filter((play) => play.submits[quizIndex].answer === quizAnswers[quizIndex])
-                    .sort(
-                        (a, b) => a.submits[quizIndex].submitRank - b.submits[quizIndex].submitRank,
-                    );
-
-                const rank =
-                    sortedCorrectPlayers.findIndex(
-                        (play) => play.submits[quizIndex].submitRank === submit.submitRank,
-                    ) + 1;
-
-                correctRanks.push(rank);
-            }
+            quizRanks.set(quizIndex, sortedCorrectPlayerIds);
         });
 
-        return correctRanks.reduce((acc, rank) => {
-            return acc.set(rank, (acc.get(rank) || 0) + 1);
-        }, new Map<number, number>());
+        return quizRanks;
+    }
+    private getPlayersCorrectRankCount(
+        players: Map<string, Player>,
+        quizRanks: Map<number, string[]>,
+    ) {
+        return new Map(
+            [...players.keys()].map((playerId) => {
+                const rankCounts = new Map<number, number>();
+
+                quizRanks.forEach((correctPlayers) => {
+                    const rank = correctPlayers.indexOf(playerId) + 1;
+                    if (rank > 0) {
+                        rankCounts.set(rank, (rankCounts.get(rank) || 0) + 1);
+                    }
+                });
+
+                return [playerId, rankCounts];
+            }),
+        );
     }
 
-    private sortPlayers(
-        playerA: Player,
-        playerB: Player,
-        players: Map<string, Player>,
-        quizAnswers: string[],
+    private compareRankCounts(
+        playerARankCount: Map<number, number>,
+        playerBRankCount: Map<number, number>,
     ): number {
-        if (playerB.score !== playerA.score) {
-            return playerB.score - playerA.score;
-        }
-
-        const aCorrectRankCount = this.getCorrectRankCount(playerA.submits, players, quizAnswers);
-        const bCorrectRankCount = this.getCorrectRankCount(playerB.submits, players, quizAnswers);
-
-        const maxRank = Math.max(
-            ...[...aCorrectRankCount.keys()],
-            ...[...bCorrectRankCount.keys()],
-        );
+        const maxRank = Math.max(...[...playerARankCount.keys()], ...[...playerBRankCount.keys()]);
 
         for (let rank = 1; rank <= maxRank; rank++) {
-            const aCount = aCorrectRankCount.get(rank) || 0;
-            const bCount = bCorrectRankCount.get(rank) || 0;
+            const aCount = playerARankCount.get(rank) || 0;
+            const bCount = playerBRankCount.get(rank) || 0;
             if (aCount !== bCount) {
                 return bCount - aCount;
             }
@@ -370,22 +457,52 @@ export class PlayService {
         return 0;
     }
 
-    private handleTiedRanks(
-        sortedPlayers: Player[],
-        quizAnswers: string[],
-        players: Map<string, Player>,
-    ) {
-        let ranking = 1;
-        let sameCount = 0;
+    private compareRanks(
+        currentPlayer: Player,
+        prevPlayer: Player,
+        currentRankCount: Map<number, number>,
+        prevRankCount: Map<number, number>,
+    ): boolean {
+        if (currentPlayer.score !== prevPlayer.score) {
+            return true;
+        }
+        return this.compareRankCounts(currentRankCount, prevRankCount) !== 0;
+    }
+
+    private getRanking(players: Map<string, Player>, quizAnswers: string[]) {
+        const quizRanks = this.calculateQuizRanks(players, quizAnswers);
+
+        const playersCorrectRankCount = this.getPlayersCorrectRankCount(players, quizRanks);
+
+        const sortedPlayers = [...players.values()].sort((playerA, playerB) => {
+            if (playerB.score !== playerA.score) {
+                return playerB.score - playerA.score;
+            }
+
+            return this.compareRankCounts(
+                playersCorrectRankCount.get(playerA.id),
+                playersCorrectRankCount.get(playerB.id),
+            );
+        });
+
+        let currentRank = 1;
+        let sameRankCount = 0;
 
         return sortedPlayers.map((player, index) => {
             if (index > 0) {
                 const prevPlayer = sortedPlayers[index - 1];
-                if (this.sortPlayers(player, prevPlayer, players, quizAnswers) === 0) {
-                    sameCount++;
+                if (
+                    this.compareRanks(
+                        player,
+                        prevPlayer,
+                        playersCorrectRankCount.get(player.id),
+                        playersCorrectRankCount.get(prevPlayer.id),
+                    )
+                ) {
+                    currentRank += sameRankCount + 1;
+                    sameRankCount = 0;
                 } else {
-                    ranking += sameCount + 1;
-                    sameCount = 0;
+                    sameRankCount++;
                 }
             }
 
@@ -393,16 +510,9 @@ export class PlayService {
                 id: player.id,
                 nickname: player.nickname,
                 score: player.score,
-                ranking,
+                ranking: currentRank,
             };
         });
-    }
-
-    private getRanking(players: Map<string, Player>, quizAnswers: string[]) {
-        const sortedPlayers = [...players.values()].sort((a, b) => {
-            return this.sortPlayers(a, b, players, quizAnswers);
-        });
-        return this.handleTiedRanks(sortedPlayers, quizAnswers, players);
     }
 
     async leaveQuizZone(quizZoneId: string, clientId: string) {
