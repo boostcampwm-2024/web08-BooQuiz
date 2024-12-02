@@ -15,9 +15,17 @@ interface ChatProps {
     sendHandler: (chatMessage: ChatMessage) => void;
     chatMessages: ChatMessage[];
     className?: string;
+    disabled?: boolean;
 }
 
-const ChatBox = ({ clientId, nickname, sendHandler, chatMessages, className }: ChatProps) => {
+const ChatBox = ({
+    clientId,
+    nickname,
+    sendHandler,
+    chatMessages,
+    className,
+    disabled = false,
+}: ChatProps) => {
     const [message, setMessage] = useState('');
     const messageContainerRef = useRef<HTMLDivElement>(null);
 
@@ -110,6 +118,7 @@ const ChatBox = ({ clientId, nickname, sendHandler, chatMessages, className }: C
                     onChange={(e) => setMessage(e.target.value)}
                     placeholder="메시지를 입력하세요"
                     name="chatInput"
+                    disabled={disabled}
                     className="flex-1 bg-white shadow-sm border-gray-200 focus-visible:ring-blue-400 h-full p-2"
                 />
                 <Button
