@@ -4,6 +4,7 @@ import CustomAlertDialog from '@/components/common/CustomAlertDialog';
 import Typography from '@/components/common/Typogrpahy';
 import { QuizZone } from '@/types/quizZone.types';
 import atob from '@/utils/atob';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 interface QuizZoneResultProps {
@@ -21,6 +22,13 @@ interface QuizResult {
 
 const QuizZoneResult = ({ quizZoneState }: QuizZoneResultProps) => {
     const navigate = useNavigate();
+    const { isQuizZoneEnd } = quizZoneState;
+    const [isHomeAlertOpen, setIsHomeAlertOpen] = useState(isQuizZoneEnd ?? false);
+    useEffect(() => {
+        if (quizZoneState.isQuizZoneEnd) {
+            setIsHomeAlertOpen(true);
+        }
+    }, [isQuizZoneEnd]);
 
     const quizResults: QuizResult[] = (quizZoneState.quizzes ?? []).map((quiz, index) => {
         const submission = quizZoneState.submits?.[index];
@@ -178,9 +186,10 @@ const QuizZoneResult = ({ quizZoneState }: QuizZoneResultProps) => {
             />
             {/* isQuizZoneEnd가 true면 메인페이지로 나갈 것인지 판단할 수 있게  */}
             <CustomAlertDialog
-                showError={quizZoneState.isQuizZoneEnd ?? false}
-                setShowError={() => {}}
-                title="메인페이지로 나가시겠습니까?"
+                showError={isHomeAlertOpen}
+                setShowError={setIsHomeAlertOpen}
+                title="퀴즈존이 종료되었습니다, 메인페이지로 이동하시겠습니까?"
+                confirmText="확인"
                 onConfirm={() => navigate('/')}
             />
         </div>
