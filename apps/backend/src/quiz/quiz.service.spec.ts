@@ -44,6 +44,8 @@ describe('QuizService', () => {
         findOneBy: jest.fn(),
         searchByName: jest.fn(),
         countByName: jest.fn(),
+        findByRecommend: jest.fn(),
+        countByRecommend: jest.fn(),
     };
 
     beforeEach(async () => {
@@ -94,6 +96,34 @@ describe('QuizService', () => {
             expect(response).toEqual({
                 quizSetDetails: response.quizSetDetails,
                 total: count,
+                currentPage: 1,
+            });
+        });
+
+        it('퀴즈셋 recommend 반환', async () => {
+            //given
+            const dto = {
+                page: 1,
+                size: 10,
+            } as SearchQuizSetRequestDTO;
+            const quizSets = [
+                { id: 1, name: '퀴즈셋 검색1', recommended: true },
+                { id: 2, name: '퀴즈셋 검색2', recommended: true },
+                { id: 2, name: '퀴즈셋 검색2', recommended: false },
+            ] as QuizSet[];
+            const count = quizSets.length;
+
+            mockQuizSetRepository.findByRecommend.mockResolvedValue(quizSets.slice(0,2));
+            mockQuizSetRepository.countByRecommend.mockResolvedValue(2);
+
+            //when
+            const response = await service.searchQuizSet(dto);
+
+            console.log(response);
+            //then
+            expect(response).toEqual({
+                quizSetDetails: response.quizSetDetails,
+                total: 2,
                 currentPage: 1,
             });
         });
