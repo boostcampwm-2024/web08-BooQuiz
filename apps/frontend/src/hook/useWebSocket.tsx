@@ -1,6 +1,12 @@
 import { useRef } from 'react';
 
-const useWebSocket = (wsUrl: string, messageHandler: (event: MessageEvent) => void) => {
+interface WebSocketConfig {
+    wsUrl: string;
+    messageHandler: (event: MessageEvent) => void;
+    handleFinish?: () => void;
+}
+
+const useWebSocket = ({ wsUrl, messageHandler, handleFinish }: WebSocketConfig) => {
     const ws = useRef<WebSocket | null>(null);
     const messageQueue = useRef<string[]>([]);
 
@@ -19,8 +25,10 @@ const useWebSocket = (wsUrl: string, messageHandler: (event: MessageEvent) => vo
         };
 
         ws.current.onclose = (ev: CloseEvent) => {
-            const { wasClean } = ev;
-
+            const { wasClean, reason } = ev;
+            if (reason == 'finish') {
+                handleFinish?.();
+            }
             if (!wasClean) {
                 location.reload();
             }
