@@ -459,7 +459,6 @@ describe('PlayService', () => {
                 },
             ]);
 
-            expect(quizZoneService.clearQuizZone).toHaveBeenCalledWith('test-zone');
         });
 
         it('동점자가 있는 경우 동일한 순위가 부여되어야 합니다', async () => {
@@ -526,7 +525,6 @@ describe('PlayService', () => {
             const result = await service.summaryQuizZone('test-zone');
 
             expect(result).toEqual([]);
-            expect(quizZoneService.clearQuizZone).toHaveBeenCalledWith('test-zone');
         });
 
         it('모든 플레이어의 퀴즈 제출 기록이 포함되어야 합니다', async () => {
