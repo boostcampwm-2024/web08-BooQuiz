@@ -1,16 +1,6 @@
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
+import { AlertDialog, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
-import { AlertCircle, AlertTriangle, CheckCircle2, Info } from 'lucide-react';
+import CustomAlertDialogContent from '@/components/common/CustomAlertDialogContent.tsx';
 
 export interface CustomAlertProps {
     // 알럿 트리거 버튼 설정
@@ -34,32 +24,6 @@ export interface CustomAlertProps {
     onCancel?: () => void;
     className?: string;
 }
-
-const getAlertIcon = (type: string) => {
-    switch (type) {
-        case 'success':
-            return <CheckCircle2 className="h-6 w-6 text-[#22c55e]" />;
-        case 'warning':
-            return <AlertTriangle className="h-6 w-6 text-[#eab308]" />;
-        case 'error':
-            return <AlertCircle className="h-6 w-6 text-[#ef4444]" />;
-        default:
-            return <Info className="h-6 w-6 text-[#2563eb]" />;
-    }
-};
-
-const getAlertStyle = (type: string) => {
-    switch (type) {
-        case 'success':
-            return 'border-[#22c55e]/20 ';
-        case 'warning':
-            return 'border-[#eab308]/20';
-        case 'error':
-            return 'border-[#ef4444]/20 ';
-        default:
-            return 'border-[#2563eb]/20 ';
-    }
-};
 
 /**
  * @description
@@ -94,7 +58,6 @@ const getAlertStyle = (type: string) => {
  *
  * @return {JSX.Element} 사용자 정의 알림 대화 상자 컴포넌트
  */
-
 const CustomAlert = ({ trigger, alert, onConfirm, onCancel, className }: CustomAlertProps) => {
     const handleCancel = () => {
         onCancel?.();
@@ -117,27 +80,15 @@ const CustomAlert = ({ trigger, alert, onConfirm, onCancel, className }: CustomA
                     {trigger.text}
                 </Button>
             </AlertDialogTrigger>
-
-            <AlertDialogContent className={`border-2 ${getAlertStyle(alert.type ?? 'info')}`}>
-                <AlertDialogHeader className="gap-4">
-                    <div className="flex items-center gap-2">
-                        {getAlertIcon(alert.type ?? 'info')}
-                        <AlertDialogTitle>{alert.title}</AlertDialogTitle>
-                    </div>
-                    {alert.description && (
-                        <AlertDialogDescription>{alert.description}</AlertDialogDescription>
-                    )}
-                </AlertDialogHeader>
-
-                <AlertDialogFooter>
-                    <AlertDialogCancel onClick={handleCancel}>
-                        {alert.cancelText ?? '취소'}
-                    </AlertDialogCancel>
-                    <AlertDialogAction onClick={handleConfirm}>
-                        {alert.confirmText ?? '확인'}
-                    </AlertDialogAction>
-                </AlertDialogFooter>
-            </AlertDialogContent>
+            <CustomAlertDialogContent
+                title={alert.title}
+                description={alert.description}
+                type={alert.type}
+                cancelText={alert.cancelText}
+                confirmText={alert.confirmText}
+                handleCancel={handleCancel}
+                handleConfirm={handleConfirm}
+            />
         </AlertDialog>
     );
 };
