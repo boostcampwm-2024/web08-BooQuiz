@@ -48,10 +48,9 @@ const QuizZoneContent = () => {
 
         const isPlaying =
             quizZoneState.currentPlayer.state === 'PLAY' && quizZoneState.stage === 'IN_PROGRESS';
-        const isResult = quizZoneState.stage === 'RESULT';
         const isSinglePlayer = quizZoneState.players?.length === 1;
 
-        return !isPlaying && !isResult && !isSinglePlayer;
+        return !isPlaying && !isSinglePlayer;
     };
 
     if (isLoading) {

@@ -311,6 +311,10 @@ export class PlayService {
         }));
     }
 
+    public clearQuizZone(quizZoneId: string) {
+        this.quizZoneService.clearQuizZone(quizZoneId);
+    }
+
     private calculateQuizRanks(
         players: Map<string, Player>,
         quizAnswers: string[],
@@ -390,7 +394,6 @@ export class PlayService {
                 playersCorrectRankCount.get(playerB.id),
             );
         });
-
         let currentRank = 1;
         let sameRankCount = 0;
 
