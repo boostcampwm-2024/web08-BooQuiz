@@ -342,7 +342,7 @@ export class PlayService {
         }, new Map<number, number>());
     }
 
-    private SortPlayers(
+    private sortPlayers(
         playerA: Player,
         playerB: Player,
         players: Map<string, Player>,
@@ -352,7 +352,6 @@ export class PlayService {
             return playerB.score - playerA.score;
         }
 
-        // 동점일 경우
         const aCorrectRankCount = this.getCorrectRankCount(playerA.submits, players, quizAnswers);
         const bCorrectRankCount = this.getCorrectRankCount(playerB.submits, players, quizAnswers);
 
@@ -382,7 +381,7 @@ export class PlayService {
         return sortedPlayers.map((player, index) => {
             if (index > 0) {
                 const prevPlayer = sortedPlayers[index - 1];
-                if (this.SortPlayers(player, prevPlayer, players, quizAnswers) === 0) {
+                if (this.sortPlayers(player, prevPlayer, players, quizAnswers) === 0) {
                     sameCount++;
                 } else {
                     ranking += sameCount + 1;
@@ -401,7 +400,7 @@ export class PlayService {
 
     private getRanking(players: Map<string, Player>, quizAnswers: string[]) {
         const sortedPlayers = [...players.values()].sort((a, b) => {
-            return this.SortPlayers(a, b, players, quizAnswers);
+            return this.sortPlayers(a, b, players, quizAnswers);
         });
         return this.handleTiedRanks(sortedPlayers, quizAnswers, players);
     }
