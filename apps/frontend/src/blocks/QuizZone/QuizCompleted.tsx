@@ -4,7 +4,7 @@ import { useTimer } from '@/hook/useTimer';
 import { useEffect } from 'react';
 import { CurrentQuizResult } from '@/types/quizZone.types.ts';
 import { Player } from '@/types/quizZone.types';
-import PodiumPlayers from '@/components/common/\bPodiumPlayers';
+import PodiumPlayers from '@/components/common/PodiumPlayers';
 
 interface QuizCompletedProps {
     currentPlayer: Player;
