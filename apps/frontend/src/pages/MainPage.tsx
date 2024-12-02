@@ -79,7 +79,7 @@ const MainPageContent = () => {
             />
 
             <ContentBox className="w-4/5 md:w-[48rem] gap-2">
-                <Typography size="base" color="blue" text="퀴즈 참여하기" bold={true} />
+                <Typography size="xl" color="blue" text="퀴즈 참여하기" bold={true} />
 
                 <TooltipWrapper
                     content="퀴즈존 코드를 입력해주세요"
@@ -92,6 +92,8 @@ const MainPageContent = () => {
                         name="입장코드"
                         isAutoFocus={false}
                         placeholder="입장 코드를 5자리에서 10자리 까지 작성해주세요(예:1A2B3C)"
+                        isBorder={true}
+                        height="h-14"
                     />
                 </TooltipWrapper>
 
