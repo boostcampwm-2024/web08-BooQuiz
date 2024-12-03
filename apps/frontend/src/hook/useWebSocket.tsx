@@ -4,9 +4,15 @@ interface WebSocketConfig {
     wsUrl: string;
     messageHandler: (event: MessageEvent) => void;
     handleFinish?: () => void;
+    handleReconnect?: () => void;
 }
 
-const useWebSocket = ({ wsUrl, messageHandler, handleFinish }: WebSocketConfig) => {
+const useWebSocket = ({
+    wsUrl,
+    messageHandler,
+    handleFinish,
+    handleReconnect,
+}: WebSocketConfig) => {
     const ws = useRef<WebSocket | null>(null);
     const messageQueue = useRef<string[]>([]);
 
@@ -26,11 +32,15 @@ const useWebSocket = ({ wsUrl, messageHandler, handleFinish }: WebSocketConfig) 
 
         ws.current.onclose = (ev: CloseEvent) => {
             const { wasClean, reason } = ev;
+
+            ws.current = null;
+
             if (reason == 'finish') {
                 handleFinish?.();
             }
+
             if (!wasClean) {
-                location.reload();
+                handleReconnect?.();
             }
         };
 

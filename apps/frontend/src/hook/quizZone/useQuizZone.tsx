@@ -222,7 +222,11 @@ export const chatMessagesReducer: Reducer<ChatMessage[], chatAction> = (chatMess
  * @returns {Function} .playQuiz - 퀴즈 상태를 플레이 모드로 변경하는 함수
  */
 
-const useQuizZone = () => {
+const useQuizZone = (
+    quizZoneId: string,
+    requstInitData: (id: string) => Promise<QuizZone>,
+    handleReconnect?: () => void,
+) => {
     const initialQuizZoneState: QuizZone = {
         stage: 'LOBBY',
         currentPlayer: {
@@ -242,14 +246,9 @@ const useQuizZone = () => {
     };
 
     const [quizZoneState, dispatch] = useReducer(quizZoneReducer, initialQuizZoneState);
-    // const [chatMessages, setChatMessages] = useReducer(chatMessagesReducer, []);
 
     const messageHandler = (event: MessageEvent) => {
         const { event: QuizZoneEvent, data } = JSON.parse(event.data);
-        // if (QuizZoneEvent === 'chat') {
-        //     setChatMessages({ type: 'chat', payload: data });
-        //     return;
-        // }
 
         dispatch({
             type: QuizZoneEvent,
@@ -266,12 +265,15 @@ const useQuizZone = () => {
         wsUrl,
         messageHandler,
         handleFinish,
+        handleReconnect,
     });
 
     //initialize QuizZOne
-    const initQuizZoneData = (initialData: any) => {
-        dispatch({ type: 'init', payload: initialData });
+    const initQuizZoneData = async () => {
+        const quizZone = await requstInitData(quizZoneId);
+        dispatch({ type: 'init', payload: quizZone });
         beginConnection();
+        joinQuizZone({ quizZoneId });
     };
 
     //퀴즈 시작 함수
