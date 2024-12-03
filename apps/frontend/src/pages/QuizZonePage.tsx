@@ -93,15 +93,13 @@ const QuizZoneContent = () => {
 
                 {/* 채팅 박스 컨테이너 */}
                 {shouldShowChat() && (
-                    <div className="w-full lg:w-[24rem]">
-                        <ChatBox
-                            chatMessages={quizZoneState.chatMessages ?? []}
-                            clientId={quizZoneState.currentPlayer.id}
-                            nickname={quizZoneState.currentPlayer.nickname}
-                            sendHandler={sendChat}
-                            className="lg:h-[60vh] h-[40vh]"
-                        />
-                    </div>
+                    <ChatBox
+                        chatMessages={quizZoneState.chatMessages ?? []}
+                        clientId={quizZoneState.currentPlayer.id}
+                        nickname={quizZoneState.currentPlayer.nickname}
+                        sendHandler={sendChat}
+                        className="lg:h-[80vh] lg:max-h-[80vh] max-h-[60vh] flex flex-col w-full lg:w-[24rem]"
+                    />
                 )}
             </div>
         </div>
@@ -115,7 +113,7 @@ const QuizZonePage = () => {
         <AsyncBoundary
             pending={
                 <div className="flex h-screen items-center justify-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500" />
+                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#2563eb]" />
                 </div>
             }
             handleError={(error: any) => {
