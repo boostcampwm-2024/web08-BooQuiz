@@ -17,11 +17,14 @@ export class ChatRepositoryMemory {
     }
 
     async get(id: string) {
-        return this.data.get(id);
+        return this.data.get(id) || null;
     }
 
     async add(id: string, chatMessage: ChatMessage) {
-        const messages = this.data.get(id);
+        let messages = this.data.get(id);
+        if (!messages) {
+            messages = [];
+        }
         if (messages.length >= this.maxMessageLength) {
             messages.shift();
         }
