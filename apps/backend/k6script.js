@@ -5,12 +5,12 @@ import { check, sleep } from 'k6';
 // HTTP 요청 후 WebSocket 연결하는 통합 테스트
 export default function () {
     // 세션 ID 생성
-    const httpResponse = http.get('http://localhost:3000/quiz-zone/loadtest');
+    const httpResponse = http.get('http://test.booquiz.kro.kr/api/quiz-zone/testtest');
 
     // 2. 응답 헤더에서 Set-Cookie를 확인합니다
     const cookies = httpResponse.headers['Set-Cookie'];
     const sessionCookie = cookies ? cookies.split(';')[0] : '';
-    console.log('Received session cookie:', sessionCookie);
+    // console.log('Received session cookie:', sessionCookie);
 
     sleep(1);
 
@@ -21,19 +21,35 @@ export default function () {
         },
     };
     // console.log(httpResponse.headers);
-    const wsResponse = ws.connect('ws://localhost:3000/play', wsParams, function (socket) {
+    const wsResponse = ws.connect('ws://test.booquiz.kro.kr/api/play', wsParams, function (socket) {
         socket.on('open', () => {
-            console.log('WebSocket connected');
+            sleep(2);
             socket.send(
                 JSON.stringify({
                     event: 'join',
-                    data: { quizZoneId: 'loadtest' },
+                    data: { quizZoneId: 'testtest' },
                 }),
             );
         });
 
         socket.on('message', (data) => {
-            console.log('Message received:', data);
+            data = JSON.parse(data);
+            console.log(data.event);
+            if (data.event === 'someone_join') {
+                sleep(2);
+                // console.log(data);
+
+                socket.send(
+                    JSON.stringify({
+                        event: 'chat',
+                        data: {
+                            clientId: wsParams.headers.Cookie,
+                            nickname: `${data.data.nickname}`,
+                            message: `안녕 나는 ${data.data.nickname}이야`,
+                        },
+                    }),
+                );
+            }
         });
     });
 
@@ -48,7 +64,7 @@ export const options = {
         contacts: {
             executor: 'ramping-vus',
             startVUs: 0,
-            stages: [{ duration: '10s', target: 200 }],
+            stages: [{ duration: '3s', target: 5 }],
         },
     },
 };
