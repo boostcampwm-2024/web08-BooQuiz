@@ -99,16 +99,24 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             return heightToFontSize[height] || 'text-base';
         };
 
-        const classes = className ? `input-wrapper ${className}` : 'input-wrapper';
+        const classes = className ? `input-wrapper  ${className}` : 'input-wrapper';
         const fontSizeClass = getFontSizeClass();
 
         return (
             <div className={classes}>
-                {label && (
-                    <label htmlFor={name} className={fontSizeClass}>
-                        {label}
-                    </label>
-                )}
+                <div className="w-full flex flex-row justify-between">
+                    {label && (
+                        <label htmlFor={name} className={fontSizeClass}>
+                            {label}
+                        </label>
+                    )}
+                    {error && (
+                        <span className={`error-message ${fontSizeClass} text-red-500 text-[10px]`}>
+                            {error}
+                        </span>
+                    )}
+                </div>
+
                 <input
                     ref={ref}
                     autoFocus={isAutoFocus}
@@ -125,7 +133,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
                         w-full 
                         ${isBorder ? 'border border-gray-300' : ''} 
                         rounded-lg
-                        p-1 
+                        p-2
                         ${height}
                         ${fontSizeClass}
                         leading-normal
@@ -136,7 +144,6 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
                     max={max}
                     {...rest}
                 />
-                {error && <span className={`error-message ${fontSizeClass}`}>{error}</span>}
                 {isUnderline && <div className="underline h-[2px] w-full bg-blue-600" />}
 
                 {typeof value === 'string' && isShowCount && (
