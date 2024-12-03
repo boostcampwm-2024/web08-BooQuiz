@@ -15,6 +15,7 @@ import { TypeormConfig } from '../config/typeorm.config';
 import { DataSource } from 'typeorm';
 import { addTransactionalDataSource } from 'typeorm-transactional';
 import { QuizModule } from './quiz/quiz.module';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
     imports: [
@@ -36,6 +37,7 @@ import { QuizModule } from './quiz/quiz.module';
             },
         }),
         QuizModule,
+        ChatModule,
     ],
     controllers: [AppController],
     providers: [

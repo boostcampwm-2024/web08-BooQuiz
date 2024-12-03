@@ -60,12 +60,20 @@ describe('PlayService', () => {
             error: jest.fn(),
         };
 
+        const mockChatService = {
+            get: jest.fn(),
+            add: jest.fn(),
+            has: jest.fn(),
+            delete: jest.fn(),
+        };
+
         const module: TestingModule = await Test.createTestingModule({
             providers: [
                 PlayService,
                 { provide: QuizZoneService, useValue: mockQuizZoneService },
                 { provide: 'winston', useValue: mockLogger },
                 { provide: 'PlayInfoStorage', useValue: playsStorage },
+                { provide: 'ChatService', useValue: mockChatService }, // 추가된 부분
             ],
         }).compile();
 

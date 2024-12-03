@@ -13,6 +13,7 @@ import { getRandomNickName, PLAYER_STATE, QUIZ_ZONE_STAGE } from '../common/cons
 import { FindQuizZoneDto } from './dto/find-quiz-zone.dto';
 import { CreateQuizZoneDto } from './dto/create-quiz-zone.dto';
 import { QuizService } from '../quiz/quiz.service';
+import { ChatService } from '../chat/chat.service';
 
 const INTERVAL_TIME = 5000;
 
@@ -23,6 +24,8 @@ export class QuizZoneService {
         private readonly repository: IQuizZoneRepository,
         @Inject(QuizService)
         private readonly quizService: QuizService,
+        @Inject(ChatService)
+        private readonly chatService: ChatService,
     ) {}
 
     /**
@@ -118,6 +121,7 @@ export class QuizZoneService {
         const { players, title, description, quizzes, stage, hostId, maxPlayers } =
             await this.findOne(quizZoneId);
         const { id, nickname, state } = players.get(clinetId);
+        const chatMessages = await this.chatService.get(quizZoneId);
 
         return {
             currentPlayer: { id, nickname, state },
@@ -127,6 +131,7 @@ export class QuizZoneService {
             maxPlayers: maxPlayers,
             stage: stage,
             hostId: hostId,
+            chatMessages: chatMessages,
         };
     }
 
@@ -144,6 +149,7 @@ export class QuizZoneService {
             quizzes,
         } = await this.findOne(quizZoneId);
         const { id, nickname, state } = players.get(clientId);
+        const chatMessages = await this.chatService.get(quizZoneId);
 
         return {
             currentPlayer: { id, nickname, state },
@@ -161,6 +167,7 @@ export class QuizZoneService {
                 question: quizzes[currentQuizIndex].question,
                 stage: stage,
             },
+            chatMessages: chatMessages,
         };
     }
 
@@ -168,6 +175,7 @@ export class QuizZoneService {
         const { players, stage, title, description, hostId, quizzes, maxPlayers } =
             await this.findOne(quizZoneId);
         const { id, nickname, state, submits, score } = players.get(clientId);
+        const chatMessages = await this.chatService.get(quizZoneId);
 
         return {
             currentPlayer: { id, nickname, state, score, submits },
@@ -177,6 +185,7 @@ export class QuizZoneService {
             quizCount: quizzes.length,
             stage: stage,
             hostId,
+            chatMessages: chatMessages,
         };
     }
 
