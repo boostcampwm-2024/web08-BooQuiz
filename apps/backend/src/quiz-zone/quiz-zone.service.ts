@@ -110,21 +110,8 @@ export class QuizZoneService {
     private async getLobbyInfo(clinetId: string, quizZoneId: string): Promise<FindQuizZoneDto> {
         const { players, title, description, quizzes, stage, host, maxPlayers } =
             await this.findOne(quizZoneId);
-        //TODO: 리팩토링 필요
-        if(host.id === clinetId) {
-            const {id, nickname, state} = host;
-            return {
-                currentPlayer: { id, nickname, state },
-                title: title,
-                description: description,
-                quizCount: quizzes.length,
-                maxPlayers: maxPlayers,
-                stage: stage,
-                hostId: host.id,
-            };
-        }
 
-        const { id, nickname, state } = players.get(clinetId);
+        const { id, nickname, state } = players.get(clinetId) || host;
 
         return {
             currentPlayer: { id, nickname, state },
@@ -151,32 +138,10 @@ export class QuizZoneService {
             quizzes,
         } = await this.findOne(quizZoneId);
 
-        if(host.id === clientId) {
-            const {id, nickname, state} = host;
+        const submittedPlayers = host.id === clientId ?
+            [...players.values()].filter(player => player.state === PLAYER_STATE.SUBMIT) : undefined;
 
-            const submittedPlayers = [...players.values()].filter(player => player.state === PLAYER_STATE.SUBMIT);
-
-            return {
-                currentPlayer: { id, nickname, state },
-                title,
-                description,
-                quizCount: quizzes.length,
-                stage,
-                maxPlayers: maxPlayers,
-                hostId: host.id,
-                currentQuiz: {
-                    currentIndex: currentQuizIndex,
-                    startTime: currentQuizStartTime,
-                    deadlineTime: currentQuizDeadlineTime,
-                    playTime: quizzes[currentQuizIndex].playTime,
-                    question: quizzes[currentQuizIndex].question,
-                    stage: stage,
-                },
-                submittedPlayers
-            }
-        }
-
-        const { id, nickname, state } = players.get(clientId);
+        const { id, nickname, state } = players.get(clientId) || host;
 
         return {
             currentPlayer: { id, nickname, state },
@@ -194,6 +159,7 @@ export class QuizZoneService {
                 question: quizzes[currentQuizIndex].question,
                 stage: stage,
             },
+            submittedPlayers
         };
     }
 
@@ -201,23 +167,10 @@ export class QuizZoneService {
         const { players, stage, title, description, host, quizzes, maxPlayers } =
             await this.findOne(quizZoneId);
 
-        if(host.id === clientId) {
-            const {id, nickname, state} = host;
-            return {
-                currentPlayer: { id, nickname, state },
-                title,
-                description,
-                maxPlayers: maxPlayers,
-                quizCount: quizzes.length,
-                stage: stage,
-                hostId: host.id,
-            };
-        }
-
-        const { id, nickname, state, submits, score } = players.get(clientId);
+        const currentPlayer = players.get(clientId) || host;
 
         return {
-            currentPlayer: { id, nickname, state, score, submits },
+            currentPlayer,
             title,
             description,
             maxPlayers: maxPlayers,
@@ -314,4 +267,5 @@ export class QuizZoneService {
             ...quizZone,
         });
     }
+
 }

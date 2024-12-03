@@ -262,9 +262,16 @@ export class PlayService {
      * @throws {BadRequestException} 플레이어가 답변을 제출할 수 없는 상태일 경우 예외가 발생합니다.
      */
     private submitQuiz(quizZone: QuizZone, clientId: string, submitQuiz?: SubmittedQuiz) {
-        const { players, currentQuizIndex, quizzes, currentQuizDeadlineTime } = quizZone;
+        const { players, currentQuizIndex, quizzes, currentQuizDeadlineTime, host } = quizZone;
+
+        if(host.id === clientId) {
+            return;
+        }
+
         const quiz = quizzes.at(currentQuizIndex);
         const player = players.get(clientId);
+
+
 
         if (player.state !== PLAYER_STATE.PLAY) {
             throw new BadRequestException('정답을 제출할 수 없습니다.');
