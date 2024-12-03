@@ -34,7 +34,7 @@ const QuizCompleted = ({
 
     return (
         <div className="w-full h-full flex flex-col items-center justify-center gap-4">
-            <ContentBox className="w-full flex flex-col items-center justify-center gap-2 h-full">
+            <ContentBox className="w-full flex flex-col items-center justify-center gap-2 h-full bg-white shadow-lg">
                 <Typography
                     size="3xl"
                     color="gray"
@@ -60,7 +60,7 @@ const QuizCompleted = ({
                 )}
             </ContentBox>
             {currentQuizResult && (
-                <ContentBox className="w-full flex flex-col items-center justify-center gap-2 h-full">
+                <ContentBox className="w-full flex flex-col items-center justify-center gap-2 h-full bg-white shadow-lg">
                     <Typography
                         size="xl"
                         color="black"
