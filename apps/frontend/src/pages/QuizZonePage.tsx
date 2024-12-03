@@ -7,9 +7,14 @@ import useQuizZone from '@/hook/quizZone/useQuizZone';
 import { useAsyncError } from '@/hook/useAsyncError';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { AlertDialog } from '@radix-ui/react-alert-dialog';
+import CustomAlertDialogContent from '@/components/common/CustomAlertDialogContent.tsx';
 
 const QuizZoneContent = () => {
     const [isLoading, setIsLoading] = useState(true);
+    const [isDisconnection, setIsDisconnection] = useState(false);
+
+    const navigate = useNavigate();
     const { quizZoneId } = useParams();
     const throwError = useAsyncError();
 
@@ -23,6 +28,17 @@ const QuizZoneContent = () => {
         joinQuizZone,
         sendChat,
     } = useQuizZone();
+    if (quizZoneId === undefined) {
+        throwError(new Error('접속하려는 퀴즈존의 입장 코드를 확인하세요.'));
+        return;
+    }
+
+    const reconnectHandler = () => {
+        setIsDisconnection(true);
+    };
+
+    const { initQuizZoneData, quizZoneState, submitQuiz, startQuiz, playQuiz, exitQuiz, sendChat } =
+        useQuizZone(quizZoneId, requestQuizZone, reconnectHandler);
 
     const initQuizZone = async () => {
         const response = await fetch(`/api/quiz-zone/${quizZoneId}`, { method: 'GET' });
@@ -104,6 +120,17 @@ const QuizZoneContent = () => {
                     </div>
                 )}
             </div>
+            <AlertDialog open={isDisconnection}>
+                <CustomAlertDialogContent
+                    title={'퀴즈존 입장'}
+                    description={'서버와의 연결이 끊어졌습니다. 다시 연결하시겠습니까?'}
+                    type={'error'}
+                    confirmText={'다시 연결하기'}
+                    cancelText={'나가기'}
+                    handleCancel={() => navigate('/')}
+                    handleConfirm={() => initQuizZone()}
+                />
+            </AlertDialog>
         </div>
     );
 };
