@@ -159,7 +159,7 @@ const quizZoneReducer: Reducer<QuizZone, QuizZoneAction> = (state, action) => {
                 submits: payload.submits,
                 quizzes: payload.quizzes,
                 ranks: payload.ranks,
-                endSocketTime: payload.endSocketTime
+                endSocketTime: payload.endSocketTime,
             };
         case 'chat':
             return {
