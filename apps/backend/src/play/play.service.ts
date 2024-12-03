@@ -16,7 +16,6 @@ import { RuntimeException } from '@nestjs/core/errors/exceptions';
 import { clearTimeout } from 'node:timers';
 import { Player } from '../quiz-zone/entities/player.entity';
 import { CurrentQuizResultDto } from './dto/current-quiz-result.dto';
-import { Quiz } from '../quiz-zone/entities/quiz.entity';
 
 @Injectable()
 export class PlayService {
@@ -297,14 +296,10 @@ export class PlayService {
 
         this.clearQuizZoneHandle(quizZoneId);
 
-        await this.quizZoneService.clearQuizZone(quizZoneId);
         const ranks = this.getRanking(
             players,
             quizzes.map((quiz) => quiz.answer),
         );
-
-        const now = Date.now();
-        const endSocketTime = now + socketConnectTime;
 
         const now = Date.now();
         const endSocketTime = now + socketConnectTime;
