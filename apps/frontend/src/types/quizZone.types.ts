@@ -87,6 +87,7 @@ export interface SubmitResponse {
     fastestPlayerIds: string[];
     submittedCount: number;
     totalPlayerCount: number;
+    chatMessages: ChatMessage[];
 }
 
 export interface SomeoneSubmitResponse {

@@ -47,6 +47,7 @@ const quizZoneReducer: Reducer<QuizZone, QuizZoneAction> = (state, action) => {
                 quizCount: payload.quizCount,
                 hostId: payload.hostId,
                 currentPlayer: payload.currentPlayer,
+                chatMessages: payload.chatMessages,
                 currentQuiz:
                     payload.currentQuiz !== undefined
                         ? {
@@ -83,6 +84,7 @@ const quizZoneReducer: Reducer<QuizZone, QuizZoneAction> = (state, action) => {
                     ...state.currentPlayer,
                     state: 'SUBMIT',
                 },
+                chatMessages: payload.chatMessages,
                 currentQuizResult: {
                     fastestPlayers: payload.fastestPlayerIds
                         .map((id) => state.players?.find((p) => p.id === id))
