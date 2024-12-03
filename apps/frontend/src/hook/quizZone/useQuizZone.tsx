@@ -266,7 +266,7 @@ const useQuizZone = (
         messageHandler,
         handleFinish,
         handleReconnect,
-    );
+    });
 
     //initialize QuizZOne
     const initQuizZoneData = async () => {

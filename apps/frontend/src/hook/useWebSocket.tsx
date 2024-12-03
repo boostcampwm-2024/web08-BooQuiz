@@ -4,10 +4,15 @@ interface WebSocketConfig {
     wsUrl: string;
     messageHandler: (event: MessageEvent) => void;
     handleFinish?: () => void;
-    reconnectHandler?: () => void,
+    handleReconnect?: () => void;
 }
 
-const useWebSocket = ({ wsUrl, messageHandler, handleFinish, reconnectHandler }: WebSocketConfig) => {
+const useWebSocket = ({
+    wsUrl,
+    messageHandler,
+    handleFinish,
+    handleReconnect,
+}: WebSocketConfig) => {
     const ws = useRef<WebSocket | null>(null);
     const messageQueue = useRef<string[]>([]);
 
@@ -35,7 +40,7 @@ const useWebSocket = ({ wsUrl, messageHandler, handleFinish, reconnectHandler }:
             }
 
             if (!wasClean) {
-                reconnectHandler?.();
+                handleReconnect?.();
             }
         };
 
