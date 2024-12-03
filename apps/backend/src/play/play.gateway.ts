@@ -16,6 +16,7 @@ import { ClientInfo } from './entities/client-info.entity';
 import { WebSocketWithSession } from '../core/SessionWsAdapter';
 import { RuntimeException } from '@nestjs/core/errors/exceptions';
 import { CLOSE_CODE } from '../common/constants';
+import { SubmitResponseDto } from './dto/submit-response.dto';
 import { clearTimeout } from 'node:timers';
 import { ChatMessage } from 'src/chat/entities/chat-message.entity';
 import { ChatService } from 'src/chat/chat.service';
@@ -207,6 +208,7 @@ export class PlayGateway implements OnGatewayInit {
     ): Promise<SendEventMessage<SubmitResponseDto>> {
         const clientId = client.session.id;
         const { quizZoneId } = this.getClientInfo(clientId);
+        const chatMessages = await this.chatService.get(quizZoneId);
 
         const {
             isLastSubmit,
@@ -227,7 +229,7 @@ export class PlayGateway implements OnGatewayInit {
 
         return {
             event: 'submit',
-            data: { fastestPlayerIds, submittedCount, totalPlayerCount },
+            data: { fastestPlayerIds, submittedCount, totalPlayerCount, chatMessages },
         };
     }
 
