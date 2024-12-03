@@ -68,7 +68,7 @@ const MainPageContent = () => {
     return (
         <div className="flex flex-col justify-center items-center gap-4 min-h-[calc(100vh-4rem)]">
             <TooltipWrapper content="BooQuiz - 실시간 퀴즈 플랫폼">
-                <Logo color="#2563eb" className="max-h-40" />
+                <Logo color="#2563eb" className="lg:max-h-40 w-full" />
             </TooltipWrapper>
 
             <Typography
@@ -78,45 +78,51 @@ const MainPageContent = () => {
                 bold={true}
             />
 
-            <ContentBox className="w-4/5 md:w-[48rem] gap-2">
-                <Typography size="xl" color="blue" text="퀴즈 참여하기" bold={true} />
-
-                <TooltipWrapper
-                    content="퀴즈존 코드를 입력해주세요"
-                    side="bottom"
-                    className="w-full"
-                >
-                    <Input
-                        value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        name="입장코드"
-                        isAutoFocus={false}
-                        placeholder="입장 코드를 5자리에서 10자리 까지 작성해주세요(예:1A2B3C)"
-                        isBorder={true}
-                        height="h-14"
-                    />
-                </TooltipWrapper>
-
+            <ContentBox className="w-full md:w-[48rem] gap-2 bg-white shadow-lg">
                 <Typography
                     size="xs"
                     color="gray"
-                    text="버튼을 눌러 퀴즈존에 참여해보세요"
-                    bold={true}
+                    text="퀴즈존 코드를 입력하거나 생성하여 퀴즈를 즐겨보세요!"
                 />
-
-                <TooltipWrapper
-                    content="입력한 퀴즈존 코드로 이동합니다"
-                    side="bottom"
-                    className="w-full"
-                >
-                    <CommonButton
-                        text="퀴즈존 참여하기"
-                        isFilled={true}
-                        clickEvent={handleClickJoin}
+                <div className="w-full flex flex-row gap-2">
+                    <TooltipWrapper
+                        content="영어 대소문자, 숫자 5~10자리로 구성된 코드를 입력해주세요"
+                        side="bottom"
                         className="w-full"
-                    />
-                </TooltipWrapper>
+                    >
+                        <Input
+                            value={input}
+                            onChange={(e) => setInput(e.target.value)}
+                            name="입장코드"
+                            isAutoFocus={false}
+                            placeholder="입장 코드를 작성해주세요"
+                            height="h-10 sm:h-12"
+                            isBorder={true}
+                            className="mb-4 w-full"
+                        />
+                    </TooltipWrapper>
 
+                    <Typography
+                        size="xs"
+                        color="gray"
+                        text="버튼을 눌러 퀴즈존에 참여해보세요"
+                        bold={true}
+                    />
+
+                    <TooltipWrapper
+                        content="입력한 퀴즈존 코드로 이동합니다"
+                        side="bottom"
+                        className="max-w-24 w-full"
+                    >
+                        <CommonButton
+                            text="참여하기"
+                            isFilled={true}
+                            clickEvent={handleClickJoin}
+                            className="w-full h-10 sm:h-12"
+                        />
+                    </TooltipWrapper>
+                </div>
+                <hr className="w-full border-t border-gray-300 my-1" />
                 <TooltipWrapper
                     content="새로운 퀴즈존을 생성합니다"
                     side="bottom"
