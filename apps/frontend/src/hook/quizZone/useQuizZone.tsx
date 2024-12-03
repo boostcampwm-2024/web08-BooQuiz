@@ -237,14 +237,9 @@ const useQuizZone = (
     };
 
     const [quizZoneState, dispatch] = useReducer(quizZoneReducer, initialQuizZoneState);
-    // const [chatMessages, setChatMessages] = useReducer(chatMessagesReducer, []);
 
     const messageHandler = (event: MessageEvent) => {
         const { event: QuizZoneEvent, data } = JSON.parse(event.data);
-        // if (QuizZoneEvent === 'chat') {
-        //     setChatMessages({ type: 'chat', payload: data });
-        //     return;
-        // }
 
         dispatch({
             type: QuizZoneEvent,
