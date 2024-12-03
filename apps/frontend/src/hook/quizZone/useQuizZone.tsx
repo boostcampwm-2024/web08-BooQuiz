@@ -216,6 +216,7 @@ export const chatMessagesReducer: Reducer<ChatMessage[], chatAction> = (chatMess
 
 const useQuizZone = (
     quizZoneId: string,
+    requstInitData: (id: string) => Promise<QuizZone>,
     handleReconnect?: () => void,
 ) => {
     const initialQuizZoneState: QuizZone = {
@@ -255,9 +256,11 @@ const useQuizZone = (
     );
 
     //initialize QuizZOne
-    const initQuizZoneData = (initialData: any) => {
-        dispatch({ type: 'init', payload: initialData });
+    const initQuizZoneData = async () => {
+        const quizZone = await requstInitData(quizZoneId);
+        dispatch({ type: 'init', payload: quizZone });
         beginConnection();
+        joinQuizZone({ quizZoneId });
     };
 
     //퀴즈 시작 함수
