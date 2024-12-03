@@ -58,7 +58,7 @@ export const requestQuizZone = async (quizZoneId: string) => {
     const response = await fetch(`/api/quiz-zone/${quizZoneId}`, { method: 'GET' });
 
     if (!response.ok) {
-        throw Error(`퀴즈존 정보 조회중 오류가 발생하였습니다.`);
+        throw response;
     }
 
     return (await response.json()) as QuizZone;
