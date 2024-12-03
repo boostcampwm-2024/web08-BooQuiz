@@ -74,7 +74,7 @@ const PlayersGrid = ({ currentPlayer, players, hostId, className = '' }: Players
         <div
             role="list"
             aria-label="참가자 목록"
-            className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 content-start ${className}`}
+            className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4 content-start ${className}`}
         >
             {players.map((player) => (
                 <PlayerCard
