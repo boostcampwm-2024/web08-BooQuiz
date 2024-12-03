@@ -8,7 +8,6 @@ import { validQuizSetName, validQuizzes } from '@/utils/validators.ts';
 import { QUIZ_LIMIT_COUNT } from '@/constants/quiz-set.constants.ts';
 import Input from '@/components/common/Input';
 import ContentBox from '@/components/common/ContentBox';
-import Typography from '@/components/common/Typogrpahy';
 import CommonButton from '@/components/common/CommonButton';
 
 interface CreateQuizZoneQuizSetProps {
