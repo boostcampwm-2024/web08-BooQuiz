@@ -19,7 +19,7 @@ import { CLOSE_CODE } from '../common/constants';
 import { SubmitResponseDto } from './dto/submit-response.dto';
 import { clearTimeout } from 'node:timers';
 import { ChatMessage } from 'src/chat/entities/chat-message.entity';
-import { ChatService } from 'src/chat/chat.service';
+import { ChatService } from '../chat/chat.service'; // 경로 수정
 
 /**
  * 퀴즈 게임에 대한 WebSocket 연결을 관리하는 Gateway입니다.
