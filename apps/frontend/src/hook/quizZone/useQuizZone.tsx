@@ -24,7 +24,8 @@ export type QuizZoneAction =
     | { type: 'quizTimeout'; payload: undefined }
     | { type: 'finish'; payload: undefined }
     | { type: 'summary'; payload: QuizZoneResultState }
-    | { type: 'chat'; payload: ChatMessage };
+    | { type: 'chat'; payload: ChatMessage }
+    | { type: 'leave'; payload: undefined };
 
 export type chatAction = {
     type: 'chat';
@@ -46,6 +47,7 @@ const quizZoneReducer: Reducer<QuizZone, QuizZoneAction> = (state, action) => {
                 quizCount: payload.quizCount,
                 hostId: payload.hostId,
                 currentPlayer: payload.currentPlayer,
+                chatMessages: payload.chatMessages,
                 currentQuiz:
                     payload.currentQuiz !== undefined
                         ? {
@@ -82,6 +84,7 @@ const quizZoneReducer: Reducer<QuizZone, QuizZoneAction> = (state, action) => {
                     ...state.currentPlayer,
                     state: 'SUBMIT',
                 },
+                chatMessages: payload.chatMessages,
                 currentQuizResult: {
                     fastestPlayers: payload.fastestPlayerIds
                         .map((id) => state.players?.find((p) => p.id === id))
@@ -159,12 +162,19 @@ const quizZoneReducer: Reducer<QuizZone, QuizZoneAction> = (state, action) => {
                 submits: payload.submits,
                 quizzes: payload.quizzes,
                 ranks: payload.ranks,
+                endSocketTime: payload.endSocketTime,
             };
         case 'chat':
             return {
                 ...state,
                 chatMessages: [...(state.chatMessages || []), payload],
             };
+        case 'leave':
+            return {
+                isQuizZoneEnd: true,
+                ...state,
+            };
+
         default:
             return state;
     }
@@ -214,7 +224,7 @@ export const chatMessagesReducer: Reducer<ChatMessage[], chatAction> = (chatMess
  * @returns {Function} .playQuiz - 퀴즈 상태를 플레이 모드로 변경하는 함수
  */
 
-const useQuizZone = () => {
+const useQuizZone = (quizZoneId: string, handleReconnect?: () => void) => {
     const initialQuizZoneState: QuizZone = {
         stage: 'LOBBY',
         currentPlayer: {
@@ -234,14 +244,9 @@ const useQuizZone = () => {
     };
 
     const [quizZoneState, dispatch] = useReducer(quizZoneReducer, initialQuizZoneState);
-    // const [chatMessages, setChatMessages] = useReducer(chatMessagesReducer, []);
 
     const messageHandler = (event: MessageEvent) => {
         const { event: QuizZoneEvent, data } = JSON.parse(event.data);
-        // if (QuizZoneEvent === 'chat') {
-        //     setChatMessages({ type: 'chat', payload: data });
-        //     return;
-        // }
 
         dispatch({
             type: QuizZoneEvent,
@@ -249,13 +254,23 @@ const useQuizZone = () => {
         });
     };
 
+    const handleFinish = () => {
+        dispatch({ type: 'leave', payload: undefined });
+    };
+
     const wsUrl = `${import.meta.env.VITE_WS_URL}/play`;
-    const { beginConnection, sendMessage, closeConnection } = useWebSocket(wsUrl, messageHandler);
+    const { beginConnection, sendMessage, closeConnection } = useWebSocket({
+        wsUrl,
+        messageHandler,
+        handleFinish,
+        handleReconnect,
+    });
 
     //initialize QuizZOne
-    const initQuizZoneData = (initialData: any) => {
-        dispatch({ type: 'init', payload: initialData });
+    const initQuizZoneData = async (quizZone: QuizZone) => {
+        dispatch({ type: 'init', payload: quizZone });
         beginConnection();
+        joinQuizZone({ quizZoneId });
     };
 
     //퀴즈 시작 함수

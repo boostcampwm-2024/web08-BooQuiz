@@ -1,4 +1,4 @@
-import { QuizSet } from '@/types/quizZone.types.ts';
+import { QuizSet, QuizZone } from '@/types/quizZone.types.ts';
 import { CreateQuizZone, ResponseSearchQuizSets } from '@/types/create-quiz-zone.types.ts';
 
 export const requestCreateQuizZone = async (quizZone: CreateQuizZone) => {
@@ -53,4 +53,13 @@ export const requestSearchQuizSets = async (params: Record<string, string>) => {
         totalQuizSetCount: total,
         currentPage: currentPage,
     };
+};
+export const requestQuizZone = async (quizZoneId: string) => {
+    const response = await fetch(`/api/quiz-zone/${quizZoneId}`, { method: 'GET' });
+
+    if (!response.ok) {
+        throw response;
+    }
+
+    return (await response.json()) as QuizZone;
 };

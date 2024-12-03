@@ -7,6 +7,7 @@ import { Quiz } from './entities/quiz.entity';
 import { PLAYER_STATE, QUIZ_TYPE, QUIZ_ZONE_STAGE } from '../common/constants';
 import { QuizService } from '../quiz/quiz.service';
 import { max } from 'class-validator';
+import { ChatService } from '../chat/chat.service';
 
 const nickNames: string[] = [
     '전설의고양이',
@@ -66,6 +67,7 @@ describe('QuizZoneService', () => {
     let service: QuizZoneService;
     let repository: IQuizZoneRepository;
     let quizService: QuizService;
+    let chatService: ChatService;
     const mockQuizZoneRepository = {
         set: jest.fn(),
         get: jest.fn(),
@@ -81,6 +83,14 @@ describe('QuizZoneService', () => {
         findQuizSet: jest.fn(),
         findQuiz: jest.fn(),
     };
+
+    const mockChatService = {
+        get: jest.fn(),
+        add: jest.fn(),
+        has: jest.fn(),
+        delete: jest.fn(),
+    };
+
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
             providers: [
@@ -93,12 +103,17 @@ describe('QuizZoneService', () => {
                     provide: QuizService,
                     useValue: mockQuizService,
                 },
+                {
+                    provide: ChatService,
+                    useValue: mockChatService,
+                },
             ],
         }).compile();
 
         service = module.get<QuizZoneService>(QuizZoneService);
         repository = module.get<IQuizZoneRepository>('QuizZoneRepository');
         quizService = module.get<QuizService>(QuizService);
+        chatService = module.get<ChatService>(ChatService); // chatService 추가
     });
 
     afterEach(() => {

@@ -60,7 +60,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
                     onConfirm={this.resetError}
                     title={errorMessage.title}
                     description={errorMessage.description}
-                    confirmText="다시 시도"
+                    confirmText="확인"
                 />
             );
         }
