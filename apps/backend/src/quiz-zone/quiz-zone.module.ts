@@ -4,10 +4,11 @@ import { QuizZoneController } from './quiz-zone.controller';
 import { QuizZoneRepositoryMemory } from './repository/quiz-zone.memory.repository';
 import { QuizService } from '../quiz/quiz.service';
 import { QuizModule } from '../quiz/quiz.module';
+import { ChatModule } from 'src/chat/chat.module';
 
 @Module({
     controllers: [QuizZoneController],
-    imports: [QuizModule],
+    imports: [QuizModule, ChatModule],
     providers: [
         QuizZoneService,
         {
