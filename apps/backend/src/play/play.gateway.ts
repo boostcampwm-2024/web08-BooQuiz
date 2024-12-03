@@ -266,6 +266,7 @@ export class PlayGateway implements OnGatewayInit {
                 this.clearClient(id, 'finish');
             });
             this.playService.clearQuizZone(quizZoneId);
+            this.chatService.delete(quizZoneId);
         }, endSocketTime - Date.now());
     }
 
