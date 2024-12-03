@@ -60,16 +60,16 @@ const CreateQuizZoneBasic = ({
     // 유효성 검사 결과를 메모이제이션
     const validationError = useMemo(() => {
         return (
+            validateQuizZoneSetCode(quizZoneId) ||
             validateQuizZoneSetName(title) ||
             validateQuizZoneSetDescription(description) ||
-            validateQuizZoneSetCode(quizZoneId) ||
             validateQuizZoneSetLimit(limitPlayerCount)
         );
     }, [title, description, quizZoneId, limitPlayerCount]);
 
     return (
-        <div className="xs:max-w-xs max-w-md flex flex-col gap-2">
-            <ContentBox className="gap-2 w-full">
+        <div className="sm:max-w-sm max-w-md w-full flex flex-col gap-2">
+            <ContentBox className="gap-2 w-full bg-white shadow-md">
                 <Typography text="퀴즈존 기본 정보" size="2xl" color="black" bold={true} />
                 <div className="flex flex-row gap-2 w-full">
                     <Input
@@ -79,8 +79,14 @@ const CreateQuizZoneBasic = ({
                         value={quizZoneId}
                         onChange={(e) => handleChangeQuizZoneBasic(e, 'QUIZ_ZONE_ID')}
                         isBorder={true}
-                        className="rounded-md"
+                        className="rounded-md w-full"
                         placeholder="퀴즈존 코드를 입력하세요"
+                        error={
+                            validationError == '퀴즈존 입장 코드를 5자 이상 입력해주세요.' ||
+                            validationError == '퀴즈존 입장 코드는 10자 이하로 입력해주세요.'
+                                ? validationError
+                                : ''
+                        }
                     />
                     <Input
                         type="number"
@@ -92,6 +98,7 @@ const CreateQuizZoneBasic = ({
                         value={limitPlayerCount}
                         onChange={(e) => handleChangeQuizZoneBasic(e, 'LIMIT')}
                         isBorder={true}
+                        className="w-20"
                     />
                 </div>
                 <Input
@@ -102,6 +109,12 @@ const CreateQuizZoneBasic = ({
                     onChange={(e) => handleChangeQuizZoneBasic(e, 'TITLE')}
                     isBorder={true}
                     placeholder="퀴즈존 제목을 입력하세요"
+                    error={
+                        validationError == '퀴즈존 제목은 100자 이하로 입력해주세요.' ||
+                        validationError == '퀴즈존 제목을 입력해주세요.'
+                            ? validationError
+                            : ''
+                    }
                 />
 
                 <Input
@@ -112,9 +125,14 @@ const CreateQuizZoneBasic = ({
                     onChange={(e) => handleChangeQuizZoneBasic(e, 'DESC')}
                     isBorder={true}
                     placeholder="퀴즈존 설명을 입력하세요"
+                    error={
+                        validationError == '퀴즈존 설명은 500자 이하로 입력해주세요.'
+                            ? validationError
+                            : ''
+                    }
                 />
             </ContentBox>
-            <ContentBox className="gap-2 w-full">
+            <ContentBox className="gap-2 w-full bg-white shadow-md">
                 <div className="w-full flex flex-row justify-between items-center">
                     <Typography text="퀴즈셋" size="2xl" color="black" bold={true} />
                     <Button
@@ -151,13 +169,12 @@ const CreateQuizZoneBasic = ({
                 <SearchQuizSet selectQuizSet={selectQuizSet} />
             </ContentBox>
             <CommonButton
-                className="min-w-10"
+                className="min-w-10 "
                 clickEvent={() => createQuizZone()}
                 disabled={!!validationError}
             >
                 퀴즈존 만들기
             </CommonButton>
-            <Typography text={validationError ?? ''} color="red" size="xs" />
         </div>
     );
 };
