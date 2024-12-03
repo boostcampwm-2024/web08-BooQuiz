@@ -17,12 +17,13 @@ const TooltipWrapper = ({
     side = 'top',
     align = 'center',
     type = undefined,
+    className = '',
 }: TooltipWrapperProps) => {
     return (
         <TooltipProvider>
             <Tooltip delayDuration={delayDuration}>
                 <TooltipTrigger asChild type={type}>
-                    <div>{children}</div>
+                    <div className={className}>{children}</div>
                 </TooltipTrigger>
                 <TooltipContent
                     side={side}

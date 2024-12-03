@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { QuizController } from './quiz.controller';
 import { QuizService } from './quiz.service';
-import { CreateQuizRequestDto } from './dto/create-quiz-request.dto';
+import { CreateQuizSetRequestDto } from './dto/create-quiz-set-request.dto';
 import { NotFoundException } from '@nestjs/common';
 import { QuizSetController } from './quiz-set.controller';
 import { QUIZ_TYPE } from '../common/constants';
@@ -46,7 +46,7 @@ describe('QuizController', () => {
                             quizType: QUIZ_TYPE.SHORT_ANSWER,
                         },
                     ]
-            } as CreateQuizRequestDto;
+            } as CreateQuizSetRequestDto;
 
             // when
             await quizSetController.createQuizSet(dto);

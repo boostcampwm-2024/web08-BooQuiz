@@ -1,8 +1,11 @@
 import ContentBox from '@/components/common/ContentBox';
 import CustomAlert from '@/components/common/CustomAlert';
+import CustomAlertDialog from '@/components/common/CustomAlertDialog';
 import Typography from '@/components/common/Typogrpahy';
+import { useTimer } from '@/hook/useTimer';
 import { QuizZone } from '@/types/quizZone.types';
 import atob from '@/utils/atob';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 interface QuizZoneResultProps {
@@ -20,6 +23,24 @@ interface QuizResult {
 
 const QuizZoneResult = ({ quizZoneState }: QuizZoneResultProps) => {
     const navigate = useNavigate();
+    const { endSocketTime } = quizZoneState;
+    const [isHomeAlertOpen, setIsHomeAlertOpen] = useState(false);
+    const currentTime = new Date().getTime();
+    const remainingTime = Math.max(0, ((endSocketTime ?? 0) - currentTime) / 1000);
+
+    const { start, time } = useTimer({
+        initialTime: remainingTime,
+        onComplete: () => {
+            setIsHomeAlertOpen(true);
+        },
+    });
+    useEffect(() => {
+        start();
+    }, []);
+
+    const handleCloseAlert = () => {
+        setIsHomeAlertOpen(false);
+    };
 
     const quizResults: QuizResult[] = (quizZoneState.quizzes ?? []).map((quiz, index) => {
         const submission = quizZoneState.submits?.[index];
@@ -39,14 +60,13 @@ const QuizZoneResult = ({ quizZoneState }: QuizZoneResultProps) => {
         totalCorrect: quizResults.filter((r) => r.isCorrect).length,
         currentPlayerRank:
             quizZoneState.ranks?.find((r) => r.id === quizZoneState.currentPlayer.id)?.ranking ?? 0,
-
         totalQuestions: quizResults.length,
     };
 
     return (
         <div className="w-full h-full flex flex-col items-center justify-center gap-4">
             {/* 상단 요약 정보 */}
-            <ContentBox className="w-full h-full p-6">
+            <ContentBox className="w-full h-full p-6 bg-white shadow-lg">
                 <div className="w-full flex flex-col items-center gap-4">
                     <Typography size="lg" color="blue" text="퀴즈 결과" bold={true} />
                     <div className="flex items-baseline gap-2">
@@ -84,18 +104,24 @@ const QuizZoneResult = ({ quizZoneState }: QuizZoneResultProps) => {
                         </div>
                     </div>
                 </div>
+
+                <Typography
+                    size="base"
+                    color="blue"
+                    text={`퀴즈존이 ${time.toFixed(0)}초 후에 종료됩니다.`}
+                    bold={true}
+                />
             </ContentBox>
 
-            {/* 문제별 결과 */}
             {quizResults.length > 0 && (
-                <ContentBox className="w-full p-6 gap-2">
+                <ContentBox className="w-full p-6 gap-2 bg-white shadow-lg">
                     <Typography size="lg" color="black" text="문제별 결과" bold={true} />
                     <div className="max-h-[400px] overflow-y-auto pr-2 space-y-3 w-full">
                         {quizResults.map((result, index) => (
                             <ContentBox
                                 key={index}
                                 className={`border-l-4 ${
-                                    result.isCorrect ? 'border-l-blue-500' : 'border-l-red-500'
+                                    result.isCorrect ? 'border-l-[#2563eb]' : 'border-l-red-500'
                                 } bg-gray-50`}
                             >
                                 <div className="flex flex-col gap-2">
@@ -113,12 +139,7 @@ const QuizZoneResult = ({ quizZoneState }: QuizZoneResultProps) => {
                                             bold={true}
                                         />
                                     </div>
-                                    <Typography
-                                        size="sm"
-                                        color="black"
-                                        text={result.question}
-                                        // className="break-all"
-                                    />
+                                    <Typography size="sm" color="black" text={result.question} />
                                     <div className="grid grid-cols-2 gap-x-4 gap-y-2 mt-2">
                                         <div>
                                             <Typography size="xs" color="gray" text="제출한 답안" />
@@ -126,7 +147,6 @@ const QuizZoneResult = ({ quizZoneState }: QuizZoneResultProps) => {
                                                 size="sm"
                                                 color={result.isCorrect ? 'blue' : 'red'}
                                                 text={result.userAnswer}
-                                                // className="break-all"
                                             />
                                         </div>
                                         <div>
@@ -135,7 +155,6 @@ const QuizZoneResult = ({ quizZoneState }: QuizZoneResultProps) => {
                                                 size="sm"
                                                 color="blue"
                                                 text={result.correctAnswer}
-                                                // className="break-all"
                                             />
                                         </div>
                                         {result.submitRank !== null && (
@@ -160,7 +179,6 @@ const QuizZoneResult = ({ quizZoneState }: QuizZoneResultProps) => {
                 </ContentBox>
             )}
 
-            {/* 나가기 버튼 */}
             <CustomAlert
                 trigger={{
                     text: '나가기',
@@ -174,6 +192,16 @@ const QuizZoneResult = ({ quizZoneState }: QuizZoneResultProps) => {
                 onConfirm={() => navigate('/')}
                 onCancel={() => {}}
                 className="w-4/5 md:w-[40rem]"
+            />
+
+            <CustomAlertDialog
+                showError={isHomeAlertOpen}
+                setShowError={setIsHomeAlertOpen}
+                title="퀴즈존이 종료되었습니다, 메인페이지로 이동하시겠습니까?"
+                cancelText="결과 확인하기"
+                confirmText="확인"
+                onConfirm={() => navigate('/')}
+                onCancel={handleCloseAlert}
             />
         </div>
     );

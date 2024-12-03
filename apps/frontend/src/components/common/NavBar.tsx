@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import TooltipWrapper from './TooltipWrapper';
 import { useNavigate } from 'react-router-dom';
+import Logo from './Logo';
 
 const Navbar = () => {
     const navigate = useNavigate();
@@ -11,10 +12,10 @@ const Navbar = () => {
                     <TooltipWrapper content="홈으로 이동">
                         <Button
                             variant="ghost"
-                            className="text-xl font-bold"
+                            className="text-xl font-bold p-0"
                             onClick={() => navigate('/')}
                         >
-                            <img className="w-[6rem]" src="/BooQuizLogo.png" alt="BooQuiz Logo" />
+                            <Logo className="min-w-32" color="#2563eb" />
                         </Button>
                     </TooltipWrapper>
                 </div>

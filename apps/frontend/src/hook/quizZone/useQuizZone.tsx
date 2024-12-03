@@ -24,7 +24,8 @@ export type QuizZoneAction =
     | { type: 'quizTimeout'; payload: undefined }
     | { type: 'finish'; payload: undefined }
     | { type: 'summary'; payload: QuizZoneResultState }
-    | { type: 'chat'; payload: ChatMessage };
+    | { type: 'chat'; payload: ChatMessage }
+    | { type: 'leave'; payload: undefined };
 
 export type chatAction = {
     type: 'chat';
@@ -159,12 +160,19 @@ const quizZoneReducer: Reducer<QuizZone, QuizZoneAction> = (state, action) => {
                 submits: payload.submits,
                 quizzes: payload.quizzes,
                 ranks: payload.ranks,
+                endSocketTime: payload.endSocketTime,
             };
         case 'chat':
             return {
                 ...state,
                 chatMessages: [...(state.chatMessages || []), payload],
             };
+        case 'leave':
+            return {
+                isQuizZoneEnd: true,
+                ...state,
+            };
+
         default:
             return state;
     }
@@ -248,10 +256,15 @@ const useQuizZone = (
         });
     };
 
+    const handleFinish = () => {
+        dispatch({ type: 'leave', payload: undefined });
+    };
+
     const wsUrl = `${import.meta.env.VITE_WS_URL}/play`;
-    const { beginConnection, sendMessage, closeConnection } = useWebSocket(
+    const { beginConnection, sendMessage, closeConnection } = useWebSocket({
         wsUrl,
         messageHandler,
+        handleFinish,
         handleReconnect,
     );
 
