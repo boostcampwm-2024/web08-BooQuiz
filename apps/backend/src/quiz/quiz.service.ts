@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { CreateQuizRequestDto } from './dto/create-quiz-request.dto';
+import { CreateQuizSetRequestDto } from './dto/create-quiz-set-request.dto';
 import { QuizRepository } from './repository/quiz.repository';
 import { QuizSetRepository } from './repository/quiz-set.repository';
 import { UpdateQuizRequestDto } from './dto/update-quiz-request.dto';
@@ -16,7 +16,7 @@ export class QuizService {
     ) {}
 
     @Transactional()
-    async createQuizzes(createQuizDto: CreateQuizRequestDto) {
+    async createQuizzes(createQuizDto: CreateQuizSetRequestDto) {
         const quizSet = await this.quizSetRepository.save({
             name: createQuizDto.quizSetName,
             recommended: createQuizDto.recommended,
@@ -79,11 +79,25 @@ export class QuizService {
 
     async searchQuizSet(searchQuery: SearchQuizSetRequestDTO) {
         const { name, page, size } = searchQuery;
+
+        if (!name) {
+            return this.findDefaultQuizSet(page, size);
+        }
+
         const [quizSets, count] = await Promise.all([
             this.quizSetRepository.searchByName(name, page, size),
             this.quizSetRepository.countByName(name),
         ]);
 
+        const quizSetDetails = quizSets.map(QuizSetDetails.from);
+        return { quizSetDetails, total: count, currentPage: page };
+    }
+
+    private async findDefaultQuizSet(page: number, size: number) {
+        const [quizSets, count] = await Promise.all([
+            this.quizSetRepository.findByRecommend(page, size),
+            this.quizSetRepository.countByRecommend(),
+        ]);
         const quizSetDetails = quizSets.map(QuizSetDetails.from);
         return { quizSetDetails, total: count, currentPage: page };
     }

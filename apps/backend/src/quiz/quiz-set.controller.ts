@@ -3,7 +3,7 @@ import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query
 import { QuizService } from './quiz.service';
 import { SearchQuizSetResponseDTO } from './dto/search-quiz-set-response.dto';
 import { SearchQuizSetRequestDTO } from './dto/search-quiz-set-request.dto';
-import { CreateQuizRequestDto } from './dto/create-quiz-request.dto';
+import { CreateQuizSetRequestDto } from './dto/create-quiz-set-request.dto';
 import { FindQuizzesResponseDto } from './dto/find-quizzes-response.dto';
 
 @ApiTags('Quiz')
@@ -31,9 +31,9 @@ export class QuizSetController {
     @ApiResponse({ status: HttpStatus.CREATED, description: '퀴즈셋이 성공적으로 생성되었습니다.' })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: '요청 데이터가 유효하지 않습니다' })
     async createQuizSet(
-        @Body() createQuizDto: CreateQuizRequestDto
+        @Body() createSetQuizDto: CreateQuizSetRequestDto
     ) {
-        return this.quizService.createQuizzes(createQuizDto);
+        return this.quizService.createQuizzes(createSetQuizDto);
     }
 
     @Get(':quizSetId')
@@ -59,6 +59,6 @@ export class QuizSetController {
     })
     @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: '해당 퀴즈셋의 id가 없습니다.' })
     async deleteQuizSet(@Param('quizSetId') quizSetId: number): Promise<void> {
-        this.quizService.deleteQuizSet(quizSetId);
+        return this.quizService.deleteQuizSet(quizSetId);
     }
 }

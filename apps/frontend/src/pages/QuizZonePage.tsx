@@ -1,4 +1,5 @@
 import QuizZoneInProgress from '@/blocks/QuizZone/QuizZoneInProgress';
+import QuizZoneLoading from '@/blocks/QuizZone/QuizZoneLoading';
 import QuizZoneLobby from '@/blocks/QuizZone/QuizZoneLobby';
 import QuizZoneResult from '@/blocks/QuizZone/QuizZoneResult';
 import { AsyncBoundary } from '@/components/boundary/AsyncBoundary';
@@ -80,6 +81,10 @@ const QuizZoneContent = () => {
                     />
                 );
             case 'RESULT':
+                // endSocketTime이 Null이면 로딩 중
+                if (!quizZoneState.endSocketTime) {
+                    return <QuizZoneLoading />;
+                }
                 return <QuizZoneResult quizZoneState={quizZoneState} />;
             default:
                 return null;
@@ -99,6 +104,7 @@ const QuizZoneContent = () => {
                         nickname={quizZoneState.currentPlayer.nickname}
                         sendHandler={sendChat}
                         className="lg:h-[80vh] lg:max-h-[80vh] max-h-[60vh] flex flex-col w-full lg:w-[24rem]"
+                        disabled={quizZoneState.isQuizZoneEnd ?? false}
                     />
                 )}
             </div>
