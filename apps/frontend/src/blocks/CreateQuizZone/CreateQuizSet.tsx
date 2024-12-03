@@ -75,6 +75,8 @@ const CreateQuizSet = ({ handlePrevStepButton, updateQuizSet }: CreateQuizZoneQu
                     name="quiz-zone-id"
                     isBorder={true}
                     error={validNameMessage}
+                    isShowCount={true}
+                    max={100}
                 />
                 {/* {validNameMessage && <Typography text={validNameMessage} size="xs" color="red" />} */}
                 <CandidateQuizzes quizzes={quizzes} removeQuiz={removeQuiz} />
