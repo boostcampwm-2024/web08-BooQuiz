@@ -1,10 +1,4 @@
-import {
-    BadRequestException,
-    ConflictException,
-    Inject,
-    Injectable,
-    NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { Quiz } from './entities/quiz.entity';
 import { Player } from './entities/player.entity';
 import { QuizZone } from './entities/quiz-zone.entity';
@@ -13,6 +7,7 @@ import { getRandomNickName, PLAYER_STATE, QUIZ_ZONE_STAGE } from '../common/cons
 import { FindQuizZoneDto } from './dto/find-quiz-zone.dto';
 import { CreateQuizZoneDto } from './dto/create-quiz-zone.dto';
 import { QuizService } from '../quiz/quiz.service';
+import { Host } from './entities/host.entity';
 
 const INTERVAL_TIME = 5000;
 
@@ -41,13 +36,11 @@ export class QuizZoneService {
             throw new ConflictException('이미 존재하는 퀴즈존입니다.');
         }
 
-        const player: Player = {
+        const host: Host = {
             id: hostId,
             nickname: getRandomNickName(),
-            score: 0,
-            submits: [],
-            state: PLAYER_STATE.WAIT,
-        };
+            state: PLAYER_STATE.WAIT
+        }
 
         const quizzes: Quiz[] = (await this.quizService.getQuizzes(quizSetId)).map((quiz) => ({
             question: Buffer.from(quiz.question).toString('base64'),
@@ -57,10 +50,10 @@ export class QuizZoneService {
         }));
 
         const quizZone: QuizZone = {
-            players: new Map<string, Player>([[hostId, player]]),
+            players: new Map<string, Player>([]),
             title,
             description,
-            hostId: hostId,
+            host: host,
             maxPlayers: limitPlayerCount,
             quizzes,
             stage: QUIZ_ZONE_STAGE.LOBBY,
@@ -115,8 +108,22 @@ export class QuizZoneService {
     }
 
     private async getLobbyInfo(clinetId: string, quizZoneId: string): Promise<FindQuizZoneDto> {
-        const { players, title, description, quizzes, stage, hostId, maxPlayers } =
+        const { players, title, description, quizzes, stage, host, maxPlayers } =
             await this.findOne(quizZoneId);
+        //TODO: 리팩토링 필요
+        if(host.id === clinetId) {
+            const {id, nickname, state} = host;
+            return {
+                currentPlayer: { id, nickname, state },
+                title: title,
+                description: description,
+                quizCount: quizzes.length,
+                maxPlayers: maxPlayers,
+                stage: stage,
+                hostId: host.id,
+            };
+        }
+
         const { id, nickname, state } = players.get(clinetId);
 
         return {
@@ -126,7 +133,7 @@ export class QuizZoneService {
             quizCount: quizzes.length,
             maxPlayers: maxPlayers,
             stage: stage,
-            hostId: hostId,
+            hostId: host.id,
         };
     }
 
@@ -138,11 +145,37 @@ export class QuizZoneService {
             currentQuizIndex,
             currentQuizStartTime,
             currentQuizDeadlineTime,
-            hostId,
+            host,
             title,
             description,
             quizzes,
         } = await this.findOne(quizZoneId);
+
+        if(host.id === clientId) {
+            const {id, nickname, state} = host;
+
+            const submittedPlayers = [...players.values()].filter(player => player.state === PLAYER_STATE.SUBMIT);
+
+            return {
+                currentPlayer: { id, nickname, state },
+                title,
+                description,
+                quizCount: quizzes.length,
+                stage,
+                maxPlayers: maxPlayers,
+                hostId: host.id,
+                currentQuiz: {
+                    currentIndex: currentQuizIndex,
+                    startTime: currentQuizStartTime,
+                    deadlineTime: currentQuizDeadlineTime,
+                    playTime: quizzes[currentQuizIndex].playTime,
+                    question: quizzes[currentQuizIndex].question,
+                    stage: stage,
+                },
+                submittedPlayers
+            }
+        }
+
         const { id, nickname, state } = players.get(clientId);
 
         return {
@@ -152,7 +185,7 @@ export class QuizZoneService {
             quizCount: quizzes.length,
             stage,
             maxPlayers: maxPlayers,
-            hostId: hostId,
+            hostId: host.id,
             currentQuiz: {
                 currentIndex: currentQuizIndex,
                 startTime: currentQuizStartTime,
@@ -165,8 +198,22 @@ export class QuizZoneService {
     }
 
     private async getResultInfo(clientId: string, quizZoneId: string): Promise<FindQuizZoneDto> {
-        const { players, stage, title, description, hostId, quizzes, maxPlayers } =
+        const { players, stage, title, description, host, quizzes, maxPlayers } =
             await this.findOne(quizZoneId);
+
+        if(host.id === clientId) {
+            const {id, nickname, state} = host;
+            return {
+                currentPlayer: { id, nickname, state },
+                title,
+                description,
+                maxPlayers: maxPlayers,
+                quizCount: quizzes.length,
+                stage: stage,
+                hostId: host.id,
+            };
+        }
+
         const { id, nickname, state, submits, score } = players.get(clientId);
 
         return {
@@ -176,16 +223,16 @@ export class QuizZoneService {
             maxPlayers: maxPlayers,
             quizCount: quizzes.length,
             stage: stage,
-            hostId,
+            hostId: host.id,
         };
     }
 
     private async setPlayerInfo(clientId: string, quizZoneId: string) {
-        const { players, maxPlayers } = await this.findOne(quizZoneId);
+        const { players, maxPlayers, host } = await this.findOne(quizZoneId);
         const playerCount = players.size;
 
         // 이미 참가한 플레이어인 경우 그냥 리턴
-        if (players.has(clientId)) {
+        if (players.has(clientId) || host.id === clientId) {
             return;
         }
 
@@ -204,7 +251,11 @@ export class QuizZoneService {
     }
 
     private async checkValidPlayer(clientId: string, quizZoneId: string) {
-        const { players } = await this.findOne(quizZoneId);
+        const { players, host } = await this.findOne(quizZoneId);
+
+        if(host.id === clientId) {
+            return;
+        }
 
         if (!players.has(clientId)) {
             throw new BadRequestException('참가하지 않은 플레이어입니다.');
@@ -249,6 +300,12 @@ export class QuizZoneService {
 
     private async leave(quizZoneId: string, clientId: any) {
         const quizZone = await this.findOne(quizZoneId);
+        if(clientId === quizZone.host.id) {
+            if(quizZone.stage === QUIZ_ZONE_STAGE.LOBBY) {
+                await this.repository.delete(quizZoneId);
+                return;
+            }
+        }
         quizZone.players.delete(clientId);
     }
 

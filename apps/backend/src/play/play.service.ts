@@ -16,7 +16,6 @@ import { RuntimeException } from '@nestjs/core/errors/exceptions';
 import { clearTimeout } from 'node:timers';
 import { Player } from '../quiz-zone/entities/player.entity';
 import { CurrentQuizResultDto } from './dto/current-quiz-result.dto';
-import { Quiz } from '../quiz-zone/entities/quiz.entity';
 
 @Injectable()
 export class PlayService {
@@ -27,23 +26,31 @@ export class PlayService {
     ) {}
 
     async joinQuizZone(quizZoneId: string, sessionId: string) {
-        const { players } = await this.quizZoneService.findOne(quizZoneId);
 
-        if (!players.has(sessionId)) {
+        const { players, host } = await this.quizZoneService.findOne(quizZoneId);
+
+        if (!players.has(sessionId) && host.id !== sessionId) {
             throw new NotFoundException('참여하지 않은 사용자입니다.');
+        }
+
+        if (host.id === sessionId) {
+            return {
+                currentPlayer: host,
+                players: [...players.values(), host]
+            }
         }
 
         return {
             currentPlayer: players.get(sessionId),
-            players: [...players.values()],
+            players: [...players.values(), host],
         };
     }
 
     async startQuizZone(quizZoneId: string, clientId: string) {
         const quizZone = await this.quizZoneService.findOne(quizZoneId);
-        const { hostId, stage, players } = quizZone;
+        const { host, stage, players } = quizZone;
 
-        if (hostId !== clientId) {
+        if (host.id !== clientId) {
             throw new UnauthorizedException('방장만 퀴즈를 시작할 수 있습니다.');
         }
 
@@ -56,7 +63,7 @@ export class PlayService {
             stage: QUIZ_ZONE_STAGE.IN_PROGRESS,
         });
 
-        return [...players.values()].map((player) => player.id);
+        return [...players.values(), host].map((player) => player.id);
     }
 
     /**
@@ -69,10 +76,10 @@ export class PlayService {
      */
     async playNextQuiz(quizZoneId: string, timeoutHandle: Function) {
         const quizZone = await this.quizZoneService.findOne(quizZoneId);
-        const { players, intervalTime } = quizZone;
+        const { players, intervalTime, host } = quizZone;
 
         const currentQuizResult = this.getCurrentQuizResult(quizZone);
-
+        host.state = PLAYER_STATE.PLAY;
         const nextQuiz = await this.nextQuiz(quizZoneId);
 
         await this.quizZoneService.updateQuizZone(quizZoneId, {
@@ -105,7 +112,7 @@ export class PlayService {
 
         return {
             nextQuiz,
-            playerIds: [...players.values()].map((player) => player.id),
+            playerIds: [...players.values(), host].map((player) => player.id),
             currentQuizResult,
         };
     }
@@ -162,7 +169,8 @@ export class PlayService {
     async finishQuizZone(quizZoneId: string) {
         const quizZone = await this.quizZoneService.findOne(quizZoneId);
         quizZone.stage = QUIZ_ZONE_STAGE.RESULT;
-        return [...quizZone.players.values()].map((player) => player.id);
+        const {players, host} = quizZone;
+        return [...players.values(), host].map((player) => player.id);
     }
 
     /**
@@ -195,7 +203,7 @@ export class PlayService {
      */
     async submit(quizZoneId: string, clientId: string, submittedQuiz: SubmittedQuiz) {
         const quizZone = await this.quizZoneService.findOne(quizZoneId);
-        const { stage, players } = quizZone;
+        const { stage, players, host } = quizZone;
 
         if (stage !== QUIZ_ZONE_STAGE.IN_PROGRESS) {
             throw new BadRequestException('퀴즈를 제출할 수 없습니다.');
@@ -229,9 +237,9 @@ export class PlayService {
             fastestPlayerIds,
             submittedCount: submittedPlayers.length,
             totalPlayerCount: players.size,
-            otherSubmittedPlayerIds: submittedPlayers
+            otherSubmittedPlayerIds: [...submittedPlayers
                 .filter((player) => player.id !== clientId)
-                .map(({ id }) => id),
+                .map(({ id }) => id), host.id]
         };
     }
 
@@ -292,7 +300,7 @@ export class PlayService {
      */
     async summaryQuizZone(quizZoneId: string) {
         const quizZone = await this.quizZoneService.findOne(quizZoneId);
-        const { players, quizzes } = quizZone;
+        const { players, quizzes, host} = quizZone;
 
         this.clearQuizZoneHandle(quizZoneId);
 
@@ -302,13 +310,15 @@ export class PlayService {
             quizzes.map((quiz) => quiz.answer),
         );
 
-        return [...players.values()].map(({ id, score, submits }) => ({
+        const summaries = [...players.values()].map(({ id, score, submits }) => ({
             id,
             score,
             submits,
             quizzes,
             ranks,
         }));
+
+        return { summaries, host };
     }
 
     private calculateQuizRanks(
@@ -423,9 +433,9 @@ export class PlayService {
 
     async leaveQuizZone(quizZoneId: string, clientId: string) {
         const quizZone = await this.quizZoneService.findOne(quizZoneId);
-        const { stage, hostId, players } = quizZone;
+        const { stage, host, players } = quizZone;
 
-        const isHost = hostId === clientId;
+        const isHost = host.id === clientId;
 
         if (stage !== QUIZ_ZONE_STAGE.LOBBY) {
             throw new BadRequestException('게임이 진행중입니다.');
@@ -439,21 +449,21 @@ export class PlayService {
 
         return {
             isHost,
-            playerIds: [...players.values()].map((player) => player.id),
+            playerIds: [...players.values(), host].map((player) => player.id),
         };
     }
 
     async chatQuizZone(clientId: string, quizZoneId: string) {
         const quizZone = await this.quizZoneService.findOne(quizZoneId);
-        const { players } = quizZone;
+        const { players, host } = quizZone;
 
-        if (players.get(clientId).state === PLAYER_STATE.PLAY) {
+        if (host.id !== clientId && players.get(clientId)?.state === PLAYER_STATE.PLAY) {
             throw new BadRequestException('채팅을 제출한 플레이어 상태가 PLAY입니다.');
         }
 
-        return [...players.values()]
+        return [...[...players.values()]
             .filter((player) => player.state !== PLAYER_STATE.PLAY)
-            .map((player) => player.id);
+            .map((player) => player.id), host.id];
     }
 
     private setQuizZoneHandle(quizZoneId: string, handle: Function, time: number) {
@@ -472,13 +482,13 @@ export class PlayService {
 
     async changeNickname(quizZoneId: string, clientId: string, changedNickname: string) {
         const quizZone = await this.quizZoneService.findOne(quizZoneId);
-        const { players } = quizZone;
+        const { players, host } = quizZone;
 
-        if (!players.has(clientId)) {
+        if (host.id !== clientId && !players.has(clientId)) {
             throw new NotFoundException('사용자 정보를 찾을 수 없습니다.');
         }
 
-        const player = players.get(clientId);
+        const player = players.get(clientId) || host;
 
         if (player.state !== PLAYER_STATE.WAIT || quizZone.stage !== QUIZ_ZONE_STAGE.LOBBY) {
             throw new BadRequestException('현재 닉네임을 변경할 수 없습니다.');
@@ -487,7 +497,26 @@ export class PlayService {
         player.nickname = changedNickname;
 
         return {
-            playerIds: [...players.values()].map((player) => player.id),
+            playerIds: [host, ...players.values()].map((player) => player.id),
         };
+    }
+
+    async notice(clientId: string, quizZoneId: string) {
+        const quizZone = await this.quizZoneService.findOne(quizZoneId);
+        const { players, host } = quizZone;
+        const isHost = true;
+
+        if(host.id !== clientId) {
+            throw new BadRequestException();
+        }
+
+        const playerIds = [...[...players.values()]
+            .filter((player) => player.state !== PLAYER_STATE.PLAY)
+            .map((player) => player.id), host.id];
+
+        return {
+            isHost, playerIds,
+        }
+
     }
 }

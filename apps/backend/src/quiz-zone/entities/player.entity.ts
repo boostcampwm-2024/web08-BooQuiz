@@ -12,7 +12,7 @@ import { PLAYER_STATE } from '../../common/constants';
 export interface Player {
     id: string;
     nickname: string;
-    score: number;
-    submits: SubmittedQuiz[];
+    score?: number;
+    submits?: SubmittedQuiz[];
     state: PLAYER_STATE;
 }

@@ -234,7 +234,14 @@ export class PlayGateway implements OnGatewayInit {
      * @param quizZoneId - WebSocket 클라이언트
      */
     private async summary(quizZoneId: string) {
-        const summaries = await this.playService.summaryQuizZone(quizZoneId);
+        const {summaries, host} = await this.playService.summaryQuizZone(quizZoneId);
+
+        const hostSummaryInfo = summaries.map(({ id, score, submits }) => {
+            return { id, score, submits };
+        });
+
+
+        this.sendToClient(host.id, 'summary', { hostSummaryInfo, quizzes: summaries[0].quizzes, ranks: summaries[0].ranks });
 
         await Promise.all(
             summaries.map(async ({ id, score, submits, quizzes, ranks }) => {
@@ -276,5 +283,19 @@ export class PlayGateway implements OnGatewayInit {
         const clientIds = await this.playService.chatQuizZone(clientId, quizZoneId);
 
         this.broadcast(clientIds, 'chat', message);
+    }
+
+    @SubscribeMessage('notice')
+    async notice(@ConnectedSocket() client: WebSocketWithSession, @MessageBody() message: string) {
+        const clientId = client.session.id;
+        const { quizZoneId } = this.getClientInfo(clientId);
+
+
+        const {isHost,playerIds} = await this.playService.notice(clientId, quizZoneId);
+
+        if (isHost) {
+            this.broadcast(playerIds, 'chat', message);
+        }
+
     }
 }

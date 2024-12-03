@@ -1,6 +1,7 @@
 import { Quiz } from './quiz.entity';
 import { Player } from './player.entity';
 import { QUIZ_ZONE_STAGE } from '../../common/constants';
+import { Host } from './host.entity';
 /**
  * 퀴즈 게임을 진행하는 공간을 나타내는 퀴즈존 인터페이스
  *
@@ -18,7 +19,7 @@ import { QUIZ_ZONE_STAGE } from '../../common/constants';
  */
 export interface QuizZone {
     players: Map<string, Player>;
-    hostId: string;
+    host: Host;
     maxPlayers: number;
     quizzes: Quiz[];
     stage: QUIZ_ZONE_STAGE;

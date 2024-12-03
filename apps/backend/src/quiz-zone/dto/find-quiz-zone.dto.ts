@@ -40,4 +40,5 @@ export interface FindQuizZoneDto {
     readonly hostId: string;
     readonly currentQuiz?: CurrentQuizDto;
     readonly maxPlayers?: number;
+    readonly submittedPlayers?: Player[];
 }
