@@ -101,14 +101,6 @@ const MainPageContent = () => {
                             className="mb-4 w-full"
                         />
                     </TooltipWrapper>
-
-                    <Typography
-                        size="xs"
-                        color="gray"
-                        text="버튼을 눌러 퀴즈존에 참여해보세요"
-                        bold={true}
-                    />
-
                     <TooltipWrapper
                         content="입력한 퀴즈존 코드로 이동합니다"
                         side="bottom"
