@@ -80,7 +80,7 @@ export class QuizService {
     async searchQuizSet(searchQuery: SearchQuizSetRequestDTO) {
         const { name, page, size } = searchQuery;
 
-        if(!name) {
+        if (!name) {
             return this.findDefaultQuizSet(page, size);
         }
 
@@ -96,27 +96,9 @@ export class QuizService {
     private async findDefaultQuizSet(page: number, size: number) {
         const [quizSets, count] = await Promise.all([
             this.quizSetRepository.findByRecommend(page, size),
-            this.quizSetRepository.countByRecommend()
+            this.quizSetRepository.countByRecommend(),
         ]);
         const quizSetDetails = quizSets.map(QuizSetDetails.from);
-        return {quizSetDetails, total: count, currentPage: page};
-    }
-
-    private async findDefaultQuizSet(page: number, size: number) {
-        const [quizSets, count] = await Promise.all([
-            this.quizSetRepository.findByRecommend(page, size),
-            this.quizSetRepository.countByRecommend()
-        ]);
-        const quizSetDetails = quizSets.map(QuizSetDetails.from);
-        return {quizSetDetails, total: count, currentPage: page};
-    }
-
-    private async findDefaultQuizSet(page: number, size: number) {
-        const [quizSets, count] = await Promise.all([
-            this.quizSetRepository.findByRecommend(page, size),
-            this.quizSetRepository.countByRecommend()
-        ]);
-        const quizSetDetails = quizSets.map(QuizSetDetails.from);
-        return {quizSetDetails, total: count, currentPage: page};
+        return { quizSetDetails, total: count, currentPage: page };
     }
 }
