@@ -6,7 +6,6 @@ import { IQuizZoneRepository } from './repository/quiz-zone.repository.interface
 import { Quiz } from './entities/quiz.entity';
 import { PLAYER_STATE, QUIZ_TYPE, QUIZ_ZONE_STAGE } from '../common/constants';
 import { QuizService } from '../quiz/quiz.service';
-import { max } from 'class-validator';
 
 const nickNames: string[] = [
     '전설의고양이',
@@ -106,6 +105,13 @@ describe('QuizZoneService', () => {
     });
 
     describe('create', () => {
+        const host = {
+            id: 'hostId',
+            nickname: 'host-nickname',
+            state: PLAYER_STATE.WAIT,
+        }
+
+
         it('새로운 퀴즈존을 생성한다', async () => {
             // given
             const createQuizZoneDto = {
@@ -116,7 +122,6 @@ describe('QuizZoneService', () => {
                 quizSetId: 1,
                 maxPlayers: 10,
             };
-            const adminId = 'adminId';
             const mockQuizzes = [
                 {
                     question: '문제1',
@@ -136,13 +141,17 @@ describe('QuizZoneService', () => {
             mockQuizService.getQuizzes.mockResolvedValue(mockQuizzes);
 
             // when
-            await service.create(createQuizZoneDto, adminId);
+            await service.create(createQuizZoneDto, host.id);
 
             // then
             expect(repository.set).toHaveBeenCalledWith(
                 createQuizZoneDto.quizZoneId,
                 expect.objectContaining({
-                    hostId: adminId,
+                    host: {
+                        id: 'hostId',
+                        nickname: expect.any(String),
+                        state: PLAYER_STATE.WAIT,
+                    },
                     title: createQuizZoneDto.title,
                     description: createQuizZoneDto.description,
                     maxPlayers: 10,
@@ -183,12 +192,18 @@ describe('QuizZoneService', () => {
 
     describe('findOne', () => {
         const quizZoneId = 'testQuizZone';
+        const host = {
+            id: 'hostId',
+            nickname: 'host-nickname',
+            state: PLAYER_STATE.WAIT,
+        }
+
 
         it('퀴즈존을 ID로 조회한다', async () => {
             // given
             const mockQuizZone: QuizZone = {
                 players: new Map(),
-                hostId: 'adminId',
+                host: host,
                 title: '테스트 퀴즈',
                 description: '테스트 퀴즈입니다',
                 maxPlayers: 10,
@@ -226,6 +241,11 @@ describe('QuizZoneService', () => {
     describe('getQuizZoneInfo', () => {
         const quizZoneId = 'testQuizZone';
         const clientId = 'clientId';
+        const host = {
+            id: 'hostId',
+            nickname: 'host-nickname',
+            state: PLAYER_STATE.WAIT,
+        }
 
         it('이미 접속해있는 퀴즈존이 있을때 다른 퀴즈존에 동시에 접속하면 기존 퀴즈존을 나가고 새로운 곳에 추가한다.', async () => {
             // given
@@ -256,7 +276,7 @@ describe('QuizZoneService', () => {
                         },
                     ],
                 ]),
-                hostId: 'adminId',
+                host: host,
                 maxPlayers: 10,
                 title: '기존 퀴즈',
                 description: '기존 퀴즈입니다',
@@ -310,7 +330,7 @@ describe('QuizZoneService', () => {
 
             const newQuizZone: QuizZone = {
                 players: new Map(),
-                hostId: 'adminId',
+                host: host,
                 title: '새로운 퀴즈',
                 description: '새로운 퀴즈입니다',
                 quizzes: quizzes,
@@ -354,7 +374,7 @@ describe('QuizZoneService', () => {
                         },
                     ],
                 ]),
-                hostId: 'adminId',
+                host: host,
                 maxPlayers: 10,
                 title: '테스트 퀴즈',
                 description: '테스트 퀴즈입니다',
@@ -393,7 +413,7 @@ describe('QuizZoneService', () => {
                 description: '테스트 퀴즈입니다',
                 quizCount: quizzes.length,
                 stage: QUIZ_ZONE_STAGE.LOBBY,
-                hostId: 'adminId',
+                hostId: host.id,
             });
         });
 
@@ -408,7 +428,7 @@ describe('QuizZoneService', () => {
             };
             const mockQuizZone: QuizZone = {
                 players: new Map([[clientId, existingPlayer]]),
-                hostId: 'adminId',
+                host: host,
                 maxPlayers: 10,
                 title: '테스트 퀴즈',
                 description: '테스트 퀴즈입니다',
@@ -459,7 +479,7 @@ describe('QuizZoneService', () => {
                         },
                     ],
                 ]),
-                hostId: 'adminId',
+                host: host,
                 maxPlayers: 2,
                 title: '테스트 퀴즈',
                 description: '테스트 퀴즈입니다',
@@ -494,7 +514,7 @@ describe('QuizZoneService', () => {
                         },
                     ],
                 ]),
-                hostId: 'adminId',
+                host: host,
                 maxPlayers: 10,
                 title: '테스트 퀴즈',
                 description: '테스트 퀴즈입니다',
@@ -518,7 +538,7 @@ describe('QuizZoneService', () => {
                 description: '테스트 퀴즈입니다',
                 quizCount: quizzes.length,
                 stage: QUIZ_ZONE_STAGE.IN_PROGRESS,
-                hostId: 'adminId',
+                hostId: 'hostId',
                 maxPlayers: 10,
                 currentQuiz: {
                     currentIndex: 1,
@@ -546,7 +566,7 @@ describe('QuizZoneService', () => {
                         },
                     ],
                 ]),
-                hostId: 'adminId',
+                host: host,
                 maxPlayers: 10,
                 title: '테스트 퀴즈',
                 description: '테스트 퀴즈입니다',
@@ -577,7 +597,7 @@ describe('QuizZoneService', () => {
                 quizCount: quizzes.length,
                 stage: QUIZ_ZONE_STAGE.RESULT,
                 maxPlayers: 10,
-                hostId: 'adminId',
+                hostId: 'hostId',
             });
         });
 
@@ -595,7 +615,7 @@ describe('QuizZoneService', () => {
             // given
             const mockQuizZone: QuizZone = {
                 players: new Map(),
-                hostId: 'adminId',
+                host: host,
                 maxPlayers: 10,
                 title: '테스트 퀴즈',
                 description: '테스트 퀴즈입니다',
@@ -636,6 +656,13 @@ describe('QuizZoneService', () => {
         });
     });
     describe('findOthersInfo', () => {
+
+        const host = {
+            id: 'hostId',
+            nickname: 'host-nickname',
+            state: PLAYER_STATE.WAIT,
+        }
+
         it('다른 플레이어들의 닉네임 목록을 반환한다', async () => {
             const quizZoneId = 'testQuizZone';
             const clientId = 'clientId';
@@ -672,7 +699,7 @@ describe('QuizZoneService', () => {
                         },
                     ],
                 ]),
-                hostId: 'adminId',
+                host: host,
                 maxPlayers: 10,
                 title: '테스트 퀴즈',
                 description: '테스트 퀴즈입니다',
@@ -710,7 +737,7 @@ describe('QuizZoneService', () => {
                         },
                     ],
                 ]),
-                hostId: 'adminId',
+                host: host,
                 maxPlayers: 10,
                 title: '테스트 퀴즈',
                 description: '테스트 퀴즈입니다',
@@ -731,11 +758,18 @@ describe('QuizZoneService', () => {
     });
 
     describe('getQuizZoneStage', () => {
+
+        const host = {
+            id: 'hostId',
+            nickname: 'host-nickname',
+            state: PLAYER_STATE.WAIT,
+        }
+
         it('퀴즈존의 현재 단계를 반환한다', async () => {
             const quizZoneId = 'testQuizZone';
             const mockQuizZone: QuizZone = {
                 players: new Map(),
-                hostId: 'adminId',
+                host: host,
                 maxPlayers: 10,
                 title: '테스트 퀴즈',
                 description: '테스트 퀴즈입니다',

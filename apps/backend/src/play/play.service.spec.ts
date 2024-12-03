@@ -20,8 +20,14 @@ describe('PlayService', () => {
         submits: [],
     };
 
+    const mockHost = {
+        id: 'hostId',
+        nickname: 'host-nickname',
+        state: PLAYER_STATE.WAIT,
+    }
+
     const mockQuizZone: QuizZone = {
-        hostId: 'host-1',
+        host: mockHost,
         stage: QUIZ_ZONE_STAGE.LOBBY,
         intervalTime: 5000,
         maxPlayers: 10,
@@ -91,6 +97,7 @@ describe('PlayService', () => {
                 players: [
                     { ...mockPlayer, id: 'player-1', nickname: 'player1' },
                     { ...mockPlayer, id: 'player-2', nickname: 'player2' },
+                    {...mockHost}
                 ],
             });
         });
@@ -115,14 +122,14 @@ describe('PlayService', () => {
             };
             quizZoneService.findOne.mockResolvedValue(mockQuizZoneWithMultiplePlayers);
 
-            const result = await service.startQuizZone('test-zone', 'host-1');
+            const result = await service.startQuizZone('test-zone', mockHost.id);
 
-            expect(result).toEqual(['player-1', 'player-2']);
+            expect(result).toEqual(['player-1', 'player-2', mockHost.id]);
             expect(quizZoneService.updateQuizZone).toHaveBeenCalledWith(
                 'test-zone',
                 expect.objectContaining({
                     stage: QUIZ_ZONE_STAGE.IN_PROGRESS,
-                    hostId: 'host-1',
+                    host: mockHost,
                 }),
             );
         });
@@ -142,7 +149,7 @@ describe('PlayService', () => {
             };
             quizZoneService.findOne.mockResolvedValue(inProgressQuizZone);
 
-            await expect(service.startQuizZone('test-zone', 'host-1')).rejects.toThrow(
+            await expect(service.startQuizZone('test-zone', mockHost.id)).rejects.toThrow(
                 new BadRequestException('이미 시작된 퀴즈존입니다.'),
             );
         });
@@ -174,7 +181,7 @@ describe('PlayService', () => {
                     startTime: expect.any(Number),
                     deadlineTime: expect.any(Number),
                 },
-                playerIds: ['player-1'],
+                playerIds: ['player-1', mockHost.id],
                 currentQuizResult: {
                     answer: undefined,
                     totalPlayerCount: 0,
@@ -263,7 +270,7 @@ describe('PlayService', () => {
                 fastestPlayerIds: ['player-1'],
                 submittedCount: 1,
                 totalPlayerCount: 1,
-                otherSubmittedPlayerIds: [],
+                otherSubmittedPlayerIds: [mockHost.id],
             });
         });
 
@@ -299,7 +306,7 @@ describe('PlayService', () => {
                 fastestPlayerIds: ['player-2', 'player-1'],
                 submittedCount: 2,
                 totalPlayerCount: 2,
-                otherSubmittedPlayerIds: ['player-2'],
+                otherSubmittedPlayerIds: ['player-2', mockHost.id],
             });
         });
 
@@ -348,7 +355,7 @@ describe('PlayService', () => {
 
             expect(result).toEqual({
                 isHost: false,
-                playerIds: ['player-2'],
+                playerIds: ['player-2', mockHost.id],
             });
         });
 
@@ -362,11 +369,11 @@ describe('PlayService', () => {
             };
             quizZoneService.findOne.mockResolvedValue(mockQuizZoneWithPlayers);
 
-            const result = await service.leaveQuizZone('test-zone', 'host-1');
+            const result = await service.leaveQuizZone('test-zone', mockHost.id);
 
             expect(result).toEqual({
                 isHost: true,
-                playerIds: ['player-1', 'player-2'],
+                playerIds: ['player-1', 'player-2', mockHost.id],
             });
             expect(quizZoneService.clearQuizZone).toHaveBeenCalledWith('test-zone');
         });
@@ -427,8 +434,8 @@ describe('PlayService', () => {
 
             const result = await service.summaryQuizZone('test-zone');
 
-            expect(result).toEqual([
-                {
+            expect(result).toEqual({
+                summaries :[{
                     id: 'player-1',
                     score: 2,
                     submits: mockSubmits,
@@ -457,7 +464,7 @@ describe('PlayService', () => {
                         { id: 'player-2', nickname: 'player2', score: 1, ranking: 2 },
                     ],
                 },
-            ]);
+            ], host: mockHost});
 
             expect(quizZoneService.clearQuizZone).toHaveBeenCalledWith('test-zone');
         });
@@ -502,7 +509,7 @@ describe('PlayService', () => {
 
             quizZoneService.findOne.mockResolvedValue(quizZoneWithTiedScores);
 
-            const result = await service.summaryQuizZone('test-zone');
+            const {summaries} = await service.summaryQuizZone('test-zone');
 
             const expectedRanks = [
                 { id: 'player-1', nickname: 'player1', score: 2, ranking: 1 },
@@ -510,9 +517,9 @@ describe('PlayService', () => {
                 { id: 'player-3', nickname: 'player3', score: 1, ranking: 3 },
             ];
 
-            expect(result[0].ranks).toEqual(expectedRanks);
-            expect(result[1].ranks).toEqual(expectedRanks);
-            expect(result[2].ranks).toEqual(expectedRanks);
+            expect(summaries[0].ranks).toEqual(expectedRanks);
+            expect(summaries[1].ranks).toEqual(expectedRanks);
+            expect(summaries[2].ranks).toEqual(expectedRanks);
         });
 
         it('플레이어가 없는 경우 빈 배열을 반환해야 합니다', async () => {
@@ -523,9 +530,9 @@ describe('PlayService', () => {
             };
             quizZoneService.findOne.mockResolvedValue(emptyQuizZone);
 
-            const result = await service.summaryQuizZone('test-zone');
+            const {summaries} = await service.summaryQuizZone('test-zone');
 
-            expect(result).toEqual([]);
+            expect(summaries).toEqual([]);
             expect(quizZoneService.clearQuizZone).toHaveBeenCalledWith('test-zone');
         });
 
@@ -570,14 +577,14 @@ describe('PlayService', () => {
 
             quizZoneService.findOne.mockResolvedValue(quizZoneWithMixedResults);
 
-            const result = await service.summaryQuizZone('test-zone');
+            const {summaries} = await service.summaryQuizZone('test-zone');
 
             const expectedRanks = [
                 { id: 'player-1', nickname: 'player1', score: 1, ranking: 1 },
                 { id: 'player-2', nickname: 'player2', score: 1, ranking: 1 },
             ];
 
-            expect(result).toEqual([
+            expect(summaries).toEqual([
                 {
                     id: 'player-1',
                     score: 1,
@@ -630,7 +637,7 @@ describe('PlayService', () => {
 
             const result = await service.chatQuizZone('player-1', 'test-zone');
 
-            expect(result).toEqual(['player-1']);
+            expect(result).toEqual(['player-1', mockHost.id]);
         });
     });
 

@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { QuizZoneRepositoryMemory } from './quiz-zone.memory.repository';
 import { QuizZone } from '../entities/quiz-zone.entity';
-import { QUIZ_ZONE_STAGE } from '../../common/constants';
+import { PLAYER_STATE, QUIZ_ZONE_STAGE } from '../../common/constants';
 
 describe('QuizZoneRepositoryMemory', () => {
     let storage: Map<string, QuizZone>;
@@ -27,9 +27,15 @@ describe('QuizZoneRepositoryMemory', () => {
         it('세션 id와 퀴즈존 정보를 통해 새로운 퀴즈존 정보를 저장한다.', async () => {
             const quizZoneId = 'some-id';
 
+            const host = {
+                id: 'some-id',
+                nickname: 'some-nickname',
+                state: PLAYER_STATE.WAIT,
+            };
+
             const quizZone: QuizZone = {
                 players: new Map(),
-                hostId: 'adminId',
+                host: host,
                 maxPlayers: 4,
                 quizzes: [],
                 stage: QUIZ_ZONE_STAGE.LOBBY,
