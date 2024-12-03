@@ -26,7 +26,7 @@ const QuizInProgress = ({ currentQuiz, submitAnswer }: QuizInProgressProps) => {
     return (
         <div className="w-full h-full flex flex-col items-center justify-center gap-4">
             <ProgressBar deadlineTime={currentQuiz.deadlineTime} onTimeEnd={() => {}} />
-            <ContentBox className="w-full flex flex-col gap-4">
+            <ContentBox className="w-full flex flex-col gap-4 bg-white shadow-lg">
                 <Typography
                     text={`Q. ${currentQuiz.question}`}
                     size="2xl"
