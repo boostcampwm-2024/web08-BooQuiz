@@ -66,7 +66,7 @@ const QuizZoneResult = ({ quizZoneState }: QuizZoneResultProps) => {
     return (
         <div className="w-full h-full flex flex-col items-center justify-center gap-4">
             {/* 상단 요약 정보 */}
-            <ContentBox className="w-full h-full p-6 bg-white shadow-lg">
+            <ContentBox className="w-full h-full p-6 flex items-center bg-white shadow-lg">
                 <div className="w-full flex flex-col items-center gap-4">
                     <Typography size="lg" color="blue" text="퀴즈 결과" bold={true} />
                     <div className="flex items-baseline gap-2">

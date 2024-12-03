@@ -82,11 +82,13 @@ const CreateQuizZoneBasic = ({
                         className="rounded-md w-full"
                         placeholder="퀴즈존 코드를 입력하세요"
                         error={
-                            validationError == '퀴즈존 입장 코드를 5자 이상 입력해주세요.' ||
-                            validationError == '퀴즈존 입장 코드는 10자 이하로 입력해주세요.'
+                            validationError == '5자 이상 입력해주세요.' ||
+                            validationError == '10자 이하로 입력해주세요.'
                                 ? validationError
                                 : ''
                         }
+                        isShowCount={true}
+                        max={10}
                     />
                     <Input
                         type="number"
@@ -110,11 +112,13 @@ const CreateQuizZoneBasic = ({
                     isBorder={true}
                     placeholder="퀴즈존 제목을 입력하세요"
                     error={
-                        validationError == '퀴즈존 제목은 100자 이하로 입력해주세요.' ||
-                        validationError == '퀴즈존 제목을 입력해주세요.'
+                        validationError == '100자 이하로 입력해주세요.' ||
+                        validationError == '제목을 입력해주세요.'
                             ? validationError
                             : ''
                     }
+                    isShowCount={true}
+                    max={100}
                 />
 
                 <Input
@@ -125,11 +129,9 @@ const CreateQuizZoneBasic = ({
                     onChange={(e) => handleChangeQuizZoneBasic(e, 'DESC')}
                     isBorder={true}
                     placeholder="퀴즈존 설명을 입력하세요"
-                    error={
-                        validationError == '퀴즈존 설명은 500자 이하로 입력해주세요.'
-                            ? validationError
-                            : ''
-                    }
+                    error={validationError == '500자 이하로 입력해주세요.' ? validationError : ''}
+                    isShowCount={true}
+                    max={500}
                 />
             </ContentBox>
             <ContentBox className="gap-2 w-full bg-white shadow-md">

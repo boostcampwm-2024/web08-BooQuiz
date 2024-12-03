@@ -104,18 +104,11 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
 
         return (
             <div className={classes}>
-                <div className="w-full flex flex-row justify-between">
-                    {label && (
-                        <label htmlFor={name} className={fontSizeClass}>
-                            {label}
-                        </label>
-                    )}
-                    {error && (
-                        <span className={`error-message ${fontSizeClass} text-red-500 text-[10px]`}>
-                            {error}
-                        </span>
-                    )}
-                </div>
+                {label && (
+                    <label htmlFor={name} className={fontSizeClass}>
+                        {label}
+                    </label>
+                )}
 
                 <input
                     ref={ref}
@@ -145,28 +138,37 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
                     {...rest}
                 />
                 {isUnderline && <div className="underline h-[2px] w-full bg-blue-600" />}
+                <div className="w-full flex flex-row">
+                    {error && (
+                        <span
+                            className={`error-message ${fontSizeClass} text-red-500 text-[10px] w-full`}
+                        >
+                            {error}
+                        </span>
+                    )}
 
-                {typeof value === 'string' && isShowCount && (
-                    <div className="w-full text-right pr-1">
-                        <Typography
-                            text={value.length.toString() + '자'}
-                            color="gray"
-                            size={
-                                getFontSizeClass().replace('text-', '') as
-                                    | 'xs'
-                                    | 'sm'
-                                    | 'base'
-                                    | 'lg'
-                                    | 'xl'
-                                    | '2xl'
-                                    | '3xl'
-                                    | '4xl'
-                                    | '5xl'
-                                    | '6xl'
-                            }
-                        />
-                    </div>
-                )}
+                    {typeof value === 'string' && isShowCount && (
+                        <div className="w-14 text-right pr-1 ml-auto">
+                            <Typography
+                                text={value.length.toString() + '/' + max}
+                                color="gray"
+                                size={
+                                    getFontSizeClass().replace('text-', '') as
+                                        | 'xs'
+                                        | 'sm'
+                                        | 'base'
+                                        | 'lg'
+                                        | 'xl'
+                                        | '2xl'
+                                        | '3xl'
+                                        | '4xl'
+                                        | '5xl'
+                                        | '6xl'
+                                }
+                            />
+                        </div>
+                    )}
+                </div>
             </div>
         );
     },
