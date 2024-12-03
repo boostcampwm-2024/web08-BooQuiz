@@ -222,11 +222,7 @@ export const chatMessagesReducer: Reducer<ChatMessage[], chatAction> = (chatMess
  * @returns {Function} .playQuiz - 퀴즈 상태를 플레이 모드로 변경하는 함수
  */
 
-const useQuizZone = (
-    quizZoneId: string,
-    requstInitData: (id: string) => Promise<QuizZone>,
-    handleReconnect?: () => void,
-) => {
+const useQuizZone = (quizZoneId: string, handleReconnect?: () => void) => {
     const initialQuizZoneState: QuizZone = {
         stage: 'LOBBY',
         currentPlayer: {
@@ -269,8 +265,7 @@ const useQuizZone = (
     });
 
     //initialize QuizZOne
-    const initQuizZoneData = async () => {
-        const quizZone = await requstInitData(quizZoneId);
+    const initQuizZoneData = async (quizZone: QuizZone) => {
         dispatch({ type: 'init', payload: quizZone });
         beginConnection();
         joinQuizZone({ quizZoneId });

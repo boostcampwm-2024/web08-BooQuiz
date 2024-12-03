@@ -30,12 +30,16 @@ const QuizZoneContent = () => {
     };
 
     const { initQuizZoneData, quizZoneState, submitQuiz, startQuiz, playQuiz, exitQuiz, sendChat } =
-        useQuizZone(quizZoneId, requestQuizZone, reconnectHandler);
+        useQuizZone(quizZoneId, reconnectHandler);
 
     const initQuizZone = async () => {
         try {
             setIsLoading(true);
-            await initQuizZoneData();
+
+            const quizZone = await requestQuizZone(quizZoneId);
+
+            await initQuizZoneData(quizZone);
+
             setIsLoading(false);
             setIsDisconnection(false);
         } catch (error) {
