@@ -82,6 +82,8 @@ const CreateQuiz = ({ handleCreateQuiz }: CreateQuizProps) => {
                     onChange={(e) => setQuestion(e.target.value)}
                     isBorder={true}
                     error={isInvalidQuestion && questionInvalidMessage}
+                    isShowCount={true}
+                    max={200}
                 />
                 {/* {isInvalidQuestion && (
                     <Typography size="xs" color="red" text={questionInvalidMessage} />
@@ -96,6 +98,8 @@ const CreateQuiz = ({ handleCreateQuiz }: CreateQuizProps) => {
                     onChange={(e) => setAnswer(e.target.value)}
                     isBorder={true}
                     error={isInvalidAnswer && answerInvalidMessage}
+                    isShowCount={true}
+                    max={50}
                 />
                 {/* {isInvalidAnswer && (
                     <Typography size="xs" color="red" text={answerInvalidMessage} />
