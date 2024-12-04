@@ -304,7 +304,8 @@ export class PlayService {
         const now = Date.now();
         const endSocketTime = now + socketConnectTime;
 
-        return [...players.values()].map(({ id, score, submits }) => ({
+
+        const summaries = [...players.values()].map(({ id, score, submits }) => ({
             id,
             score,
             submits,
@@ -312,6 +313,9 @@ export class PlayService {
             ranks,
             endSocketTime
         }));
+
+        quizZone.summaries  = {ranks, endSocketTime};
+        return summaries;
     }
 
     public clearQuizZone(quizZoneId: string) {

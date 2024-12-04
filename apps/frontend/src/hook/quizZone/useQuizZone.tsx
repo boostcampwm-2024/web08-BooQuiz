@@ -39,15 +39,10 @@ const quizZoneReducer: Reducer<QuizZone, QuizZoneAction> = (state, action) => {
 
     switch (type) {
         case 'init':
+            console.log(payload);
             return {
                 ...state,
-                stage: payload.stage,
-                title: payload.title,
-                description: payload.description,
-                quizCount: payload.quizCount,
-                hostId: payload.hostId,
-                currentPlayer: payload.currentPlayer,
-                chatMessages: payload.chatMessages,
+                ...payload,
                 currentQuiz:
                     payload.currentQuiz !== undefined
                         ? {
@@ -55,8 +50,6 @@ const quizZoneReducer: Reducer<QuizZone, QuizZoneAction> = (state, action) => {
                               question: atob(payload.currentQuiz?.question ?? ''),
                           }
                         : undefined,
-                maxPlayers: payload.maxPlayers,
-                players: [],
             };
         case 'join':
             return { ...state, players: payload };
