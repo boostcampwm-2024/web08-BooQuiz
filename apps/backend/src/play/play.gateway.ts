@@ -15,11 +15,10 @@ import { SendEventMessage } from './entities/send-event.entity';
 import { ClientInfo } from './entities/client-info.entity';
 import { WebSocketWithSession } from '../core/SessionWsAdapter';
 import { RuntimeException } from '@nestjs/core/errors/exceptions';
-import { CLOSE_CODE } from '../common/constants';
 import { SubmitResponseDto } from './dto/submit-response.dto';
-import { clearTimeout } from 'node:timers';
 import { ChatMessage } from 'src/chat/entities/chat-message.entity';
-import { ChatService } from '../chat/chat.service'; // 경로 수정
+import { ChatService } from '../chat/chat.service';
+import { CLOSE_CODE } from '../common/constants'; // 경로 수정
 
 /**
  * 퀴즈 게임에 대한 WebSocket 연결을 관리하는 Gateway입니다.
@@ -248,7 +247,7 @@ export class PlayGateway implements OnGatewayInit {
 
         const clientsIds = summaries.map(({ id }) => id);
 
-        this.clearQuizZone(clientsIds, quizZoneId, endSocketTime);
+        this.clearQuizZone(clientsIds, quizZoneId, endSocketTime - Date.now());
     }
 
     /**
@@ -258,16 +257,16 @@ export class PlayGateway implements OnGatewayInit {
      * - 일반 플레이어가 나가면 퀴즈 존에서 나가고 다른 플레이어에게 나갔다고 알립니다.
      * @param clientIds - 퀴즈존에 참여하고 있는 클라이언트 id 리스트
      * @param quizZoneId - 퀴즈가 끝난 퀴즈존 id
-     * @param endSocketTime - 소켓 연결 종료 시간 종료 시간
+     * @param time - 소켓 연결 종료 시간 종료 시간
      */
-    private clearQuizZone(clientIds: string[], quizZoneId: string, endSocketTime: number) {
+    private clearQuizZone(clientIds: string[], quizZoneId: string, time: number) {
         setTimeout(() => {
             clientIds.forEach((id) => {
                 this.clearClient(id, 'finish');
             });
             this.playService.clearQuizZone(quizZoneId);
             this.chatService.delete(quizZoneId);
-        }, endSocketTime - Date.now());
+        }, time);
     }
 
     /**
@@ -286,7 +285,7 @@ export class PlayGateway implements OnGatewayInit {
 
         if (isHost) {
             this.broadcast(playerIds, 'close');
-            playerIds.forEach((id) => this.clearClient(id, 'Host leave.'));
+            this.clearQuizZone(playerIds, quizZoneId, 0);
         } else {
             this.broadcast(playerIds, 'someone_leave', clientId);
             this.clearClient(clientId, 'Client leave');
