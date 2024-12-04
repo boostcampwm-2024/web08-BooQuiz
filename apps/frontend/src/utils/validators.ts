@@ -32,7 +32,7 @@ export const validateQuizZoneSetName = (name: string) => {
 
 //퀴즈존 설명 유효성 검사
 export const validateQuizZoneSetDescription = (description: string) => {
-    if (description.length > 500) return '500자 이하로 입력해주세요.';
+    if (description.length > 300) return '300자 이하로 입력해주세요.';
 };
 
 //퀴즈존 입장 코드 유효성 검사

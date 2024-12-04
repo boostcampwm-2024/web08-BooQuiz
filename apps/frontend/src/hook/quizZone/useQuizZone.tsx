@@ -39,7 +39,6 @@ const quizZoneReducer: Reducer<QuizZone, QuizZoneAction> = (state, action) => {
 
     switch (type) {
         case 'init':
-            console.log(payload);
             return {
                 ...state,
                 ...payload,

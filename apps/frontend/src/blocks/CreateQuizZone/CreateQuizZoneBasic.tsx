@@ -129,9 +129,9 @@ const CreateQuizZoneBasic = ({
                     onChange={(e) => handleChangeQuizZoneBasic(e, 'DESC')}
                     isBorder={true}
                     placeholder="퀴즈존 설명을 입력하세요"
-                    error={validationError == '500자 이하로 입력해주세요.' ? validationError : ''}
+                    error={validationError == '300자 이하로 입력해주세요.' ? validationError : ''}
                     isShowCount={true}
-                    max={500}
+                    max={300}
                 />
             </ContentBox>
             <ContentBox className="gap-2 w-full bg-white shadow-md">
