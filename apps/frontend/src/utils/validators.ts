@@ -39,6 +39,7 @@ export const validateQuizZoneSetDescription = (description: string) => {
 export const validateQuizZoneSetCode = (code: string) => {
     if (code.length < 5) return '5자 이상 입력해주세요.';
     if (code.length > 10) return '10자 이하로 입력해주세요.';
+    if (!/^[a-zA-Z0-9]*$/g.test(code)) return '숫자와 알파벳 조합만 가능합니다.';
 };
 
 //입장 인원 제한 유효성 검사

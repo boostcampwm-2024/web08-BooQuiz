@@ -1,8 +1,8 @@
 name: backend test
 
 on:
-  push:
-    pull_request: [develop, main]
+  pull_request:
+    branches: [develop, main]
     paths:
       - apps/backend/**
 

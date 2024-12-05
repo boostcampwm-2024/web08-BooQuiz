@@ -80,10 +80,11 @@ const CreateQuizZoneBasic = ({
                         onChange={(e) => handleChangeQuizZoneBasic(e, 'QUIZ_ZONE_ID')}
                         isBorder={true}
                         className="rounded-md w-full"
-                        placeholder="퀴즈존 코드를 입력하세요"
+                        placeholder="숫자와 영문자 5자 이상 10자 이하"
                         error={
                             validationError == '5자 이상 입력해주세요.' ||
-                            validationError == '10자 이하로 입력해주세요.'
+                            validationError == '10자 이하로 입력해주세요.' ||
+                            validationError == '숫자와 알파벳 조합만 가능합니다.'
                                 ? validationError
                                 : ''
                         }
@@ -95,12 +96,13 @@ const CreateQuizZoneBasic = ({
                         label="최대 인원"
                         name="quiz-zone-limit-player-count"
                         step={10}
-                        min={1}
-                        max={300}
                         value={limitPlayerCount}
                         onChange={(e) => handleChangeQuizZoneBasic(e, 'LIMIT')}
                         isBorder={true}
                         className="w-20"
+                        isShowCount={true}
+                        min={1}
+                        max={300}
                     />
                 </div>
                 <Input

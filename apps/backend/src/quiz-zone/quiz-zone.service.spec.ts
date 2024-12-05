@@ -602,7 +602,7 @@ describe('QuizZoneService', () => {
                     {id: "player1", nickname: "미친투사", score: 0, ranking: 1},
                     {id: "player2", nickname: "미친투사", score: 0, ranking: 1}
                 ],
-                endSocketTime: Date.now(),
+                endSocketTime: expect.any(Number),
             });
         });
 
