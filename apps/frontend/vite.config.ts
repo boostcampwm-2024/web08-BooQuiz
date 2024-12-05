@@ -25,6 +25,24 @@ export default defineConfig(({ mode }) => {
                 },
             },
         },
+        build: {
+            rollupOptions: {
+                output: {
+                    manualChunks(id) {
+                        if (id.includes('timer.worker')) {
+                            return 'worker';
+                        }
+                    },
+                    // 캐시 무효화를 위한 더 안전한 방법
+                    entryFileNames: `assets/[name].[hash].js`,
+                    chunkFileNames: `assets/[name].[hash].js`,
+                    assetFileNames: `assets/[name].[hash].[ext]`,
+                },
+            },
+            // 캐시 설정
+            manifest: true, // manifest 파일 생성
+            sourcemap: true,
+        },
         test: {
             environment: 'jsdom',
             globals: true,
