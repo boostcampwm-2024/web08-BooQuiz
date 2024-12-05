@@ -1,94 +1,85 @@
-import { TimerMessage, TimerResponse } from '@/types/timer.types';
+let timerId: ReturnType<typeof setInterval> | null = null;
+let startTime: number | null = null;
+let duration: number | null = null;
+let timeOffset: number = 0;
+let pausedTimeRemaining: number | null = null;
 
-class TimerWorker {
-    private timerId: ReturnType<typeof setInterval> | null = null;
-    private startTime: number | null = null;
-    private duration: number | null = null;
-    private timeOffset: number = 0;
-    private pausedTimeRemaining: number | null = null;
+self.onmessage = (event: MessageEvent) => {
+    const { type, payload } = event.data;
 
-    constructor() {
-        self.onmessage = this.handleMessage.bind(this);
-    }
+    switch (type) {
+        case 'START':
+            if (!payload?.duration) return;
 
-    private handleMessage(event: MessageEvent<TimerMessage>) {
-        const { type, payload } = event.data;
-
-        switch (type) {
-            case 'START':
-                if (!payload?.duration) return;
-
-                if (this.pausedTimeRemaining !== null) {
-                    this.startTimer(this.pausedTimeRemaining);
-                    this.pausedTimeRemaining = null;
-                } else {
-                    if (payload.serverTime) {
-                        this.timeOffset = Date.now() - payload.serverTime;
-                    }
-                    this.startTimer(payload.duration);
-                }
-                break;
-
-            case 'STOP':
-                if (this.timerId !== null && this.startTime !== null && this.duration !== null) {
-                    const currentTime = Date.now() - this.timeOffset;
-                    const elapsed = (currentTime - this.startTime) / 1000;
-                    this.pausedTimeRemaining = Math.max(0, this.duration - elapsed);
-                }
-                this.stopTimer();
-                break;
-
-            case 'RESET':
-                this.resetTimer();
-                break;
-        }
-    }
-
-    private startTimer(duration: number) {
-        this.stopTimer(); // 기존 타이머가 있다면 정리
-
-        this.duration = duration;
-        this.startTime = Date.now() - this.timeOffset;
-
-        // setInterval 직접 사용
-        this.timerId = setInterval(() => {
-            if (!this.startTime || !this.duration) return;
-
-            const currentTime = Date.now() - this.timeOffset;
-            const elapsed = (currentTime - this.startTime) / 1000;
-            const remaining = Math.max(0, this.duration - elapsed);
-            const roundedRemaining = Math.round(remaining * 10) / 10;
-
-            if (roundedRemaining <= 0) {
-                this.postMessage({ type: 'COMPLETE' });
-                this.stopTimer();
+            if (pausedTimeRemaining !== null) {
+                startTimer(pausedTimeRemaining, self.postMessage);
+                pausedTimeRemaining = null;
             } else {
-                this.postMessage({
-                    type: 'TICK',
-                    payload: { time: roundedRemaining },
-                });
+                if (payload.serverTime) {
+                    timeOffset = Date.now() - payload.serverTime;
+                }
+                startTimer(payload.duration, self.postMessage);
             }
-        }, 100);
-    }
+            break;
 
-    private stopTimer() {
-        if (this.timerId !== null) {
-            clearInterval(this.timerId);
-            this.timerId = null;
+        case 'STOP':
+            if (timerId !== null && startTime !== null && duration !== null) {
+                const currentTime = Date.now() - timeOffset;
+                const elapsed = (currentTime - startTime) / 1000;
+                pausedTimeRemaining = Math.max(0, duration - elapsed);
+            }
+            stopTimer();
+            break;
+
+        case 'RESET':
+            resetTimer();
+            break;
+    }
+};
+
+function startTimer(
+    newDuration: number,
+    postMessage: {
+        (message: any, targetOrigin: string, transfer?: Transferable[]): void;
+        (message: any, options?: WindowPostMessageOptions): void;
+    },
+) {
+    stopTimer(); // 기존 타이머가 있다면 정리
+
+    duration = newDuration;
+    startTime = Date.now() - timeOffset;
+
+    timerId = setInterval(() => {
+        if (!startTime || !duration) return;
+
+        const currentTime = Date.now() - timeOffset;
+        const elapsed = (currentTime - startTime) / 1000;
+        const remaining = Math.max(0, duration - elapsed);
+        const roundedRemaining = Math.round(remaining * 10) / 10;
+
+        if (roundedRemaining <= 0) {
+            postMessage({ type: 'COMPLETE' });
+            stopTimer();
+        } else {
+            postMessage({
+                type: 'TICK',
+                payload: { time: roundedRemaining },
+            });
         }
-    }
+    }, 100);
+}
 
-    private resetTimer() {
-        this.stopTimer();
-        this.startTime = null;
-        this.duration = null;
-        this.timeOffset = 0;
-        this.pausedTimeRemaining = null;
-    }
-
-    private postMessage(message: TimerResponse) {
-        self.postMessage(message);
+function stopTimer() {
+    if (timerId !== null) {
+        clearInterval(timerId);
+        timerId = null;
     }
 }
 
-new TimerWorker();
+function resetTimer() {
+    stopTimer();
+    startTime = null;
+    duration = null;
+    timeOffset = 0;
+    pausedTimeRemaining = null;
+}
