@@ -2,6 +2,7 @@ import { useReducer } from 'react';
 import useWebSocket from '@/hook/useWebSocket.tsx';
 import {
     ChatMessage,
+    InitQuizZoneResponse,
     NextQuizResponse,
     Player,
     QuizZone,
@@ -12,7 +13,7 @@ import {
 import atob from '@/utils/atob';
 
 export type QuizZoneAction =
-    | { type: 'init'; payload: QuizZone }
+    | { type: 'init'; payload: InitQuizZoneResponse }
     | { type: 'join'; payload: Player[] }
     | { type: 'someone_join'; payload: Player }
     | { type: 'someone_leave'; payload: string }
@@ -39,23 +40,19 @@ const quizZoneReducer: Reducer<QuizZone, QuizZoneAction> = (state, action) => {
 
     switch (type) {
         case 'init':
+            const { quizZone, now } = payload;
+            const receiveTime = new Date().getTime();
             return {
                 ...state,
-                stage: payload.stage,
-                title: payload.title,
-                description: payload.description,
-                quizCount: payload.quizCount,
-                hostId: payload.hostId,
-                currentPlayer: payload.currentPlayer,
-                chatMessages: payload.chatMessages,
+                ...quizZone,
                 currentQuiz:
-                    payload.currentQuiz !== undefined
+                    quizZone.currentQuiz !== undefined
                         ? {
-                              ...payload.currentQuiz,
-                              question: atob(payload.currentQuiz?.question ?? ''),
+                              ...quizZone.currentQuiz,
+                              question: atob(quizZone.currentQuiz?.question ?? ''),
                           }
                         : undefined,
-                maxPlayers: payload.maxPlayers,
+                offset: quizZone.serverTime - (now + receiveTime) / 2,
                 players: [],
             };
         case 'join':
@@ -121,8 +118,8 @@ const quizZoneReducer: Reducer<QuizZone, QuizZoneAction> = (state, action) => {
                     question: atob(nextQuiz.question),
                     currentIndex: nextQuiz.currentIndex,
                     playTime: nextQuiz.playTime,
-                    startTime: nextQuiz.startTime,
-                    deadlineTime: nextQuiz.deadlineTime,
+                    startTime: nextQuiz.startTime - state.offset,
+                    deadlineTime: nextQuiz.deadlineTime - state.offset,
                     quizType: 'SHORT',
                 },
                 currentQuizResult: {
@@ -162,7 +159,7 @@ const quizZoneReducer: Reducer<QuizZone, QuizZoneAction> = (state, action) => {
                 submits: payload.submits,
                 quizzes: payload.quizzes,
                 ranks: payload.ranks,
-                endSocketTime: payload.endSocketTime,
+                endSocketTime: payload.endSocketTime - state.offset,
             };
         case 'chat':
             return {
@@ -241,6 +238,8 @@ const useQuizZone = (quizZoneId: string, handleReconnect?: () => void) => {
         quizzes: [],
         chatMessages: [],
         maxPlayers: 0,
+        offset: 0,
+        serverTime: 0,
     };
 
     const [quizZoneState, dispatch] = useReducer(quizZoneReducer, initialQuizZoneState);
@@ -267,8 +266,8 @@ const useQuizZone = (quizZoneId: string, handleReconnect?: () => void) => {
     });
 
     //initialize QuizZOne
-    const initQuizZoneData = async (quizZone: QuizZone) => {
-        dispatch({ type: 'init', payload: quizZone });
+    const initQuizZoneData = async (quizZone: QuizZone, now: number) => {
+        dispatch({ type: 'init', payload: { quizZone, now } });
         beginConnection();
         joinQuizZone({ quizZoneId });
     };
