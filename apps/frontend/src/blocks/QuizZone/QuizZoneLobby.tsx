@@ -4,7 +4,7 @@ import CustomAlert from '@/components/common/CustomAlert';
 import TextCopy from '@/components/common/TextCopy';
 import Typography from '@/components/common/Typogrpahy';
 import { useNavigate } from 'react-router-dom';
-import { QuizZone, ChatMessage } from '@/types/quizZone.types';
+import { ChatMessage, QuizZone } from '@/types/quizZone.types';
 import PlayersGrid from '@/components/common/PlayersGrid';
 import TooltipWrapper from '@/components/common/TooltipWrapper';
 import { cn } from '@/lib/utils';
