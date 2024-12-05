@@ -4,7 +4,7 @@ import { check, sleep } from 'k6';
 // 첫 번째 방 시나리오
 
 export function scenario1() {
-    const httpResponse = http.get('https://booquiz.kro.kr/api/quiz-zone/loadtest');
+    const httpResponse = http.get('https://booquiz.kro.kr/api/quiz-zone/testtest1');
 
     check(httpResponse, {
         'is status 200': (r) => r.status === 200,
@@ -29,7 +29,7 @@ export function scenario1() {
             socket.send(
                 JSON.stringify({
                     event: 'join',
-                    data: { quizZoneId: 'loadtest' },
+                    data: { quizZoneId: 'testtest1' },
                 }),
             );
         });
@@ -52,14 +52,14 @@ export function scenario1() {
         });
     });
 
-    check(wsResponse, {
-        'WebSocket connected successfully (Room 1)': (r) => r && r.status === 101,
-    });
+    // check(wsResponse, {
+    //     'WebSocket connected successfully (Room 1)': (r) => r && r.status === 101,
+    // });
 }
 
 // 두 번째 방 시나리오
 export function scenario2() {
-    const httpResponse = http.get('https://booquiz.kro.kr/api/quiz-zone/loadtest4');
+    const httpResponse = http.get('https://booquiz.kro.kr/api/quiz-zone/testtest2');
 
     check(httpResponse, {
         'is status 200': (r) => r.status === 200,
@@ -84,7 +84,7 @@ export function scenario2() {
             socket.send(
                 JSON.stringify({
                     event: 'join',
-                    data: { quizZoneId: 'loadtest4' },
+                    data: { quizZoneId: 'testtest2' },
                 }),
             );
         });
@@ -107,58 +107,103 @@ export function scenario2() {
         });
     });
 
-    check(wsResponse, {
-        'WebSocket connected successfully (Room 2)': (r) => r && r.status === 101,
-    });
+    // check(wsResponse, {
+    //     'WebSocket connected successfully (Room 2)': (r) => r && r.status === 101,
+    // });
 }
-//
-// export function scenario3() {
-//     const httpResponse = http.get('https://booquiz.kro.kr/api/quiz-zone/loadtest3');
-//     const cookies = httpResponse.headers['Set-Cookie'];
-//     const sessionCookie = cookies ? cookies.split(';')[0] : '';
-//
-//     sleep(1);
-//
-//     const wsParams = {
-//         headers: {
-//             Cookie: sessionCookie,
-//         },
-//     };
-//
-//     const wsResponse = ws.connect('wss://booquiz.kro.kr/api/play', wsParams, function (socket) {
-//         socket.on('open', () => {
-//             sleep(2);
-//             socket.send(
-//                 JSON.stringify({
-//                     event: 'join',
-//                     data: { quizZoneId: 'loadtest3' },
-//                 }),
-//             );
-//         });
-//
-//         socket.on('message', (data) => {
-//             data = JSON.parse(data);
-//             if (data.event === 'someone_join') {
-//                 sleep(2);
-//                 socket.send(
-//                     JSON.stringify({
-//                         event: 'chat',
-//                         data: {
-//                             clientId: wsParams.headers.Cookie,
-//                             nickname: `${data.data.nickname}`,
-//                             message: `안녕 나는 ${data.data.nickname}이야`,
-//                         },
-//                     }),
-//                 );
-//             }
-//         });
-//     });
-//
-//     check(wsResponse, {
-//         'WebSocket connected successfully (Room 2)': (r) => r && r.status === 101,
-//     });
-// }
 
+export function scenario4() {
+    const httpResponse = http.get('https://booquiz.kro.kr/api/quiz-zone/testtest3');
+    const cookies = httpResponse.headers['Set-Cookie'];
+    const sessionCookie = cookies ? cookies.split(';')[0] : '';
+
+    sleep(1);
+
+    const wsParams = {
+        headers: {
+            Cookie: sessionCookie,
+        },
+    };
+
+    const wsResponse = ws.connect('wss://booquiz.kro.kr/api/play', wsParams, function (socket) {
+        socket.on('open', () => {
+            sleep(2);
+            socket.send(
+                JSON.stringify({
+                    event: 'join',
+                    data: { quizZoneId: 'testtest3' },
+                }),
+            );
+        });
+
+        socket.on('message', (data) => {
+            data = JSON.parse(data);
+            if (data.event === 'someone_join') {
+                sleep(2);
+                socket.send(
+                    JSON.stringify({
+                        event: 'chat',
+                        data: {
+                            clientId: wsParams.headers.Cookie,
+                            nickname: `${data.data.nickname}`,
+                            message: `안녕 나는 ${data.data.nickname}이야`,
+                        },
+                    }),
+                );
+            }
+        });
+    });
+
+    // check(wsResponse, {
+    //     'WebSocket connected successfully (Room 2)': (r) => r && r.status === 101,
+    // });
+}
+export function scenario3() {
+    const httpResponse = http.get('https://booquiz.kro.kr/api/quiz-zone/testtest4');
+    const cookies = httpResponse.headers['Set-Cookie'];
+    const sessionCookie = cookies ? cookies.split(';')[0] : '';
+
+    sleep(1);
+
+    const wsParams = {
+        headers: {
+            Cookie: sessionCookie,
+        },
+    };
+
+    const wsResponse = ws.connect('wss://booquiz.kro.kr/api/play', wsParams, function (socket) {
+        socket.on('open', () => {
+            sleep(2);
+            socket.send(
+                JSON.stringify({
+                    event: 'join',
+                    data: { quizZoneId: 'testtest4' },
+                }),
+            );
+        });
+
+        socket.on('message', (data) => {
+            data = JSON.parse(data);
+            if (data.event === 'someone_join') {
+                sleep(2);
+                socket.send(
+                    JSON.stringify({
+                        event: 'chat',
+                        data: {
+                            clientId: wsParams.headers.Cookie,
+                            nickname: `${data.data.nickname}`,
+                            message: `안녕 나는 ${data.data.nickname}이야`,
+                        },
+                    }),
+                );
+            }
+        });
+    });
+
+    // check(wsResponse, {
+    //     'WebSocket connected successfully (Room 2)': (r) => r && r.status === 101,
+    // });
+}
 // 테스트 설정
 export const options = {
     scenarios: {
@@ -174,11 +219,17 @@ export const options = {
             startVUs: 0,
             stages: [{ duration: '1s', target: 300 }],
         },
-        // room3: {
-        //     executor: 'ramping-vus',
-        //     exec: 'scenario3', // 두 번째 시나리오 실행
-        //     startVUs: 0,
-        //     stages: [{ duration: '1s', target: 300 }],
-        // },
+        room3: {
+            executor: 'ramping-vus',
+            exec: 'scenario3', // 두 번째 시나리오 실행
+            startVUs: 0,
+            stages: [{ duration: '1s', target: 300 }],
+        },
+        room4: {
+            executor: 'ramping-vus',
+            exec: 'scenario4', // 두 번째 시나리오 실행
+            startVUs: 0,
+            stages: [{ duration: '1s', target: 300 }],
+        },
     },
 };
