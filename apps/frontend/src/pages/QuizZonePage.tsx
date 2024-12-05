@@ -15,6 +15,7 @@ import CustomAlertDialogContent from '@/components/common/CustomAlertDialogConte
 const QuizZoneContent = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [isDisconnection, setIsDisconnection] = useState(false);
+    const [isClose, setIsClose] = useState(false);
 
     const navigate = useNavigate();
     const { quizZoneId } = useParams();
@@ -29,8 +30,12 @@ const QuizZoneContent = () => {
         setIsDisconnection(true);
     };
 
+    const closeHandler = () => {
+        setIsClose(true);
+    };
+
     const { initQuizZoneData, quizZoneState, submitQuiz, startQuiz, playQuiz, exitQuiz, sendChat } =
-        useQuizZone(quizZoneId, reconnectHandler);
+        useQuizZone(quizZoneId, reconnectHandler, closeHandler);
 
     const initQuizZone = async () => {
         try {
@@ -125,6 +130,17 @@ const QuizZoneContent = () => {
                     cancelText={'나가기'}
                     handleCancel={() => navigate('/')}
                     handleConfirm={() => initQuizZone()}
+                />
+            </AlertDialog>
+            <AlertDialog open={isClose}>
+                <CustomAlertDialogContent
+                    title={'퀴즈존 종료'}
+                    description={'방장이 퀴즈존을 떠나 퀴즈존이 삭제되었습니다.'}
+                    type={'info'}
+                    cancelText={'취소'}
+                    handleCancel={() => setIsClose(false)}
+                    confirmText={'나가기'}
+                    handleConfirm={() => navigate('/')}
                 />
             </AlertDialog>
         </div>
