@@ -13,7 +13,8 @@ type Story = StoryObj<typeof ProgressBar>;
 
 export const Default: Story = {
     args: {
-        deadlineTime: Date.now() + 30000,
+        playTime: 30000,
+        time: Date.now(),
         onTimeEnd: () => {
             alert('time end');
         },
