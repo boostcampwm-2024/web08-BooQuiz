@@ -81,7 +81,10 @@ describe('QuizZoneController', () => {
             stage: 'LOBBY',
             playerCount: 1,
             maxPlayers: 8,
+            serverTime: 0,
         };
+
+        Date.now = jest.fn().mockReturnValue(0);
 
         it('퀴즈존 정보를 성공적으로 조회한다', async () => {
             const session = { id: 'sessionId' };

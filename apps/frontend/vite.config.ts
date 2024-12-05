@@ -7,6 +7,9 @@ export default defineConfig(({ mode }) => {
 
     return {
         plugins: [react()],
+        worker: {
+            format: 'es',
+        },
         resolve: {
             alias: {
                 '@': path.resolve(__dirname, './src'),
@@ -21,6 +24,25 @@ export default defineConfig(({ mode }) => {
                     rewrite: (path) => path.replace(/^\/api/, ''), // /api prefix 제거
                 },
             },
+        },
+        build: {
+            clean: true, // 빌드 전에 outDir을 청소합니다
+            rollupOptions: {
+                output: {
+                    manualChunks(id) {
+                        if (id.includes('timer.worker')) {
+                            return 'worker';
+                        }
+                    },
+                    // 캐시 무효화를 위한 더 안전한 방법
+                    entryFileNames: `assets/[name].[hash].js`,
+                    chunkFileNames: `assets/[name].[hash].js`,
+                    assetFileNames: `assets/[name].[hash].[ext]`,
+                },
+            },
+            // 캐시 설정
+            manifest: true, // manifest 파일 생성
+            sourcemap: true,
         },
         test: {
             environment: 'jsdom',
