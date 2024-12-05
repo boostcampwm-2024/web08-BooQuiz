@@ -132,7 +132,7 @@ const QuizZoneContent = () => {
                     handleConfirm={() => initQuizZone()}
                 />
             </AlertDialog>
-            <AlertDialog open={isClose}>
+            <AlertDialog open={quizZoneState.stage === 'LOBBY' && isClose}>
                 <CustomAlertDialogContent
                     title={'퀴즈존 종료'}
                     description={'방장이 퀴즈존을 떠나 퀴즈존이 삭제되었습니다.'}
