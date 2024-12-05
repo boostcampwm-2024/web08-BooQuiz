@@ -54,7 +54,7 @@ export class QuizService {
     }
 
     async deleteQuizSet(quizSetId: number) {
-        const quiz = await this.findQuizSet(quizSetId);
+        const quizSet = await this.findQuizSet(quizSetId);
 
         await this.quizSetRepository.delete({ id: quizSetId });
     }
@@ -80,10 +80,6 @@ export class QuizService {
     async searchQuizSet(searchQuery: SearchQuizSetRequestDTO) {
         const { name, page, size } = searchQuery;
 
-        if (!name) {
-            return this.findDefaultQuizSet(page, size);
-        }
-
         const [quizSets, count] = await Promise.all([
             this.quizSetRepository.searchByName(name, page, size),
             this.quizSetRepository.countByName(name),
@@ -93,12 +89,4 @@ export class QuizService {
         return { quizSetDetails, total: count, currentPage: page };
     }
 
-    private async findDefaultQuizSet(page: number, size: number) {
-        const [quizSets, count] = await Promise.all([
-            this.quizSetRepository.findByRecommend(page, size),
-            this.quizSetRepository.countByRecommend(),
-        ]);
-        const quizSetDetails = quizSets.map(QuizSetDetails.from);
-        return { quizSetDetails, total: count, currentPage: page };
-    }
 }
