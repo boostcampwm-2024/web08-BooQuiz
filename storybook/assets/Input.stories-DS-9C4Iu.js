@@ -8,7 +8,7 @@ import{j as e}from"./jsx-runtime-DR9Q75dM.js";import{r as Y}from"./index-DRjF_FH
                         ${b}
                         ${v}
                         leading-normal
-                    `,onKeyDown:$,step:A,min:B,max:f,...k}),K&&e.jsx("div",{className:"underline h-[2px] w-full bg-blue-600"}),e.jsxs("div",{className:"w-full flex flex-row",children:[g&&e.jsx("span",{className:`error-message ${v} text-red-500 text-[10px] w-full`,children:g}),typeof a=="string"&&P&&e.jsx("div",{className:"w-14 text-right pr-1 ml-auto",children:e.jsx(G,{text:a.length.toString()+"/"+f,color:"gray",size:y().replace("text-","")})})]})]})});t.displayName="Input";t.__docgenInfo={description:`\`Input\` 컴포넌트는 다양한 입력 필드를 렌더링합니다.
+                    `,onKeyDown:$,step:A,min:B,max:f,...k}),K&&e.jsx("div",{className:"underline h-[2px] w-full bg-blue-600"}),e.jsxs("div",{className:"w-full flex flex-row",children:[g&&e.jsx("span",{className:`error-message ${v} text-red-500 text-[10px] w-full`,children:g}),typeof a=="string"&&P&&e.jsx("div",{className:"w-20 text-right pr-1 ml-auto",children:e.jsx(G,{text:a.length.toString()+"/"+f,color:"gray",size:y().replace("text-","")})})]})]})});t.displayName="Input";t.__docgenInfo={description:`\`Input\` 컴포넌트는 다양한 입력 필드를 렌더링합니다.
 
 @example
 \`\`\`tsx
