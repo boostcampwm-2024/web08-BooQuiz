@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import TimerWorker from '@/workers/timer.worker?worker';
 
 interface TimerConfig {
     initialTime: number;
@@ -24,12 +25,7 @@ export const useTimer = ({ initialTime, onComplete }: TimerConfig) => {
         }
 
         // 새 Worker 생성
-        workerRef.current = new Worker(
-            new URL('../workers/timer.worker.ts?worker', import.meta.url),
-            {
-                type: 'module',
-            },
-        );
+        workerRef.current = new TimerWorker();
 
         // Worker 메시지 핸들러
         workerRef.current.onmessage = (event) => {
