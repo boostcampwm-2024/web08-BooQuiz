@@ -69,7 +69,7 @@ export class QuizZoneController {
         @Param('quizZoneId') quizZoneId: string,
     ) {
         const serverTime = Date.now();
-        const quizZoneInfo = this.quizZoneService.getQuizZoneInfo(
+        const quizZoneInfo = await this.quizZoneService.getQuizZoneInfo(
             session.id,
             quizZoneId,
             session.quizZoneId,
