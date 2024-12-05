@@ -27,8 +27,6 @@ const ProgressBar = ({ playTime, time, onTimeEnd }: ProgressBarProps) => {
         onTimeEnd?.();
     }
 
-    console.log(progress);
-
     return (
         <div className="w-full flex justify-center flex-col items-center gap-2">
             <Progress value={progress} max={100} className="max-w-[60%]" />
