@@ -24,7 +24,7 @@ export class CreateQuizZoneDto {
 
     @IsInt({ message: '최대 플레이어 수가 없습니다.' })
     @Min(1, { message: '최소 1명 이상이어야 합니다.' })
-    // @Max(300, { message: '최대 300명까지 가능합니다.' })
+    @Max(300, { message: '최대 300명까지 가능합니다.' })
     readonly limitPlayerCount: number;
 
     @IsNotEmpty({ message: '퀴즈존을 선택해주세요.' })
