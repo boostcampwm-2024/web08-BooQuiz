@@ -76,13 +76,11 @@ const quizZoneReducer: Reducer<QuizZone, QuizZoneAction> = (state, action) => {
                     ...state.currentPlayer,
                     state: 'SUBMIT',
                 },
-                chatMessages: payload.chatMessages,
                 currentQuizResult: {
+                    ...payload,
                     fastestPlayers: payload.fastestPlayerIds
                         .map((id) => state.players?.find((p) => p.id === id))
                         .filter((p) => !!p),
-                    submittedCount: payload.submittedCount,
-                    totalPlayerCount: payload.totalPlayerCount,
                 },
             };
         case 'someone_submit':
@@ -110,11 +108,8 @@ const quizZoneReducer: Reducer<QuizZone, QuizZoneAction> = (state, action) => {
                 },
                 currentQuiz: {
                     ...state.currentQuiz,
+                    ...nextQuiz,
                     question: atob(nextQuiz.question),
-                    currentIndex: nextQuiz.currentIndex,
-                    playTime: nextQuiz.playTime,
-                    startTime: nextQuiz.startTime,
-                    deadlineTime: nextQuiz.deadlineTime,
                     quizType: 'SHORT',
                 },
                 currentQuizResult: {
@@ -149,12 +144,8 @@ const quizZoneReducer: Reducer<QuizZone, QuizZoneAction> = (state, action) => {
         case 'summary':
             return {
                 ...state,
+                ...payload,
                 stage: 'RESULT',
-                score: payload.score,
-                submits: payload.submits,
-                quizzes: payload.quizzes,
-                ranks: payload.ranks,
-                endSocketTime: payload.endSocketTime,
             };
         case 'chat':
             return {
