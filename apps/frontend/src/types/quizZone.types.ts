@@ -27,6 +27,8 @@ export interface QuizZone {
     chatMessages?: ChatMessage[];
     isQuizZoneEnd?: boolean;
     endSocketTime?: number;
+    serverTime: number;
+    offset: number;
 }
 
 export interface Rank {
@@ -118,4 +120,9 @@ export interface ChatMessage {
     clientId: string;
     nickname: string;
     message: string;
+}
+
+export interface InitQuizZoneResponse {
+    quizZone: QuizZone;
+    now: number;
 }

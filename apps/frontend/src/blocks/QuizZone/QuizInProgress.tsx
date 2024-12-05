@@ -3,11 +3,13 @@ import ContentBox from '@/components/common/ContentBox';
 import Input from '@/components/common/Input';
 import ProgressBar from '@/components/common/ProgressBar';
 import Typography from '@/components/common/Typogrpahy';
-import { useState } from 'react';
+import { useTimer } from '@/hook/useTimer';
+import { CurrentQuiz } from '@/types/quizZone.types';
+import { useEffect, useState } from 'react';
 
 interface QuizInProgressProps {
     playTime: number | null;
-    currentQuiz: any;
+    currentQuiz: CurrentQuiz;
     submitAnswer: (e: any) => void;
 }
 
@@ -17,6 +19,17 @@ const QuizInProgress = ({ currentQuiz, submitAnswer }: QuizInProgressProps) => {
     const MAX_TEXT_LENGTH = 100;
     const MIN_TEXT_LENGTH = 1;
 
+    const playTime = currentQuiz.playTime;
+
+    const { start, time } = useTimer({
+        initialTime: playTime / 1000,
+        onComplete: () => {},
+    });
+
+    useEffect(() => {
+        start();
+    }, []);
+
     const handleSubmitAnswer = () => {
         if (answer.length >= MIN_TEXT_LENGTH && answer.length <= MAX_TEXT_LENGTH) {
             submitAnswer(answer);
@@ -25,7 +38,7 @@ const QuizInProgress = ({ currentQuiz, submitAnswer }: QuizInProgressProps) => {
 
     return (
         <div className="w-full h-full flex flex-col items-center justify-center gap-4">
-            <ProgressBar deadlineTime={currentQuiz.deadlineTime} onTimeEnd={() => {}} />
+            <ProgressBar time={time} playTime={playTime} onTimeEnd={() => {}} />
             <ContentBox className="w-full flex flex-col gap-4 bg-white shadow-lg">
                 <Typography
                     text={`Q. ${currentQuiz.question}`}
