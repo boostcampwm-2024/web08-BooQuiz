@@ -215,7 +215,11 @@ export const chatMessagesReducer: Reducer<ChatMessage[], chatAction> = (chatMess
  * @returns {Function} .playQuiz - 퀴즈 상태를 플레이 모드로 변경하는 함수
  */
 
-const useQuizZone = (quizZoneId: string, handleReconnect?: () => void) => {
+const useQuizZone = (
+    quizZoneId: string,
+    handleReconnect?: () => void,
+    handleClose?: () => void,
+) => {
     const initialQuizZoneState: QuizZone = {
         stage: 'LOBBY',
         currentPlayer: {
@@ -249,6 +253,7 @@ const useQuizZone = (quizZoneId: string, handleReconnect?: () => void) => {
 
     const handleFinish = () => {
         dispatch({ type: 'leave', payload: undefined });
+        handleClose?.();
     };
 
     const wsUrl = `${import.meta.env.VITE_WS_URL}/play`;
