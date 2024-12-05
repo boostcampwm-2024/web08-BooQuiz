@@ -19,10 +19,11 @@ const QuizInProgress = ({ currentQuiz, submitAnswer }: QuizInProgressProps) => {
     const MAX_TEXT_LENGTH = 100;
     const MIN_TEXT_LENGTH = 1;
 
-    const playTime = currentQuiz.playTime;
+    const now = new Date().getTime();
+    const { playTime, deadlineTime } = currentQuiz;
 
     const { start, time } = useTimer({
-        initialTime: playTime / 1000,
+        initialTime: (deadlineTime - now) / 1000,
         onComplete: () => {},
     });
 
