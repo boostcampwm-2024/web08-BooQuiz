@@ -37,8 +37,8 @@ const QuizZoneContent = () => {
             setIsLoading(true);
 
             const quizZone = await requestQuizZone(quizZoneId);
-
-            await initQuizZoneData(quizZone);
+            const now = new Date().getTime();
+            await initQuizZoneData(quizZone, now);
 
             setIsLoading(false);
             setIsDisconnection(false);

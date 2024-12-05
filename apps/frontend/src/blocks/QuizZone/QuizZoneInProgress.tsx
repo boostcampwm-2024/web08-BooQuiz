@@ -27,7 +27,7 @@ const QuizZoneInProgress = ({ quizZoneState, submitAnswer, playQuiz }: QuizZoneI
             return (
                 <QuizInProgress
                     playTime={playTime!}
-                    currentQuiz={currentQuiz}
+                    currentQuiz={currentQuiz!}
                     submitAnswer={submitAnswer}
                 />
             );
