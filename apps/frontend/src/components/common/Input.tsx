@@ -168,6 +168,27 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
                             />
                         </div>
                     )}
+                    {typeof value === 'number' && isShowCount && (
+                        <div className="w-20 text-right pr-1 ml-auto">
+                            <Typography
+                                text={(isNaN(value) ? '-' : value) + '/' + max}
+                                color="gray"
+                                size={
+                                    getFontSizeClass().replace('text-', '') as
+                                        | 'xs'
+                                        | 'sm'
+                                        | 'base'
+                                        | 'lg'
+                                        | 'xl'
+                                        | '2xl'
+                                        | '3xl'
+                                        | '4xl'
+                                        | '5xl'
+                                        | '6xl'
+                                }
+                            />
+                        </div>
+                    )}
                 </div>
             </div>
         );
