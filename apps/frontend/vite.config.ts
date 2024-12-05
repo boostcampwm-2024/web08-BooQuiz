@@ -26,6 +26,7 @@ export default defineConfig(({ mode }) => {
             },
         },
         build: {
+            clean: true, // 빌드 전에 outDir을 청소합니다
             rollupOptions: {
                 output: {
                     manualChunks(id) {
