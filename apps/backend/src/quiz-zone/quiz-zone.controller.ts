@@ -68,12 +68,16 @@ export class QuizZoneController {
         @Session() session: Record<string, any>,
         @Param('quizZoneId') quizZoneId: string,
     ) {
+        const serverTime = Date.now();
         const quizZoneInfo = this.quizZoneService.getQuizZoneInfo(
             session.id,
             quizZoneId,
             session.quizZoneId,
         );
         session['quizZoneId'] = quizZoneId;
-        return quizZoneInfo;
+        return {
+            ...quizZoneInfo,
+            serverTime,
+        };
     }
 }
