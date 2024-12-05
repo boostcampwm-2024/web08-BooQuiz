@@ -44,5 +44,5 @@ export const validateQuizZoneSetCode = (code: string) => {
 //입장 인원 제한 유효성 검사
 export const validateQuizZoneSetLimit = (limit: number) => {
     if (limit < 1) return '최소 1명 이상 지정해주세요.';
-    if (limit > 300) return '최대 인원은 300명입니다.';
+    // if (limit > 300) return '최대 인원은 300명입니다.';
 };
