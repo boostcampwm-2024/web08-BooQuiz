@@ -10,12 +10,16 @@ import {
 } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { QuizZoneService } from './quiz-zone.service';
+import { ChatService } from '../chat/chat.service';
 import { CreateQuizZoneDto } from './dto/create-quiz-zone.dto';
 
 @ApiTags('Quiz Zone')
 @Controller('quiz-zone')
 export class QuizZoneController {
-    constructor(private readonly quizZoneService: QuizZoneService) {}
+    constructor(
+        private readonly quizZoneService: QuizZoneService,
+        private readonly chatService: ChatService,
+    ) {}
 
     @Post()
     @HttpCode(201)
@@ -31,6 +35,7 @@ export class QuizZoneController {
         }
         const hostId = session.id;
         await this.quizZoneService.create(createQuizZoneDto, hostId);
+        await this.chatService.set(createQuizZoneDto.quizZoneId);
     }
 
     @Get('check/:quizZoneId')
@@ -46,7 +51,7 @@ export class QuizZoneController {
         @Session() session: Record<string, any>,
         @Param('quizZoneId') quizZoneId: string,
     ) {
-        const sessionQuizZoneId = session.id;
+        const sessionQuizZoneId = session.quizZoneId;
         return sessionQuizZoneId === undefined || sessionQuizZoneId === quizZoneId;
     }
 

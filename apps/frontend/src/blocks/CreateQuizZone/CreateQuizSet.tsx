@@ -8,7 +8,6 @@ import { validQuizSetName, validQuizzes } from '@/utils/validators.ts';
 import { QUIZ_LIMIT_COUNT } from '@/constants/quiz-set.constants.ts';
 import Input from '@/components/common/Input';
 import ContentBox from '@/components/common/ContentBox';
-import Typography from '@/components/common/Typogrpahy';
 import CommonButton from '@/components/common/CommonButton';
 
 interface CreateQuizZoneQuizSetProps {
@@ -68,15 +67,18 @@ const CreateQuizSet = ({ handlePrevStepButton, updateQuizSet }: CreateQuizZoneQu
 
     return (
         <div className="w-full h-full flex flex-col justify-center items-center gap-4">
-            <ContentBox className="gap-2 xs:max-w-xs md:max-w-md w-full">
+            <ContentBox className="gap-2 xs:max-w-xs md:max-w-md w-full bg-white shadow-md">
                 <Input
                     label="퀴즈셋 이름"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     name="quiz-zone-id"
                     isBorder={true}
+                    error={validNameMessage}
+                    isShowCount={true}
+                    max={100}
                 />
-                {validNameMessage && <Typography text={validNameMessage} size="xs" color="red" />}
+                {/* {validNameMessage && <Typography text={validNameMessage} size="xs" color="red" />} */}
                 <CandidateQuizzes quizzes={quizzes} removeQuiz={removeQuiz} />
                 {validQuizzesMessage && <span>{validQuizzesMessage}</span>}
                 <CreateQuiz handleCreateQuiz={addQuiz} />
@@ -88,12 +90,15 @@ const CreateQuizSet = ({ handlePrevStepButton, updateQuizSet }: CreateQuizZoneQu
                 >
                     퀴즈셋 만들기
                 </CommonButton>
+                {handlePrevStepButton && (
+                    <CommonButton
+                        className="min-w-[15rem]"
+                        clickEvent={() => handlePrevStepButton()}
+                    >
+                        돌아가기
+                    </CommonButton>
+                )}
             </ContentBox>
-            {handlePrevStepButton && (
-                <CommonButton className="min-w-[15rem]" clickEvent={() => handlePrevStepButton()}>
-                    돌아가기
-                </CommonButton>
-            )}
         </div>
     );
 };

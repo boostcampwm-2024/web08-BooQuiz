@@ -11,6 +11,7 @@ export class QuizSetRepository extends Repository<QuizSet> {
     searchByName(name: string, page: number, pageSize: number) {
         return this.find({
                 where: {name: ILike(`${name}%`)},
+                order: {createAt: 'desc'},
                 skip: (page - 1) * pageSize,
                 take: pageSize,
         });
@@ -18,5 +19,18 @@ export class QuizSetRepository extends Repository<QuizSet> {
 
     countByName(name: string) {
         return this.count({ where: { name: ILike(`${name}%`) } });
+    }
+
+    countByRecommend() {
+        return this.count({where: {recommended: true}});
+    }
+
+    findByRecommend(page: number, pageSize: number) {
+        return this.find({
+            where: {recommended: true},
+            order: {createAt: 'desc'},
+            skip: (page - 1) * pageSize,
+            take: pageSize,
+        })
     }
 }

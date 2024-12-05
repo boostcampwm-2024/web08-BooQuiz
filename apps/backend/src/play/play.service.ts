@@ -117,14 +117,12 @@ export class PlayService {
             currentQuizResult['answer'] = undefined;
             currentQuizResult['totalPlayerCount'] = 0;
             currentQuizResult['correctPlayerCount'] = 0;
-        }
-
-        if (currentQuizIndex >= 0) {
-            const answer: string = quizZone.quizzes.at(currentQuizIndex).answer;
+        } else if (currentQuizIndex >= 0) {
+            const answer: string = quizZone.quizzes.at(currentQuizIndex).answer.replace(/\s/g, '');
             currentQuizResult['answer'] = answer;
             currentQuizResult['totalPlayerCount'] = players.size;
             currentQuizResult['correctPlayerCount'] = [...players.values()].filter(
-                (player) => player.submits[currentQuizIndex]?.answer === answer,
+                (player) => player.submits[currentQuizIndex]?.answer.replace(/\s/g, '') === answer,
             ).length;
         }
         return currentQuizResult;
@@ -191,10 +189,10 @@ export class PlayService {
      * 특정 퀴즈 존에서 현재 퀴즈에 대한 답변을 제출합니다.
      * @param quizZoneId - 퀴즈 존 ID
      * @param clientId - 플레이어 ID
-     * @param submitQuiz - 제출된 퀴즈의 답변과 메타데이터
+     * @param submittedQuiz - 제출된 퀴즈의 답변과 메타데이터
      * @throws {BadRequestException} 답변을 제출할 수 없는 경우 예외가 발생합니다.
      */
-    async submit(quizZoneId: string, clientId: string, submitQuiz: SubmittedQuiz) {
+    async submit(quizZoneId: string, clientId: string, submittedQuiz: SubmittedQuiz) {
         const quizZone = await this.quizZoneService.findOne(quizZoneId);
         const { stage, players } = quizZone;
 
@@ -202,7 +200,13 @@ export class PlayService {
             throw new BadRequestException('퀴즈를 제출할 수 없습니다.');
         }
 
-        this.submitQuiz(quizZone, clientId, submitQuiz);
+        const submittedCount = [...players.values()].filter(
+            (player) => player.state === PLAYER_STATE.SUBMIT,
+        ).length;
+
+        submittedQuiz.submitRank = submittedCount + 1;
+
+        this.submitQuiz(quizZone, clientId, submittedQuiz);
 
         const submittedPlayers = [...players.values()].filter(
             (player) => player.state === PLAYER_STATE.SUBMIT,
@@ -261,16 +265,17 @@ export class PlayService {
 
         const submittedQuiz = {
             index: currentQuizIndex,
-            answer: undefined,
+            answer: '',
             submittedAt: now,
             receivedAt: now,
+            submitRank: players.size,
             ...submitQuiz,
         };
 
         player.submits.push(submittedQuiz);
 
         if (
-            quiz.answer === submittedQuiz.answer &&
+            quiz.answer.replace(/\s/g, '') === submittedQuiz.answer.replace(/\s/g, '') &&
             submittedQuiz.submittedAt <= currentQuizDeadlineTime
         ) {
             player.score++;
@@ -282,16 +287,22 @@ export class PlayService {
     /**
      * 퀴즈 존에서 사용자의 퀴즈 진행 요약 결과를 제공합니다.
      * @param quizZoneId - 퀴즈 존 ID
+     * @param socketConnectTime - 퀴즈 결과 시간 socket 연결 시간
      * @returns 퀴즈 결과 요약 DTO를 포함한 Promise
      */
-    async summaryQuizZone(quizZoneId: string) {
+    async summaryQuizZone(quizZoneId: string, socketConnectTime: number = 30 * 1000) {
         const quizZone = await this.quizZoneService.findOne(quizZoneId);
         const { players, quizzes } = quizZone;
 
         this.clearQuizZoneHandle(quizZoneId);
 
-        await this.quizZoneService.clearQuizZone(quizZoneId);
-        const ranks = this.getRanking(players);
+        const ranks = this.getRanking(
+            players,
+            quizzes.map((quiz) => quiz.answer),
+        );
+
+        const now = Date.now();
+        const endSocketTime = now + socketConnectTime;
 
         return [...players.values()].map(({ id, score, submits }) => ({
             id,
@@ -299,22 +310,112 @@ export class PlayService {
             submits,
             quizzes,
             ranks,
+            endSocketTime
         }));
     }
 
-    private getRanking(players: Map<string, Player>) {
-        const sortedPlayers = [...players.values()].sort((a, b) => b.score - a.score);
-        let currentRank = 1;
-        let currentScore = sortedPlayers[0]?.score;
-        let sameRankCount = -1; // 첫 번째 플레이어를 위해 -1로 시작
+    public clearQuizZone(quizZoneId: string) {
+        this.quizZoneService.clearQuizZone(quizZoneId);
+    }
 
-        return sortedPlayers.map((player) => {
-            if (player.score < currentScore) {
-                currentRank = currentRank + sameRankCount + 1;
-                currentScore = player.score;
-                sameRankCount = 0;
-            } else {
-                sameRankCount++;
+    private calculateQuizRanks(
+        players: Map<string, Player>,
+        quizAnswers: string[],
+    ): Map<number, string[]> {
+        const quizRanks = new Map<number, string[]>();
+        quizAnswers.forEach((answer, quizIndex) => {
+            const sortedCorrectPlayerIds = [...players.values()]
+                .filter((player) => player.submits[quizIndex]?.answer === answer)
+                .sort((a, b) => a.submits[quizIndex].submitRank - b.submits[quizIndex].submitRank)
+                .map((player) => player.id);
+
+            quizRanks.set(quizIndex, sortedCorrectPlayerIds);
+        });
+
+        return quizRanks;
+    }
+    private getPlayersCorrectRankCount(
+        players: Map<string, Player>,
+        quizRanks: Map<number, string[]>,
+    ) {
+        return new Map(
+            [...players.keys()].map((playerId) => {
+                const rankCounts = new Map<number, number>();
+
+                quizRanks.forEach((correctPlayers) => {
+                    const rank = correctPlayers.indexOf(playerId) + 1;
+                    if (rank > 0) {
+                        rankCounts.set(rank, (rankCounts.get(rank) || 0) + 1);
+                    }
+                });
+
+                return [playerId, rankCounts];
+            }),
+        );
+    }
+
+    private compareRankCounts(
+        playerARankCount: Map<number, number>,
+        playerBRankCount: Map<number, number>,
+    ): number {
+        const maxRank = Math.max(...[...playerARankCount.keys()], ...[...playerBRankCount.keys()]);
+
+        for (let rank = 1; rank <= maxRank; rank++) {
+            const aCount = playerARankCount.get(rank) || 0;
+            const bCount = playerBRankCount.get(rank) || 0;
+            if (aCount !== bCount) {
+                return bCount - aCount;
+            }
+        }
+        return 0;
+    }
+
+    private compareRanks(
+        currentPlayer: Player,
+        prevPlayer: Player,
+        currentRankCount: Map<number, number>,
+        prevRankCount: Map<number, number>,
+    ): boolean {
+        if (currentPlayer.score !== prevPlayer.score) {
+            return true;
+        }
+        return this.compareRankCounts(currentRankCount, prevRankCount) !== 0;
+    }
+
+    private getRanking(players: Map<string, Player>, quizAnswers: string[]) {
+        const quizRanks = this.calculateQuizRanks(players, quizAnswers);
+
+        const playersCorrectRankCount = this.getPlayersCorrectRankCount(players, quizRanks);
+
+        const sortedPlayers = [...players.values()].sort((playerA, playerB) => {
+            if (playerB.score !== playerA.score) {
+                return playerB.score - playerA.score;
+            }
+
+            return this.compareRankCounts(
+                playersCorrectRankCount.get(playerA.id),
+                playersCorrectRankCount.get(playerB.id),
+            );
+        });
+        let currentRank = 1;
+        let sameRankCount = 0;
+
+        return sortedPlayers.map((player, index) => {
+            if (index > 0) {
+                const prevPlayer = sortedPlayers[index - 1];
+                if (
+                    this.compareRanks(
+                        player,
+                        prevPlayer,
+                        playersCorrectRankCount.get(player.id),
+                        playersCorrectRankCount.get(prevPlayer.id),
+                    )
+                ) {
+                    currentRank += sameRankCount + 1;
+                    sameRankCount = 0;
+                } else {
+                    sameRankCount++;
+                }
             }
 
             return {

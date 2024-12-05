@@ -81,10 +81,13 @@ const CreateQuiz = ({ handleCreateQuiz }: CreateQuizProps) => {
                     value={question}
                     onChange={(e) => setQuestion(e.target.value)}
                     isBorder={true}
+                    error={isInvalidQuestion && questionInvalidMessage}
+                    isShowCount={true}
+                    max={200}
                 />
-                {isInvalidQuestion && (
+                {/* {isInvalidQuestion && (
                     <Typography size="xs" color="red" text={questionInvalidMessage} />
-                )}
+                )} */}
             </div>
             <div className={isInvalidAnswer ? 'invalid' : ''}>
                 <Input
@@ -94,10 +97,13 @@ const CreateQuiz = ({ handleCreateQuiz }: CreateQuizProps) => {
                     value={answer}
                     onChange={(e) => setAnswer(e.target.value)}
                     isBorder={true}
+                    error={isInvalidAnswer && answerInvalidMessage}
+                    isShowCount={true}
+                    max={50}
                 />
-                {isInvalidAnswer && (
+                {/* {isInvalidAnswer && (
                     <Typography size="xs" color="red" text={answerInvalidMessage} />
-                )}
+                )} */}
             </div>
             <CommonButton clickEvent={() => handleComplete()} disabled={isInvalid()}>
                 추가하기

@@ -16,6 +16,7 @@ export interface QuizZone {
     hostId: string;
     quizCount: number;
     players?: Player[];
+    maxPlayers?: number;
     currentQuiz?: CurrentQuiz;
     currentQuizResult?: CurrentQuizResult;
     score?: number;
@@ -24,6 +25,8 @@ export interface QuizZone {
     ranks?: Rank[];
     isLastQuiz?: boolean;
     chatMessages?: ChatMessage[];
+    isQuizZoneEnd?: boolean;
+    endSocketTime?: number;
 }
 
 export interface Rank {
@@ -69,6 +72,7 @@ export interface SubmittedQuiz {
     answer: string;
     submittedAt: number;
     receivedAt: number;
+    submitRank?: number;
 }
 
 export interface QuizZoneResultState {
@@ -76,12 +80,14 @@ export interface QuizZoneResultState {
     submits: SubmittedQuiz[];
     quizzes: Quiz[];
     ranks: Rank[];
+    endSocketTime: number;
 }
 
 export interface SubmitResponse {
     fastestPlayerIds: string[];
     submittedCount: number;
     totalPlayerCount: number;
+    chatMessages: ChatMessage[];
 }
 
 export interface SomeoneSubmitResponse {

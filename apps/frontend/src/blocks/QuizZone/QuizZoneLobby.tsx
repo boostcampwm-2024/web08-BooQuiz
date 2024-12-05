@@ -12,12 +12,19 @@ import { cn } from '@/lib/utils';
 interface QuizZoneLobbyProps {
     quizZoneState: QuizZone;
     quizZoneId: string;
+    maxPlayers: number;
     sendChat: (chatMessage: ChatMessage) => void;
     startQuiz: () => void;
     exitQuiz: () => void;
 }
 
-const QuizZoneLobby = ({ quizZoneState, quizZoneId, startQuiz, exitQuiz }: QuizZoneLobbyProps) => {
+const QuizZoneLobby = ({
+    quizZoneState,
+    quizZoneId,
+    maxPlayers,
+    startQuiz,
+    exitQuiz,
+}: QuizZoneLobbyProps) => {
     const navigate = useNavigate();
     const handleLeave = () => {
         exitQuiz();
@@ -44,7 +51,7 @@ const QuizZoneLobby = ({ quizZoneState, quizZoneId, startQuiz, exitQuiz }: QuizZ
 
     return (
         <div className="w-full h-full flex flex-col items-center justify-center gap-4">
-            <ContentBox className="w-full flex-1 min-h-0 h-full">
+            <ContentBox className="w-full flex-1 min-h-0 h-full bg-white shadow-lg">
                 {/* 모바일에서는 세로로, md 이상에서는 가로로 배치 */}
                 <div className="w-full min-h-0 h-full flex flex-col md:flex-row gap-4 items-stretch">
                     {/* 퀴즈 정보 섹션 - 모바일에서는 전체 너비, md 이상에서는 30% */}
@@ -78,8 +85,8 @@ const QuizZoneLobby = ({ quizZoneState, quizZoneId, startQuiz, exitQuiz }: QuizZ
                             </div>
                             {renderInfoItem('퀴즈 개수', `${quizZoneState.quizCount ?? '?'}문제`)}
                             {renderInfoItem(
-                                '퀴즈존 참가자수',
-                                `${quizZoneState.players?.length ?? '?'} 명`,
+                                '현재 참여자',
+                                `${quizZoneState.players?.length ?? '?'} / ${maxPlayers ?? '?'} 명`,
                             )}
                         </div>
 

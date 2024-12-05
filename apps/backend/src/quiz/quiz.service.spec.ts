@@ -4,7 +4,7 @@ import { QuizRepository } from './repository/quiz.repository';
 import { QuizSetRepository } from './repository/quiz-set.repository';
 import { QuizSet } from './entity/quiz-set.entity';
 import { QUIZ_TYPE } from '../common/constants';
-import { CreateQuizRequestDto } from './dto/create-quiz-request.dto';
+import { CreateQuizSetRequestDto } from './dto/create-quiz-set-request.dto';
 import { BadRequestException } from '@nestjs/common';
 import { UpdateQuizRequestDto } from './dto/update-quiz-request.dto';
 import { SearchQuizSetRequestDTO } from './dto/search-quiz-set-request.dto';
@@ -15,7 +15,6 @@ describe('QuizService', () => {
     let service: QuizService;
     let quizRepository: QuizRepository;
     let quizSetRepository: QuizSetRepository;
-
 
     beforeAll(async () => {
         initializeTransactionalContext();
@@ -45,6 +44,8 @@ describe('QuizService', () => {
         findOneBy: jest.fn(),
         searchByName: jest.fn(),
         countByName: jest.fn(),
+        findByRecommend: jest.fn(),
+        countByRecommend: jest.fn(),
     };
 
     beforeEach(async () => {
@@ -94,7 +95,35 @@ describe('QuizService', () => {
             //then
             expect(response).toEqual({
                 quizSetDetails: response.quizSetDetails,
-                total: response.total,
+                total: count,
+                currentPage: 1,
+            });
+        });
+
+        it('퀴즈셋 recommend 반환', async () => {
+            //given
+            const dto = {
+                page: 1,
+                size: 10,
+            } as SearchQuizSetRequestDTO;
+            const quizSets = [
+                { id: 1, name: '퀴즈셋 검색1', recommended: true },
+                { id: 2, name: '퀴즈셋 검색2', recommended: true },
+                { id: 2, name: '퀴즈셋 검색2', recommended: false },
+            ] as QuizSet[];
+            const count = quizSets.length;
+
+            mockQuizSetRepository.findByRecommend.mockResolvedValue(quizSets.slice(0,2));
+            mockQuizSetRepository.countByRecommend.mockResolvedValue(2);
+
+            //when
+            const response = await service.searchQuizSet(dto);
+
+            console.log(response);
+            //then
+            expect(response).toEqual({
+                quizSetDetails: response.quizSetDetails,
+                total: 2,
                 currentPage: 1,
             });
         });
@@ -114,7 +143,7 @@ describe('QuizService', () => {
                         quizType: QUIZ_TYPE.SHORT_ANSWER,
                     },
                 ],
-            } as CreateQuizRequestDto;
+            } as CreateQuizSetRequestDto;
             const quiz = {
                 ...dto[0],
                 id: 1,
@@ -151,7 +180,7 @@ describe('QuizService', () => {
                         quizType: QUIZ_TYPE.SHORT_ANSWER,
                     },
                 ],
-            } as CreateQuizRequestDto;
+            } as CreateQuizSetRequestDto;
 
             const quiz1 = {
                 ...dto[0],

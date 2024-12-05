@@ -20,7 +20,8 @@
     "docs:shared": "typedoc --tsconfig packages/shared/tsconfig.json --entryPointStrategy expand --out docs/shared",
     "docs": "pnpm run docs:backend && pnpm run docs:frontend",
     "prepare": "husky",
-    "preinstall": "npx only-allow pnpm"
+    "preinstall": "npx only-allow pnpm",
+    "start": "pnpm --stream -r start"
   },
   "repository": {
     "type": "git",

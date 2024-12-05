@@ -37,7 +37,7 @@ const QuizWaiting = ({ playQuiz, startTime, currentQuizSummary }: QuizWaitingPro
 
     return (
         <div className="w-full h-full flex flex-col items-center justify-center gap-4">
-            <ContentBox className="w-full h-full flex flex-col justify-center items-center gap-4 min-h-10">
+            <ContentBox className="w-full h-full flex flex-col justify-center items-center gap-4 min-h-10 bg-white shadow-lg">
                 <Typography size="2xl" color="gray" text="다음 퀴즈를 준비 중입니다." bold={true} />
                 <Typography size="2xl" color="gray" text="잠시만 기다려주세요" bold={true} />
 
@@ -54,13 +54,13 @@ const QuizWaiting = ({ playQuiz, startTime, currentQuizSummary }: QuizWaitingPro
                 )}
             </ContentBox>
             {isVisibleSummary && (
-                <ContentBox className="w-full h-full flex flex-col justify-center items-center gap-2">
+                <ContentBox className="w-full h-full flex flex-col justify-center items-center gap-2 bg-white shadow-lg">
                     <Typography size="2xl" color="blue" text="정답: " bold={true} />
                     <Typography size="2xl" color="black" text={answer} bold={true} />
                     <Typography
                         size="2xl"
                         color="gray"
-                        text={`정답률: ${(correctPlayerCount / totalPlayerCount) * 100}%`}
+                        text={`정답률: ${((correctPlayerCount / totalPlayerCount) * 100).toFixed(1)}%`}
                         bold={true}
                     />
                 </ContentBox>

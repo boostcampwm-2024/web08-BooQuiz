@@ -15,9 +15,17 @@ interface ChatProps {
     sendHandler: (chatMessage: ChatMessage) => void;
     chatMessages: ChatMessage[];
     className?: string;
+    disabled?: boolean;
 }
 
-const ChatBox = ({ clientId, nickname, sendHandler, chatMessages, className }: ChatProps) => {
+const ChatBox = ({
+    clientId,
+    nickname,
+    sendHandler,
+    chatMessages,
+    className,
+    disabled = false,
+}: ChatProps) => {
     const [message, setMessage] = useState('');
     const messageContainerRef = useRef<HTMLDivElement>(null);
 
@@ -49,11 +57,11 @@ const ChatBox = ({ clientId, nickname, sendHandler, chatMessages, className }: C
 
     return (
         <div
-            className={`flex flex-col bg-white border rounded-lg h-full w-full 
+            className={`flex flex-col bg-white border rounded-lg h-full w-full shadow-lg 
             ${className}`}
         >
             <div className="p-4 border-b bg-gradient-to-r rounded-t-lg">
-                <h2 className="font-semibold text-blue-500 flex items-center gap-2">
+                <h2 className="font-semibold text-[#2563eb] flex items-center gap-2">
                     <MessageCircle className="h-5 w-5" />
                     실시간 채팅
                 </h2>
@@ -62,7 +70,7 @@ const ChatBox = ({ clientId, nickname, sendHandler, chatMessages, className }: C
             {/* ref를 메시지 컨테이너에 직접 적용 */}
             <div
                 ref={messageContainerRef}
-                className="flex-1 p-4 overflow-y-auto bg-gray-50/50 min-h-[300px] space-y-4"
+                className="flex-1 p-4 overflow-y-auto bg-white min-h-[300px] space-y-4"
             >
                 <div className="flex flex-col gap-3">
                     {chatMessages.map((chat, index) => (
@@ -80,7 +88,7 @@ const ChatBox = ({ clientId, nickname, sendHandler, chatMessages, className }: C
                                 <span className="text-sm font-medium text-gray-600">
                                     {chat.nickname}
                                     {chat.clientId === clientId && (
-                                        <span className="ml-1 text-xs text-blue-500 font-normal">
+                                        <span className="ml-1 text-xs text-[#2563eb] font-normal">
                                             (나)
                                         </span>
                                     )}
@@ -89,7 +97,7 @@ const ChatBox = ({ clientId, nickname, sendHandler, chatMessages, className }: C
                                 <div
                                     className={`max-w-[240px] rounded-2xl px-4 py-2 break-words ${
                                         chat.clientId === clientId
-                                            ? 'bg-blue-500 text-white shadow-sm'
+                                            ? 'bg-[#2563eb] text-white shadow-sm'
                                             : 'bg-white border border-gray-200 text-gray-700 shadow-sm'
                                     }`}
                                 >
@@ -103,14 +111,15 @@ const ChatBox = ({ clientId, nickname, sendHandler, chatMessages, className }: C
 
             <form
                 onSubmit={handleSubmit}
-                className="w-full flex p-4 border-t bg-gray-50/30 rounded-b-lg lg:rounded-none items-center gap-3"
+                className="w-full flex p-2 border-t bg-white items-center gap-3 rounded-b-lg"
             >
                 <Input
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     placeholder="메시지를 입력하세요"
                     name="chatInput"
-                    className="flex-1 bg-white shadow-sm border-gray-200 focus-visible:ring-blue-400 h-full p-2"
+                    disabled={disabled}
+                    className="flex-1 bg-white shadow-sm border-gray-200 focus-visible:ring-blue-400 h-full p-1"
                 />
                 <Button
                     type="submit"

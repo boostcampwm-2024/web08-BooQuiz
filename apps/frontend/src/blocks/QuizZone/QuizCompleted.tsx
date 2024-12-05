@@ -4,7 +4,7 @@ import { useTimer } from '@/hook/useTimer';
 import { useEffect } from 'react';
 import { CurrentQuizResult } from '@/types/quizZone.types.ts';
 import { Player } from '@/types/quizZone.types';
-import PodiumPlayers from '@/components/common/\bPodiumPlayers';
+import PodiumPlayers from '@/components/common/PodiumPlayers';
 
 interface QuizCompletedProps {
     currentPlayer: Player;
@@ -34,7 +34,7 @@ const QuizCompleted = ({
 
     return (
         <div className="w-full h-full flex flex-col items-center justify-center gap-4">
-            <ContentBox className="w-full flex flex-col items-center justify-center gap-2 h-full">
+            <ContentBox className="w-full flex flex-col items-center justify-center gap-2 h-full bg-white shadow-lg">
                 <Typography
                     size="3xl"
                     color="gray"
@@ -60,7 +60,7 @@ const QuizCompleted = ({
                 )}
             </ContentBox>
             {currentQuizResult && (
-                <ContentBox className="w-full flex flex-col items-center justify-center gap-2 h-full">
+                <ContentBox className="w-full flex flex-col items-center justify-center gap-2 h-full bg-white shadow-lg">
                     <Typography
                         size="xl"
                         color="black"
