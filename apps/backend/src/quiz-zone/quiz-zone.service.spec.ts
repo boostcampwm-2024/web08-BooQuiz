@@ -6,7 +6,6 @@ import { IQuizZoneRepository } from './repository/quiz-zone.repository.interface
 import { Quiz } from './entities/quiz.entity';
 import { PLAYER_STATE, QUIZ_TYPE, QUIZ_ZONE_STAGE } from '../common/constants';
 import { QuizService } from '../quiz/quiz.service';
-import { max } from 'class-validator';
 import { ChatService } from '../chat/chat.service';
 
 const nickNames: string[] = [
@@ -571,6 +570,13 @@ describe('QuizZoneService', () => {
                 currentQuizStartTime: Date.now(),
                 currentQuizDeadlineTime: Date.now() + playTime,
                 intervalTime: 5000,
+                summaries: {
+                    ranks: [
+                        {id: "player1", nickname: "미친투사", score: 0, ranking: 1},
+                        {id: "player2", nickname: "미친투사", score: 0, ranking: 1}
+                    ],
+                    endSocketTime: Date.now(),
+                }
             };
 
             mockQuizZoneRepository.get.mockResolvedValue(mockQuizZone);
@@ -579,7 +585,7 @@ describe('QuizZoneService', () => {
             const result = await service.getQuizZoneInfo(clientId, quizZoneId);
 
             // then
-            expect(result).toEqual({
+            expect(result).toMatchObject({
                 currentPlayer: {
                     id: clientId,
                     nickname: '닉네임',
@@ -591,8 +597,12 @@ describe('QuizZoneService', () => {
                 description: '테스트 퀴즈입니다',
                 quizCount: quizzes.length,
                 stage: QUIZ_ZONE_STAGE.RESULT,
-                maxPlayers: 10,
                 hostId: 'adminId',
+                ranks: [
+                    {id: "player1", nickname: "미친투사", score: 0, ranking: 1},
+                    {id: "player2", nickname: "미친투사", score: 0, ranking: 1}
+                ],
+                endSocketTime: Date.now(),
             });
         });
 

@@ -2,6 +2,8 @@ import { PLAYER_STATE, QUIZ_ZONE_STAGE } from '../../common/constants';
 import { CurrentQuizDto } from '../../play/dto/current-quiz.dto';
 import { SubmittedQuiz } from '../entities/submitted-quiz.entity';
 import { ChatMessage } from 'src/chat/entities/chat-message.entity';
+import { Rank } from '../../play/entities/rank.entity';
+import { Quiz } from '../entities/quiz.entity';
 
 /**
  * 퀴즈 게임에 참여하는 플레이어 엔티티
@@ -42,4 +44,10 @@ export interface FindQuizZoneDto {
     readonly currentQuiz?: CurrentQuizDto;
     readonly maxPlayers?: number;
     readonly chatMessages?: ChatMessage[];
+
+    readonly ranks?: Rank[];
+    readonly endSocketTime?: number;
+    readonly score?: number;
+    readonly quizzes?: Quiz[];
+    readonly submits?: SubmittedQuiz[];
 }

@@ -148,7 +148,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
                     )}
 
                     {typeof value === 'string' && isShowCount && (
-                        <div className="w-14 text-right pr-1 ml-auto">
+                        <div className="w-20 text-right pr-1 ml-auto">
                             <Typography
                                 text={value.length.toString() + '/' + max}
                                 color="gray"
