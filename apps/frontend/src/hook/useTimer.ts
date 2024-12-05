@@ -24,9 +24,12 @@ export const useTimer = ({ initialTime, onComplete }: TimerConfig) => {
         }
 
         // 새 Worker 생성
-        workerRef.current = new Worker(new URL('../workers/timer.worker.ts', import.meta.url), {
-            type: 'module',
-        });
+        workerRef.current = new Worker(
+            new URL('../workers/timer.worker.ts?worker', import.meta.url),
+            {
+                type: 'module',
+            },
+        );
 
         // Worker 메시지 핸들러
         workerRef.current.onmessage = (event) => {
